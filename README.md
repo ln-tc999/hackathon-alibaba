@@ -559,31 +559,6 @@ If you encounter issues not covered here:
 4. Ensure all prerequisites are installed correctly
 5. Try deleting `node_modules` and running `pnpm install` again
 
-## Contributing
-
-### Development Guidelines
-
-1. **Code Style**
-   - Follow TypeScript best practices
-   - Use ESLint and Prettier configurations
-   - Write descriptive variable and function names
-   - Add comments for complex logic
-
-2. **Testing**
-   - Write unit tests for new features
-   - Ensure all tests pass before committing
-   - Aim for high test coverage
-
-3. **Commits**
-   - Write clear, descriptive commit messages
-   - Reference issue numbers when applicable
-   - Keep commits focused and atomic
-
-4. **Pull Requests**
-   - Provide clear description of changes
-   - Include screenshots for UI changes
-   - Ensure all checks pass
-   - Request review from team members
 
 ### Project Structure Conventions
 
