@@ -1,0 +1,232 @@
+# ============================================
+# Dependencies
+# ============================================
+node_modules/
+.pnp
+.pnp.js
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# Package manager lock files (keep pnpm-lock.yaml)
+package-lock.json
+yarn.lock
+bun.lockb
+
+# ============================================
+# Environment Variables
+# ============================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+*.env
+
+# ============================================
+# Build Outputs
+# ============================================
+dist/
+build/
+out/
+.output/
+.vercel/
+.netlify/
+
+# ============================================
+# Next.js Specific
+# ============================================
+.next/
+next-env.d.ts
+.next/cache/
+.next/trace
+.next/server/
+*.trace
+
+# ============================================
+# TypeScript
+# ============================================
+*.tsbuildinfo
+*.tsbuildinfo.*
+tsconfig.tsbuildinfo
+**/tsconfig.tsbuildinfo
+
+# ============================================
+# Testing
+# ============================================
+coverage/
+.nyc_output/
+*.lcov
+
+# Vitest
+.vitest/
+vitest.config.*.timestamp-*
+
+# Test outputs
+test-results/
+test-report/
+junit.xml
+*.spec.js.snap
+*.test.js.snap
+
+# ============================================
+# Logs
+# ============================================
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+logs/
+*.log.*
+
+# ============================================
+# Operating System Files
+# ============================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# ============================================
+# IDE & Editor Files
+# ============================================
+# VSCode
+.vscode/
+*.code-workspace
+
+# JetBrains IDEs
+.idea/
+*.iml
+*.iws
+*.ipr
+.idea_modules/
+
+# Vim
+*.swp
+*.swo
+*.swn
+*~
+.*.sw[a-p]
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# ============================================
+# Temporary & Cache Files
+# ============================================
+*.tmp
+*.temp
+*.cache
+.cache/
+.temp/
+tmp/
+temp/
+*.pid
+*.seed
+*.pid.lock
+
+# ============================================
+# Security & Certificates
+# ============================================
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.pfx
+secrets/
+.secrets/
+
+# ============================================
+# Documentation & Reports
+# ============================================
+# Generated docs
+docs/generated/
+docs/api/generated/
+.docusaurus/
+.cache-loader/
+
+# Coverage reports
+coverage-report/
+htmlcov/
+.coverage
+.coverage.*
+
+# Lighthouse reports
+lighthouse-report.html
+lighthouse-report.json
+
+# Bundle analysis
+stats.html
+bundle-report.html
+.webpack-stats.json
+
+# ============================================
+# Development Artifacts
+# ============================================
+# Turbo
+.turbo/
+
+# Debug
+.vscode-test/
+debug/
+*.debug
+
+# Profiling
+*.cpuprofile
+*.heapprofile
+*.heapsnapshot
+
+# Storybook
+storybook-static/
+.storybook-out/
+
+# Misc
+.eslintcache
+.stylelintcache
+.prettiercache
+*.bak
+*.backup
+*.old
+*.orig

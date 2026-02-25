@@ -1,0 +1,36 @@
+{
+  "name": "@vlowgen/frontend",
+  "version": "1.0.0",
+  "description": "VlowGen frontend application",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "type-check": "tsc --noEmit",
+    "lint": "next lint",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@rainbow-me/rainbowkit": "^2.0.0",
+    "@tanstack/react-query": "^5.17.0",
+    "@vlowgen/shared": "workspace:*",
+    "lucide-react": "^0.575.0",
+    "next": "^14.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "reactflow": "^11.11.4",
+    "sonner": "^2.0.7",
+    "viem": "^2.0.0",
+    "wagmi": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "autoprefixer": "^10.4.16",
+    "eslint-config-next": "^14.0.0",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.3.6",
+    "vitest": "^1.0.0"
+  }
+}

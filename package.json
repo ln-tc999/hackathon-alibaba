@@ -1,0 +1,30 @@
+{
+  "name": "vlowgen-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "VlowGen - Visual workflow automation platform for content generation",
+  "scripts": {
+    "dev": "pnpm --parallel -r dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "test:properties": "pnpm -r test -- --grep \"Property [0-9]+:\"",
+    "lint": "pnpm -r lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "type-check": "pnpm -r type-check"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "eslint-config-prettier": "^9.0.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}
