@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # Frontend service
+  frontend:
+    build:
+      context: ./packages/frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:3001
+      - NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID=${NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID}
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - vlowgen-network
+
+  # Backend service
+  backend:
+    build:
+      context: ./packages/backend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - WAN2_API_KEY=${WAN2_API_KEY}
+      - WAN2_API_URL=${WAN2_API_URL}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - COMPOSIO_API_KEY=${COMPOSIO_API_KEY}
+      - COMPOSIO_API_URL=${COMPOSIO_API_URL}
+    restart: unless-stopped
+    networks:
+      - vlowgen-network
+
+networks:
+  vlowgen-network:
+    driver: bridge
+
+volumes:
+  # You can add volumes here if you need persistent storage
+  # vlowgen-data:
