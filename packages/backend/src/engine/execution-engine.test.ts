@@ -61,7 +61,7 @@ describe('WorkflowExecutionEngine', () => {
       // Register mock handlers
       const executionOrder: string[] = [];
       
-      for (const nodeType of ['prompt-text', 'wan2', 'twitter']) {
+      for (const nodeType of ['prompt-text', 'wan2', 'openrouter', 'twitter']) {
         engine.registerNodeHandler(nodeType, {
           async execute(node, inputs, context) {
             executionOrder.push(node.id);
@@ -164,7 +164,7 @@ describe('WorkflowExecutionEngine', () => {
 
       const executionOrder: string[] = [];
       
-      for (const nodeType of ['prompt-text', 'wan2']) {
+      for (const nodeType of ['prompt-text', 'wan2', 'openrouter']) {
         engine.registerNodeHandler(nodeType, {
           async execute(node, inputs, context) {
             executionOrder.push(node.id);

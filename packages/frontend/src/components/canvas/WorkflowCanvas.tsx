@@ -24,6 +24,7 @@ import type { Workflow, WorkflowNode, WorkflowEdge, NodeType, NodeData, Executio
 import { CONNECTION_RULES } from '@vlowgen/shared';
 import PromptTextNode from '../nodes/PromptTextNode';
 import Wan2Node from '../nodes/Wan2Node';
+import OpenRouterNode from '../nodes/OpenRouterNode';
 import TwitterNode from '../nodes/TwitterNode';
 import { DEMO_WORKFLOW } from '../../lib/demo-workflow';
 
@@ -54,6 +55,7 @@ function WorkflowCanvasInner({
     () => ({
       'prompt-text': PromptTextNode,
       'wan2': Wan2Node,
+      'openrouter': OpenRouterNode,
       'twitter': TwitterNode,
     }),
     []
@@ -174,6 +176,13 @@ function WorkflowCanvasInner({
           type: 'wan2',
           model: 'wanx-v1',
           size: '1024x1024',
+        };
+      case 'openrouter':
+        return {
+          type: 'openrouter',
+          model: 'black-forest-labs/flux-1.1-pro',
+          width: 1024,
+          height: 1024,
         };
       case 'twitter':
         return {

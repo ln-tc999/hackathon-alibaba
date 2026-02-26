@@ -19,6 +19,7 @@ import { WorkflowExecutionEngine } from '../engine/execution-engine';
 import { WorkflowValidator } from '../engine/validator';
 import { PromptTextNodeHandler } from '../nodes/prompt-text-handler';
 import { Wan2NodeHandler } from '../nodes/wan2-handler';
+import { OpenRouterNodeHandler } from '../nodes/openrouter-handler';
 import { TwitterNodeHandler } from '../nodes/twitter-handler';
 import { ComposioClient } from '../integrations/composio';
 
@@ -64,6 +65,7 @@ router.post('/execute', async (req: Request, res: Response) => {
     // Register node handlers
     engine.registerNodeHandler('prompt-text', new PromptTextNodeHandler());
     engine.registerNodeHandler('wan2', new Wan2NodeHandler());
+    engine.registerNodeHandler('openrouter', new OpenRouterNodeHandler());
     engine.registerNodeHandler('twitter', new TwitterNodeHandler());
 
     // Execute workflow

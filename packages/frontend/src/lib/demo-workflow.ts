@@ -2,8 +2,8 @@ import type { Workflow } from '@vlowgen/shared';
 
 /**
  * Demo workflow for VlowGen platform
- * Contains three nodes: Prompt Text → Wan2.1 → Twitter
- * Demonstrates end-to-end content generation and distribution
+ * Contains three nodes: Prompt Text → OpenRouter → Twitter
+ * Demonstrates end-to-end content generation and distribution using OpenRouter
  * 
  * Validates: Requirements 12.1
  */
@@ -17,17 +17,18 @@ export const DEMO_WORKFLOW: Workflow = {
       position: { x: 100, y: 200 },
       data: {
         type: 'prompt-text',
-        promptText: 'A futuristic city at sunset',
+        promptText: 'A futuristic city at sunset, digital art',
       },
     },
     {
-      id: 'wan2-node',
-      type: 'wan2',
+      id: 'openrouter-node',
+      type: 'openrouter',
       position: { x: 400, y: 200 },
       data: {
-        type: 'wan2',
-        model: 'wanx-v1',
-        size: '1024x1024',
+        type: 'openrouter',
+        model: 'black-forest-labs/flux-1.1-pro',
+        width: 1024,
+        height: 1024,
       },
     },
     {
@@ -42,13 +43,13 @@ export const DEMO_WORKFLOW: Workflow = {
   ],
   edges: [
     {
-      id: 'edge-prompt-wan2',
+      id: 'edge-prompt-openrouter',
       source: 'prompt-node',
-      target: 'wan2-node',
+      target: 'openrouter-node',
     },
     {
-      id: 'edge-wan2-twitter',
-      source: 'wan2-node',
+      id: 'edge-openrouter-twitter',
+      source: 'openrouter-node',
       target: 'twitter-node',
     },
   ],

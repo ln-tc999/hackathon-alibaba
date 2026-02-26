@@ -29,6 +29,7 @@ export interface ExecutionContext {
 
 export interface ServiceCredentials {
   wan2ApiKey?: string;
+  openRouterApiKey?: string;
   composioApiKey?: string;
   twitterToken?: string;
 }

@@ -2,7 +2,7 @@
  * Core workflow data types for VlowGen platform
  */
 
-export type NodeType = 'prompt-text' | 'wan2' | 'twitter';
+export type NodeType = 'prompt-text' | 'wan2' | 'openrouter' | 'twitter';
 
 export interface Workflow {
   id: string;
@@ -20,7 +20,7 @@ export interface WorkflowNode {
   data: NodeData;
 }
 
-export type NodeData = PromptTextNodeData | Wan2NodeData | TwitterNodeData;
+export type NodeData = PromptTextNodeData | Wan2NodeData | OpenRouterNodeData | TwitterNodeData;
 
 export interface PromptTextNodeData {
   type: 'prompt-text';
@@ -32,6 +32,14 @@ export interface Wan2NodeData {
   model: 'wanx-v1' | 'wanx-v2';
   size: '1024x1024' | '512x512';
   style?: string;
+}
+
+export interface OpenRouterNodeData {
+  type: 'openrouter';
+  model: string;
+  width: number;
+  height: number;
+  negative_prompt?: string;
 }
 
 export interface TwitterNodeData {
