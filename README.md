@@ -178,7 +178,33 @@ WAN2_API_URL=https://dashscope.aliyuncs.com/api/v1/services/aigc/text2image/imag
 - Monitor your usage to avoid unexpected charges
 - Set up billing alerts in your Alibaba Cloud account
 
-### 3. Composio API Key
+### 3. OpenRouter API Key (Alternative for Development)
+
+OpenRouter provides an alternative API for AI image generation, which can be used instead of Wan2.1 for development purposes.
+
+**Steps to obtain:**
+
+1. Visit [OpenRouter](https://openrouter.ai/)
+2. Click "Sign Up" to create an account
+3. Navigate to the "Keys" section in your dashboard
+4. Click "Create Secret Key"
+5. Copy the generated API key (starts with `sk-or-v1-`)
+6. Add to `.env` as `OPENROUTER_API_KEY`
+
+**Example:**
+```bash
+OPENROUTER_API_KEY=sk-or-v1-1234567890abcdef1234567890abcdef
+```
+
+**Cost:** Various pricing models available (free tier with limited requests)
+- Check current pricing at [OpenRouter Pricing](https://openrouter.ai/pricing)
+
+**Important Notes:**
+- This key can be used as an alternative to the Wan2.1 API key
+- Supports multiple AI models including Flux, Stable Diffusion, and others
+- Better for development and testing without needing to set up Alibaba Cloud
+
+### 4. Composio API Key
 
 Composio provides integration with Twitter and other social media platforms.
 
@@ -355,6 +381,7 @@ The platform uses environment variables for configuration. Copy `.env.template` 
 | `PORT` | Backend server port | No | `3001` (default) |
 | `WAN2_API_KEY` | Alibaba Cloud Wan2.1 API key | Yes | `sk-1234...` |
 | `WAN2_API_URL` | Wan2.1 API endpoint | No | `https://dashscope.aliyuncs.com/...` |
+| `OPENROUTER_API_KEY` | OpenRouter API key (alternative for development) | No | `sk-or-v1-1234...` |
 | `COMPOSIO_API_KEY` | Composio API key | Yes | `comp_1234...` |
 | `COMPOSIO_API_URL` | Composio API endpoint | No | `https://api.composio.dev` |
 
@@ -388,6 +415,7 @@ The platform uses environment variables for configuration. Copy `.env.template` 
 - **TypeScript** - Type safety
 - **Axios** - HTTP client for external APIs
 - **Composio SDK** - Twitter integration
+- **OpenRouter API** - Alternative AI image generation (for development)
 
 **Development:**
 - **pnpm workspaces** - Monorepo management
@@ -414,6 +442,7 @@ The platform uses environment variables for configuration. Copy `.env.template` 
 
 4. **External Integrations**
    - Alibaba Cloud Wan2.1 for image generation
+   - OpenRouter as alternative for development
    - Composio for Twitter posting
    - RainbowKit for wallet connections
 
