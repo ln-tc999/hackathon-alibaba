@@ -39,6 +39,7 @@ export default function Home() {
       // TODO: Get credentials from user settings or environment
       const credentials = {
         wan2ApiKey: process.env.NEXT_PUBLIC_WAN2_API_KEY,
+        openRouterApiKey: process.env.NEXT_PUBLIC_OPENROUTER_API_KEY,
         composioApiKey: process.env.NEXT_PUBLIC_COMPOSIO_API_KEY,
       };
 
