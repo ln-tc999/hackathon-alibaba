@@ -18,16 +18,17 @@ describe('Demo Workflow', () => {
     expect(promptNode).toBeDefined();
     expect(promptNode?.id).toBe('prompt-node');
     expect(promptNode?.data.type).toBe('prompt-text');
-    expect(promptNode?.data).toHaveProperty('promptText', 'A futuristic city at sunset');
+    expect(promptNode?.data).toHaveProperty('promptText', 'A futuristic city at sunset, digital art');
   });
 
-  it('should have Wan2.1 node with correct configuration', () => {
-    const wan2Node = DEMO_WORKFLOW.nodes.find((n) => n.type === 'wan2');
-    expect(wan2Node).toBeDefined();
-    expect(wan2Node?.id).toBe('wan2-node');
-    expect(wan2Node?.data.type).toBe('wan2');
-    expect(wan2Node?.data).toHaveProperty('model', 'wanx-v1');
-    expect(wan2Node?.data).toHaveProperty('size', '1024x1024');
+  it('should have OpenRouter node with correct configuration', () => {
+    const openRouterNode = DEMO_WORKFLOW.nodes.find((n) => n.type === 'openrouter');
+    expect(openRouterNode).toBeDefined();
+    expect(openRouterNode?.id).toBe('openrouter-node');
+    expect(openRouterNode?.data.type).toBe('openrouter');
+    expect(openRouterNode?.data).toHaveProperty('model', 'black-forest-labs/flux-1.1-pro');
+    expect(openRouterNode?.data).toHaveProperty('width', 1024);
+    expect(openRouterNode?.data).toHaveProperty('height', 1024);
   });
 
   it('should have Twitter node', () => {
@@ -38,28 +39,28 @@ describe('Demo Workflow', () => {
   });
 
   it('should have correct edge connections', () => {
-    const edge1 = DEMO_WORKFLOW.edges.find((e) => e.id === 'edge-prompt-wan2');
+    const edge1 = DEMO_WORKFLOW.edges.find((e) => e.id === 'edge-prompt-openrouter');
     expect(edge1).toBeDefined();
     expect(edge1?.source).toBe('prompt-node');
-    expect(edge1?.target).toBe('wan2-node');
+    expect(edge1?.target).toBe('openrouter-node');
 
-    const edge2 = DEMO_WORKFLOW.edges.find((e) => e.id === 'edge-wan2-twitter');
+    const edge2 = DEMO_WORKFLOW.edges.find((e) => e.id === 'edge-openrouter-twitter');
     expect(edge2).toBeDefined();
-    expect(edge2?.source).toBe('wan2-node');
+    expect(edge2?.source).toBe('openrouter-node');
     expect(edge2?.target).toBe('twitter-node');
   });
 
-  it('should form a valid pipeline: Prompt → Wan2 → Twitter', () => {
+  it('should form a valid pipeline: Prompt → OpenRouter → Twitter', () => {
     // Verify the workflow forms a linear pipeline
     const promptNode = DEMO_WORKFLOW.nodes.find((n) => n.type === 'prompt-text');
-    const wan2Node = DEMO_WORKFLOW.nodes.find((n) => n.type === 'wan2');
+    const openRouterNode = DEMO_WORKFLOW.nodes.find((n) => n.type === 'openrouter');
     const twitterNode = DEMO_WORKFLOW.nodes.find((n) => n.type === 'twitter');
 
     const edge1 = DEMO_WORKFLOW.edges.find(
-      (e) => e.source === promptNode?.id && e.target === wan2Node?.id
+      (e) => e.source === promptNode?.id && e.target === openRouterNode?.id
     );
     const edge2 = DEMO_WORKFLOW.edges.find(
-      (e) => e.source === wan2Node?.id && e.target === twitterNode?.id
+      (e) => e.source === openRouterNode?.id && e.target === twitterNode?.id
     );
 
     expect(edge1).toBeDefined();
