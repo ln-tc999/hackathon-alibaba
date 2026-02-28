@@ -134,3 +134,187 @@ Input Niche dari User: "Tech & AI Startups"
 Output AI (Prompt untuk Wan2.1): A photorealistic image of a stressed programmer looking back longingly at a glowing, futuristic AI robot, while his current old, clunky laptop screen displays error codes. The old laptop has a 'sad face' sticker on it. Cinematic lighting, office background, 8k resolution, humorous tone.
 
 (Dengan ini, Wan2.1 akan membuat meme 'Distracted Boyfriend' versi dunia programmer, 100% orisinal dan bebas hak cipta, tapi audiens langsung paham format komedinya!)
+
+---
+
+## 7. Example User Prompts
+
+Berikut adalah contoh prompt yang dapat digunakan oleh user untuk setiap jenis node:
+
+### 7.1 Image Generation Prompts (Wan2.1 Node)
+
+**Basic Prompt:**
+```
+A cute cat wearing sunglasses
+```
+
+**Enhanced Output (dari LLM):**
+```
+A photorealistic close-up of an adorable fluffy Maine Coon cat wearing retro aviator sunglasses, sitting on a sunny windowsill. The cat has a confident, cool expression with its head slightly tilted. Golden hour lighting streaming through the window creates a warm glow on its fur. Shot in 8k resolution with shallow depth of field, professional pet photography style, bokeh background of a cozy living room.
+```
+
+**More Examples:**
+
+1. **Cyberpunk Character:**
+   ```
+   Female cyberpunk hacker with neon blue hair
+   ```
+   
+2. **Fantasy Landscape:**
+   ```
+   Magical forest with floating islands and waterfalls
+   ```
+
+3. **Product Photography:**
+   ```
+   Luxury perfume bottle on marble surface
+   ```
+
+4. **Abstract Art:**
+   ```
+   Colorful explosion of geometric shapes representing creativity
+   ```
+
+5. **Food Photography:**
+   ```
+   Gourmet burger with melting cheese and fresh ingredients
+   ```
+
+### 7.2 Video Generation Prompts (Wan2.1 Video Node)
+
+**Basic Prompt:**
+```
+A dragon flying over mountains
+```
+
+**Enhanced Output (dari LLM):**
+```
+Cinematic aerial shot of a majestic golden dragon soaring gracefully over snow-capped mountain peaks at sunset. Camera follows the dragon from behind, slowly panning right as it banks left. The dragon's scales shimmer with iridescent light, wings beating powerfully creating visible air currents. Volumetric clouds part around the mountains, golden hour lighting casts dramatic shadows. 4K resolution, hyper-detailed fantasy cinematography, epic scale.
+```
+
+**More Examples:**
+
+1. **Ocean Waves:**
+   ```
+   Peaceful ocean beach at sunrise with gentle waves
+   ```
+
+2. **City Timelapse:**
+   ```
+   Busy Tokyo intersection at night with neon lights
+   ```
+
+3. **Nature Scene:**
+   ```
+   Cherry blossom petals falling in slow motion
+   ```
+
+4. **Action Scene:**
+   ```
+   Superhero landing in urban street with debris flying
+   ```
+
+5. **Abstract Motion:**
+   ```
+   Flowing liquid gold morphing into different shapes
+   ```
+
+### 7.3 Viral Content Analysis Prompts (Trend Analyzer Node)
+
+**Example Input Data dari Twitter API:**
+```
+Trending now: #AITechnology, ClimateAction, CryptoCrash, MarvelStudios, MentalHealthMatters, RemoteWork, ElectricVehicles, SpaceExploration, PlantBased, DigitalArt
+```
+
+**User Niche:** "Fitness & Health"
+
+**AI Output (Content Idea):**
+```
+Create an image showing a futuristic AI-powered home gym with holographic personal trainer, person working out while monitoring health metrics on floating screens, bright modern interior with plants, 8k photorealistic.
+```
+
+**More Examples:**
+
+1. **Niche: Tech Startups**
+   - Trends: `#ArtificialIntelligence, StartupLife, VentureCapital, TechLayoffs, RemoteWork`
+   - Output: `Visual concept: A split-screen showing chaotic traditional office vs calm remote worker using AI tools, minimalist infographic style, clean typography, LinkedIn-optimized format.`
+
+2. **Niche: Food & Cooking**
+   - Trends: `#PlantBased, FoodInflation, HealthyEating, MealPrep, Sustainability`
+   - Output: `Create a vibrant before/after carousel: expensive restaurant meal vs colorful homemade plant-based bowl, overhead shot, Instagram-worthy styling with natural lighting and rustic wooden table.`
+
+3. **Niche: Fashion & Lifestyle**
+   - Trends: `#SustainableFashion, ThriftFlip, OOTD, FastFashion, VintageStyle`
+   - Output: `Dynamic video concept: Quick transformation montage showing thrifted items being styled into trendy outfits, fast cuts, upbeat energy, TikTok vertical format with text overlays.`
+
+4. **Niche: Finance & Investing**
+   - Trends: `#Bitcoin, Inflation, StockMarket, PassiveIncome, FinancialFreedom`
+   - Output: `Infographic-style image: Simple flowchart showing 'Traditional Savings vs Crypto Portfolio' with humorous illustrations, bold colors, Twitter-optimized square format with clear data visualization.`
+
+5. **Niche: Travel & Adventure**
+   - Trends: `#DigitalNomad, BudgetTravel, HiddenGems, SustainableTourism, WorkFromAnywhere`
+   - Output: `Carousel post concept: 'Top 5 Underrated Southeast Asian Destinations' - each slide features stunning landscape photo with overlay text showing cost breakdown, Instagram portrait format.`
+
+### 7.4 Complete Workflow Example
+
+**User Request:**
+```
+I want to create daily motivational quotes with beautiful backgrounds and auto-post to Twitter every morning at 6 AM
+```
+
+**Generated Workflow JSON:**
+```json
+{
+  "nodes": [
+    {
+      "id": "node_1",
+      "type": "trigger_cron",
+      "position": { "x": 0, "y": 100 },
+      "data": {
+        "label": "Daily 6 AM Trigger",
+        "cron_expression": "0 6 * * *"
+      }
+    },
+    {
+      "id": "node_2",
+      "type": "llm_qwen",
+      "position": { "x": 300, "y": 100 },
+      "data": {
+        "label": "Generate Motivational Quote",
+        "prompt": "Generate a unique, inspiring motivational quote about success, perseverance, or personal growth. Keep it under 280 characters. Include 2-3 relevant emojis."
+      }
+    },
+    {
+      "id": "node_3",
+      "type": "wan21_image",
+      "position": { "x": 600, "y": 100 },
+      "data": {
+        "label": "Create Background Image",
+        "image_prompt": "Beautiful inspirational background with sunrise over mountains, misty valley below, golden light breaking through clouds, serene and majestic atmosphere, cinematic lighting, 8k resolution, photorealistic landscape photography"
+      }
+    },
+    {
+      "id": "node_4",
+      "type": "composio_twitter",
+      "position": { "x": 900, "y": 100 },
+      "data": {
+        "label": "Post to Twitter",
+        "content_template": "{{node_2.output}}\n\n#Motivation #Inspiration #DailyQuote"
+      }
+    }
+  ],
+  "edges": [
+    { "source": "node_1", "target": "node_2" },
+    { "source": "node_2", "target": "node_3" },
+    { "source": "node_3", "target": "node_4" }
+  ]
+}
+```
+
+**Workflow Explanation:**
+1. **Trigger**: Cron job runs daily at 6 AM
+2. **LLM Node**: Generates unique motivational quote
+3. **Image Node**: Creates beautiful background image
+4. **Twitter Node**: Posts quote with image and hashtags
+
+This workflow automates the entire process of creating and sharing daily motivational content!
