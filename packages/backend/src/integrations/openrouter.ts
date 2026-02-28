@@ -44,6 +44,7 @@ export class OpenRouterClient {
 
   /**
    * Generate an image from a text prompt using OpenRouter API
+   * Uses bytedance-seed/seedream-4.5 model for image generation
    * 
    * @param params - Generation parameters including prompt, model, dimensions, and optional negative prompt
    * @returns Promise resolving to image URL
@@ -51,23 +52,37 @@ export class OpenRouterClient {
    */
   async generateImage(params: OpenRouterGenerateParams): Promise<OpenRouterGenerateResponse> {
     try {
+      // Use bytedance-seed/seedream-4.5 for image generation
+      const imageModel = 'bytedance-seed/seedream-4.5';
+      
       const requestBody = {
-        model: params.model,
-        prompt: params.prompt,
-        width: params.width,
-        height: params.height,
-        ...(params.negative_prompt && { negative_prompt: params.negative_prompt }),
+        model: imageModel,
+        messages: [
+          {
+            role: 'user',
+            content: params.prompt,
+          },
+        ],
+        max_tokens: 1024,
+        temperature: 0.7,
       };
 
-      const response = await this.client.post<OpenRouterApiResponse>('/images/generations', requestBody);
+      const response = await this.client.post('/chat/completions', requestBody, {
+        headers: {
+          'HTTP-Referer': 'https://vlowgen.com',
+          'X-Title': 'VlowGen Image Generator',
+        },
+      });
 
       // Extract image URL from response
-      if (!response.data.data?.[0]?.url) {
+      const imageUrl = response.data.choices?.[0]?.message?.content;
+      
+      if (!imageUrl) {
         throw new Error('Invalid API response: missing image URL');
       }
 
       return {
-        imageUrl: response.data.data[0].url,
+        imageUrl,
       };
     } catch (error) {
       // Map API errors to standard error format

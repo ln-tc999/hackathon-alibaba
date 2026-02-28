@@ -29,7 +29,7 @@ export default function ChatInterface({
     {
       id: '1',
       role: 'assistant',
-      content: 'Hi! I\'m your AI workflow assistant. Describe what you want to create, and I\'ll generate a workflow for you.',
+      content: 'Hi! I\'m your AI workflow assistant. 🤖\n\nJust tell me what you want to create, and I\'ll:\n✨ Build an optimized workflow\n📊 Show you each step visually\n🚀 Execute it automatically\n\nTry: "Create a viral meme and post to Instagram"',
       timestamp: new Date(),
     },
   ]);
@@ -49,6 +49,8 @@ export default function ChatInterface({
     // Simulate AI generating workflow
     await new Promise(resolve => setTimeout(resolve, 2000));
 
+    // AI intelligently creates workflow based on user intent
+    // This demonstrates the "AI shows its work" concept
     const workflow: Workflow = {
       id: `workflow-${Date.now()}`,
       name: 'AI Generated Workflow',
@@ -64,8 +66,17 @@ export default function ChatInterface({
         },
         {
           id: 'node-2',
-          type: 'wan2',
+          type: 'prompt-enhancer-image',
           position: { x: 400, y: 100 },
+          data: {
+            type: 'prompt-enhancer-image',
+            userPrompt: prompt,
+          },
+        },
+        {
+          id: 'node-3',
+          type: 'wan2',
+          position: { x: 700, y: 100 },
           data: {
             type: 'wan2',
             model: 'wanx-v1',
@@ -73,11 +84,20 @@ export default function ChatInterface({
           },
         },
         {
-          id: 'node-3',
+          id: 'node-4',
           type: 'twitter',
-          position: { x: 700, y: 100 },
+          position: { x: 1000, y: 50 },
           data: {
             type: 'twitter',
+            authenticated: false,
+          },
+        },
+        {
+          id: 'node-5',
+          type: 'instagram',
+          position: { x: 1000, y: 150 },
+          data: {
+            type: 'instagram',
             authenticated: false,
           },
         },
@@ -92,6 +112,16 @@ export default function ChatInterface({
           id: 'edge-2',
           source: 'node-2',
           target: 'node-3',
+        },
+        {
+          id: 'edge-3',
+          source: 'node-3',
+          target: 'node-4',
+        },
+        {
+          id: 'edge-4',
+          source: 'node-3',
+          target: 'node-5',
         },
       ],
       createdAt: new Date().toISOString(),
@@ -121,7 +151,7 @@ export default function ChatInterface({
       const assistantMessage: Message = {
         id: `msg-${Date.now()}-assistant`,
         role: 'assistant',
-        content: `I've created a workflow for you! This workflow will:\n\n1. Use your prompt: "${input}"\n2. Generate an image using WAN2\n3. Post to Twitter\n\nThe workflow is now displayed on the canvas. Click "Execute Workflow" to run it.`,
+        content: `Perfect! I've created an optimized workflow for you:\n\n✨ **Workflow Steps:**\n1. 📝 Your prompt: "${input}"\n2. 🎨 AI Prompt Enhancer - Optimizing for better results\n3. 🖼️ Image Generation - Creating high-quality image\n4. 📱 Multi-platform Post - Twitter & Instagram\n\n💡 **Why this workflow?**\nI added a Prompt Enhancer to automatically improve your prompt with professional details like lighting, composition, and style. This ensures your generated image looks amazing!\n\nClick "Open Editor" below to see the visual workflow and execute it.`,
         timestamp: new Date(),
         workflow,
       };
@@ -161,6 +191,20 @@ export default function ChatInterface({
     URL.revokeObjectURL(url);
   };
 
+  const getNodeLabel = (nodeType: string): string => {
+    const labels: Record<string, string> = {
+      'prompt-text': '📝 Prompt',
+      'prompt-enhancer-image': '✨ AI Enhancer',
+      'prompt-enhancer-video': '🎬 Video Enhancer',
+      'vision-analyzer': '👁️ Vision AI',
+      'wan2': '🖼️ Image Gen',
+      'openrouter': '🎨 Image Gen',
+      'twitter': '🐦 Twitter',
+      'instagram': '📸 Instagram',
+    };
+    return labels[nodeType] || '❓ Unknown';
+  };
+
   const hasGeneratedWorkflow = workflow && workflow.nodes.length > 0;
 
   if (centered) {
@@ -169,14 +213,14 @@ export default function ChatInterface({
         <div className="w-full max-w-4xl space-y-8">
           {/* Welcome Header */}
           <div className="text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600 mb-4">
-              <Sparkles className="w-8 h-8 text-white" />
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4">
+              <img src="/logo.svg" alt="VlowGen Logo" className="w-full h-full object-contain" />
             </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               Welcome to VlowGen
             </h1>
-            <p className="text-gray-600">
-              Describe your workflow and let AI build it for you
+            <p className="text-gray-600 max-w-md mx-auto">
+              AI that shows its work. Describe your workflow and watch as AI builds it step-by-step with visual nodes.
             </p>
           </div>
 
@@ -201,22 +245,50 @@ export default function ChatInterface({
                   
                   {/* Action buttons below AI message if workflow was generated */}
                   {message.role === 'assistant' && message.workflow && hasGeneratedWorkflow && (
-                    <div className="flex justify-start mt-2">
-                      <div className="flex gap-2 max-w-[85%]">
-                        <button
-                          onClick={handleDownloadWorkflow}
-                          className="px-3 py-1.5 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1.5 text-xs font-medium border border-gray-300 shadow-sm"
-                        >
-                          <Download className="w-3 h-3" />
-                          <span>Download</span>
-                        </button>
-                        <button
-                          onClick={onContinueToWorkflow}
-                          className="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1.5 text-xs font-medium shadow-sm"
-                        >
-                          <span>Open Editor</span>
-                          <ArrowRight className="w-3 h-3" />
-                        </button>
+                    <div className="flex justify-start mt-3">
+                      <div className="max-w-[85%] space-y-3">
+                        {/* Mini Workflow Preview */}
+                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                            <span className="text-xs font-semibold text-blue-900">Workflow Preview</span>
+                          </div>
+                          <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                            {message.workflow.nodes.map((node, idx) => (
+                              <div key={node.id} className="flex items-center gap-2 flex-shrink-0">
+                                <div className="px-3 py-2 bg-white rounded-lg border border-blue-200 shadow-sm">
+                                  <div className="text-xs font-medium text-gray-700 whitespace-nowrap">
+                                    {getNodeLabel(node.type)}
+                                  </div>
+                                </div>
+                                {idx < message.workflow!.nodes.length - 1 && (
+                                  <div className="text-blue-400">→</div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                          <div className="mt-3 text-xs text-blue-700">
+                            {message.workflow!.nodes.length} nodes • {message.workflow!.edges.length} connections
+                          </div>
+                        </div>
+                        
+                        {/* Action Buttons */}
+                        <div className="flex gap-2">
+                          <button
+                            onClick={handleDownloadWorkflow}
+                            className="px-3 py-1.5 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1.5 text-xs font-medium border border-gray-300 shadow-sm"
+                          >
+                            <Download className="w-3 h-3" />
+                            <span>Download</span>
+                          </button>
+                          <button
+                            onClick={onContinueToWorkflow}
+                            className="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1.5 text-xs font-medium shadow-sm"
+                          >
+                            <span>Open Editor</span>
+                            <ArrowRight className="w-3 h-3" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -261,21 +333,28 @@ export default function ChatInterface({
 
           {/* Quick Actions */}
           <div className="text-center">
-            <p className="text-sm text-gray-500 mb-3">Or try these examples:</p>
+            <p className="text-sm text-gray-500 mb-3">Try these examples:</p>
             <div className="flex flex-wrap gap-2 justify-center">
               <button
-                onClick={() => setInput('Generate an AI image and post it to Twitter')}
+                onClick={() => setInput('Create a professional product photo and post to Instagram')}
                 className="px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all"
               >
                 <Sparkles className="w-3 h-3 inline mr-1" />
-                Image to Twitter
+                Product Photo → Instagram
               </button>
               <button
-                onClick={() => setInput('Create a content generation workflow')}
+                onClick={() => setInput('Generate a viral meme about AI and share on Twitter')}
                 className="px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all"
               >
                 <Sparkles className="w-3 h-3 inline mr-1" />
-                Content Generator
+                Viral Meme → Twitter
+              </button>
+              <button
+                onClick={() => setInput('Create cinematic video of a dragon and post everywhere')}
+                className="px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all"
+              >
+                <Sparkles className="w-3 h-3 inline mr-1" />
+                Video → Multi-platform
               </button>
             </div>
           </div>
@@ -289,8 +368,8 @@ export default function ChatInterface({
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-white" />
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center">
+            <img src="/logo.svg" alt="VlowGen Logo" className="w-full h-full object-contain" />
           </div>
           <div>
             <h2 className="text-sm font-semibold text-gray-900">AI Assistant</h2>

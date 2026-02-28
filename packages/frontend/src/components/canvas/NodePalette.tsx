@@ -1,6 +1,6 @@
 'use client';
 
-import { FileText, Image, Layers, Twitter } from 'lucide-react';
+import { FileText, Image, Layers, Twitter, Sparkles, Video, Eye, Instagram } from 'lucide-react';
 import type { NodeType } from '@vlowgen/shared';
 
 interface NodeTypeInfo {
@@ -16,6 +16,24 @@ const NODE_TYPES: NodeTypeInfo[] = [
     label: 'Prompt Text',
     description: 'Text input for AI prompts',
     icon: FileText,
+  },
+  {
+    type: 'prompt-enhancer-image',
+    label: 'Image Prompt Enhancer',
+    description: 'Enhance prompts for image generation',
+    icon: Sparkles,
+  },
+  {
+    type: 'prompt-enhancer-video',
+    label: 'Video Prompt Enhancer',
+    description: 'Enhance prompts for video generation',
+    icon: Video,
+  },
+  {
+    type: 'vision-analyzer',
+    label: 'Vision Analyzer',
+    description: 'Generate prompt from image/video',
+    icon: Eye,
   },
   {
     type: 'wan2',
@@ -34,6 +52,12 @@ const NODE_TYPES: NodeTypeInfo[] = [
     label: 'Twitter Post',
     description: 'Post content to Twitter',
     icon: Twitter,
+  },
+  {
+    type: 'instagram',
+    label: 'Instagram Post',
+    description: 'Post content to Instagram',
+    icon: Instagram,
   },
 ];
 

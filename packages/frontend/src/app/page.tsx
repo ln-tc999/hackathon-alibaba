@@ -40,7 +40,10 @@ export default function Home() {
   }, []);
 
   const handleContinueToWorkflow = useCallback(() => {
-    setAppMode('workflow');
+    // Small delay to ensure workflow state is fully updated
+    setTimeout(() => {
+      setAppMode('workflow');
+    }, 100);
   }, []);
 
   const handleExecute = useCallback(async () => {
@@ -91,8 +94,8 @@ export default function Home() {
       <div className="px-6 pt-6 pb-0">
         <div className="flex justify-between items-center px-6 py-3 bg-white/80 backdrop-blur-lg rounded-2xl border border-gray-200/50 shadow-lg shadow-gray-200/50">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-500/30">
-              <span className="text-white text-sm font-bold">V</span>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center">
+              <img src="/logo.svg" alt="VlowGen Logo" className="w-full h-full object-contain" />
             </div>
             <div>
               <h1 className="text-base font-bold text-gray-900">VlowGen</h1>
@@ -105,7 +108,7 @@ export default function Home() {
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-lg">
               <div className={`w-2 h-2 rounded-full ${appMode === 'chat' ? 'bg-green-500' : 'bg-blue-500'} animate-pulse`}></div>
               <span className="text-xs font-medium text-gray-700">
-                {appMode === 'chat' ? 'Chat Mode' : 'Editor Mode'}
+                {appMode === 'chat' ? '💬 AI Chat Mode' : '📊 Workflow Editor'}
               </span>
             </div>
             

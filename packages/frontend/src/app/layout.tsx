@@ -13,6 +13,13 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   title: 'VlowGen Platform',
   description: 'Visual workflow automation platform for content generation and distribution',
+  icons: {
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/logo.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/logo.png',
+  },
 };
 
 export default function RootLayout({

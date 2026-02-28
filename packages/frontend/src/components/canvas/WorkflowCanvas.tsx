@@ -26,6 +26,10 @@ import PromptTextNode from '../nodes/PromptTextNode';
 import Wan2Node from '../nodes/Wan2Node';
 import OpenRouterNode from '../nodes/OpenRouterNode';
 import TwitterNode from '../nodes/TwitterNode';
+import InstagramNode from '../nodes/InstagramNode';
+import PromptEnhancerImageNode from '../nodes/PromptEnhancerImageNode';
+import PromptEnhancerVideoNode from '../nodes/PromptEnhancerVideoNode';
+import VisionAnalyzerNode from '../nodes/VisionAnalyzerNode';
 import { DEMO_WORKFLOW } from '../../lib/demo-workflow';
 
 interface WorkflowCanvasProps {
@@ -57,6 +61,10 @@ function WorkflowCanvasInner({
       'wan2': Wan2Node,
       'openrouter': OpenRouterNode,
       'twitter': TwitterNode,
+      'instagram': InstagramNode,
+      'prompt-enhancer-image': PromptEnhancerImageNode,
+      'prompt-enhancer-video': PromptEnhancerVideoNode,
+      'vision-analyzer': VisionAnalyzerNode,
     }),
     []
   );
@@ -188,6 +196,25 @@ function WorkflowCanvasInner({
         return {
           type: 'twitter',
           authenticated: false,
+        };
+      case 'instagram':
+        return {
+          type: 'instagram',
+          authenticated: false,
+        };
+      case 'prompt-enhancer-image':
+        return {
+          type: 'prompt-enhancer-image',
+          userPrompt: '',
+        };
+      case 'prompt-enhancer-video':
+        return {
+          type: 'prompt-enhancer-video',
+          userPrompt: '',
+        };
+      case 'vision-analyzer':
+        return {
+          type: 'vision-analyzer',
         };
       default:
         throw new Error(`Unknown node type: ${nodeType}`);

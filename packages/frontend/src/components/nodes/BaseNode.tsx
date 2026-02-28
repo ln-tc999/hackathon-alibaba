@@ -6,11 +6,12 @@ import { AlertCircle } from 'lucide-react';
 
 interface BaseNodeProps {
   id?: string;
-  selected: boolean;
+  selected?: boolean;
   error?: string;
-  icon?: string;
+  icon?: React.ComponentType<{ className?: string }>;
   title: string;
   children: ReactNode;
+  color?: string;
 }
 
 /**
@@ -20,20 +21,30 @@ interface BaseNodeProps {
  * Requirements: 4.4, 15.1, 15.2
  */
 export default function BaseNode({
-  selected,
+  selected = false,
   error,
-  icon,
+  icon: Icon,
   title,
   children,
+  color = 'blue',
 }: BaseNodeProps) {
   const [showErrorTooltip, setShowErrorTooltip] = useState(false);
   const hasError = !!error;
+
+  const colorClasses = {
+    blue: 'border-blue-500',
+    purple: 'border-purple-500',
+    indigo: 'border-indigo-500',
+    emerald: 'border-emerald-500',
+    pink: 'border-pink-500',
+  };
 
   return (
     <div
       className={`
         min-w-[250px] bg-white rounded-lg shadow-md border-2 transition-all relative
-        ${selected ? 'border-blue-500 shadow-lg' : 'border-gray-200'}
+        ${selected ? colorClasses[color as keyof typeof colorClasses] || 'border-blue-500' : 'border-gray-200'}
+        ${selected ? 'shadow-lg' : ''}
         ${hasError ? 'border-red-500 bg-red-50' : ''}
       `}
     >
@@ -47,7 +58,7 @@ export default function BaseNode({
       {/* Node header */}
       <div className={`px-4 py-2 border-b ${hasError ? 'border-red-200 bg-red-100' : 'border-gray-100 bg-gray-50'}`}>
         <div className="flex items-center gap-2">
-          {icon && <span className="text-xl">{icon}</span>}
+          {Icon && <Icon className="w-4 h-4 text-gray-600" />}
           <span className="font-semibold text-sm">{title}</span>
           {hasError && (
             <div
