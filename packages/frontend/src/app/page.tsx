@@ -87,21 +87,39 @@ export default function Home() {
 
   return (
     <main className="flex h-screen flex-col bg-gray-50">
-      {/* Header - Always visible */}
-      <div className="flex justify-between items-center px-6 py-4 border-b border-gray-200 bg-white">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-black flex items-center justify-center">
-            <span className="text-white text-sm font-bold">V</span>
+      {/* Floating Header */}
+      <div className="px-6 pt-6 pb-0">
+        <div className="flex justify-between items-center px-6 py-3 bg-white/80 backdrop-blur-lg rounded-2xl border border-gray-200/50 shadow-lg shadow-gray-200/50">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-500/30">
+              <span className="text-white text-sm font-bold">V</span>
+            </div>
+            <div>
+              <h1 className="text-base font-bold text-gray-900">VlowGen</h1>
+              <p className="text-xs text-gray-500">AI Workflow Platform</p>
+            </div>
           </div>
-          <h1 className="text-lg font-semibold">VlowGen</h1>
+          
+          <div className="flex items-center gap-3">
+            {/* Mode indicator */}
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-lg">
+              <div className={`w-2 h-2 rounded-full ${appMode === 'chat' ? 'bg-green-500' : 'bg-blue-500'} animate-pulse`}></div>
+              <span className="text-xs font-medium text-gray-700">
+                {appMode === 'chat' ? 'Chat Mode' : 'Editor Mode'}
+              </span>
+            </div>
+            
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+              <ConnectButton />
+            </div>
+          </div>
         </div>
-        <ConnectButton />
       </div>
 
       {/* Main content */}
       {appMode === 'chat' ? (
         /* Chat Mode - Full screen chat */
-        <div className="flex flex-1 overflow-hidden p-4 gap-4">
+        <div className="flex flex-1 overflow-hidden px-6 pb-6 pt-4 gap-6">
           <div className="flex-1 relative">
             <ChatInterface 
               onWorkflowGenerated={handleWorkflowGenerated}
@@ -114,7 +132,7 @@ export default function Home() {
             {!rightSidebarOpen && (
               <button
                 onClick={() => setRightSidebarOpen(true)}
-                className="absolute top-8 right-8 p-3 bg-white rounded-xl border border-gray-200 shadow-lg hover:shadow-xl transition-all z-10 group hover:scale-105"
+                className="absolute top-8 right-8 p-3 bg-white/90 backdrop-blur-sm rounded-xl border border-gray-200/50 shadow-lg hover:shadow-xl transition-all z-10 group hover:scale-105"
                 aria-label="Open session history"
               >
                 <Clock className="w-5 h-5 text-gray-600 group-hover:text-blue-600 transition-colors" />
@@ -129,7 +147,7 @@ export default function Home() {
         </div>
       ) : (
         /* Workflow Mode - Canvas with sidebars */
-        <div className="flex flex-1 overflow-hidden p-4 gap-4">
+        <div className="flex flex-1 overflow-hidden px-6 pb-6 pt-4 gap-6">
           {/* Left Sidebar */}
           <div className="w-80 flex-shrink-0 flex flex-col bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             {/* Mode Toggle */}
@@ -173,7 +191,7 @@ export default function Home() {
           </div>
 
           {/* Canvas */}
-          <div className="flex-1 flex gap-4">
+          <div className="flex-1 flex gap-6">
             <div className="flex-1 relative">
               <WorkflowCanvas
                 workflow={workflow}
@@ -187,7 +205,7 @@ export default function Home() {
               {!rightSidebarOpen && (
                 <button
                   onClick={() => setRightSidebarOpen(true)}
-                  className="absolute top-4 right-4 p-3 bg-white rounded-xl border border-gray-200 shadow-lg hover:shadow-xl transition-all z-10 group hover:scale-105"
+                  className="absolute top-4 right-4 p-3 bg-white/90 backdrop-blur-sm rounded-xl border border-gray-200/50 shadow-lg hover:shadow-xl transition-all z-10 group hover:scale-105"
                   aria-label="Open session history"
                 >
                   <Clock className="w-5 h-5 text-gray-600 group-hover:text-blue-600 transition-colors" />
