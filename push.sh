@@ -15,10 +15,23 @@ if [ -z "$commit_message" ]; then
 fi
 
 echo "Finding changed files..."
-git status --porcelain | while IFS= read -r line; do
+
+# Store changed files in an array
+changed_files=()
+while IFS= read -r line; do
     # Extract file path (starting from column 4 to handle spaces properly)
     file="${line:3}"
-    
+    changed_files+=("$file")
+done < <(git status --porcelain)
+
+# Check if there are any changes
+if [ ${#changed_files[@]} -eq 0 ]; then
+    echo "No changes to commit."
+    exit 0
+fi
+
+# Add and commit each file separately
+for file in "${changed_files[@]}"; do
     echo "Adding and committing: $file"
     git add "$file"
     git commit -m "$commit_message ($file)"
