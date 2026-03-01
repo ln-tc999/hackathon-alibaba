@@ -8,17 +8,44 @@ const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
   variable: '--font-space-grotesk',
+  display: 'swap', // Optimize font loading
+  preload: true,
 });
 
 export const metadata: Metadata = {
-  title: 'VlowGen Platform',
-  description: 'Visual workflow automation platform for content generation and distribution',
+  title: 'VlowGen Platform - AI Workflow Automation',
+  description: 'Fully autonomous AI that builds and executes workflows. Create content and automate distribution with visual workflow builder.',
+  keywords: ['AI workflow', 'automation', 'content generation', 'visual workflow', 'autonomous AI'],
+  authors: [{ name: 'VlowGen Team' }],
+  creator: 'VlowGen',
+  publisher: 'VlowGen',
+  robots: {
+    index: true,
+    follow: true,
+  },
   icons: {
     icon: [
-      { url: '/favicon.ico' },
+      { url: '/favicon.ico', sizes: 'any' },
       { url: '/logo.svg', type: 'image/svg+xml' },
     ],
     apple: '/logo.png',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    title: 'VlowGen Platform - AI Workflow Automation',
+    description: 'Fully autonomous AI that builds and executes workflows',
+    siteName: 'VlowGen',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'VlowGen Platform - AI Workflow Automation',
+    description: 'Fully autonomous AI that builds and executes workflows',
+  },
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
   },
 };
 

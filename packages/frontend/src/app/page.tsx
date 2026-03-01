@@ -1,19 +1,64 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo, memo } from 'react';
+import dynamic from 'next/dynamic';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import WorkflowCanvas from '@/components/canvas/WorkflowCanvas';
 import ChatInterface from '@/components/chat/ChatInterface';
-import NodePalette from '@/components/canvas/NodePalette';
-import SessionHistory from '@/components/sidebar/SessionHistory';
-import ExecutionPanel from '@/components/canvas/ExecutionPanel';
 import type { Workflow, ExecutionResult } from '@vlowgen/shared';
 import { executeWorkflow } from '@/lib/api-client';
 import { toast } from 'sonner';
-import { MessageSquare, Blocks, Clock } from 'lucide-react';
+import { MessageSquare, Clock, Bot, Zap } from 'lucide-react';
 
-type SidebarMode = 'chat' | 'nodes';
+// Lazy load heavy components
+const WorkflowCanvas = dynamic(() => import('@/components/canvas/WorkflowCanvas'), {
+  loading: () => <div className="flex items-center justify-center h-full"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>,
+  ssr: false
+});
+
+const SessionHistory = dynamic(() => import('@/components/sidebar/SessionHistory'), {
+  loading: () => <div className="animate-pulse bg-gray-100 h-full rounded-xl"></div>,
+  ssr: false
+});
+
+const ExecutionPanel = dynamic(() => import('@/components/canvas/ExecutionPanel'), {
+  loading: () => null,
+  ssr: false
+});
+
 type AppMode = 'chat' | 'workflow';
+
+// Memoized Header Component
+const AppHeader = memo(({ appMode }: { appMode: AppMode }) => (
+  <div className="px-6 pt-6 pb-0">
+    <div className="flex justify-between items-center px-6 py-3 bg-white/80 backdrop-blur-lg rounded-2xl border border-gray-200/50 shadow-lg shadow-gray-200/50">
+      <div className="flex items-center gap-3">
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+          <Bot className="w-6 h-6 text-white" />
+        </div>
+        <div>
+          <h1 className="text-base font-bold text-gray-900">VlowGen</h1>
+          <p className="text-xs text-gray-500">AI Workflow Platform</p>
+        </div>
+      </div>
+      
+      <div className="flex items-center gap-3">
+        {/* Mode indicator */}
+        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+          <Zap className="w-3.5 h-3.5 text-green-600" />
+          <span className="text-xs font-semibold text-green-700">
+            {appMode === 'chat' ? 'AI Mode' : 'Building'}
+          </span>
+        </div>
+        
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+          <ConnectButton />
+        </div>
+      </div>
+    </div>
+  </div>
+));
+
+AppHeader.displayName = 'AppHeader';
 
 export default function Home() {
   const [appMode, setAppMode] = useState<AppMode>('chat');
@@ -29,7 +74,6 @@ export default function Home() {
 
   const [executionStatus, setExecutionStatus] = useState<'idle' | 'running' | 'success' | 'error'>('idle');
   const [executionResult, setExecutionResult] = useState<ExecutionResult | undefined>(undefined);
-  const [sidebarMode, setSidebarMode] = useState<SidebarMode>('chat');
 
   const handleWorkflowChange = useCallback((updatedWorkflow: Workflow) => {
     setWorkflow(updatedWorkflow);
@@ -81,43 +125,21 @@ export default function Home() {
         description: error instanceof Error ? error.message : 'Unknown error',
       });
     }
-  }, [workflow]);
+  }, [workflow.nodes.length, workflow]);
 
   const handleCloseExecutionPanel = useCallback(() => {
     setExecutionResult(undefined);
     setExecutionStatus('idle');
   }, []);
 
+  const toggleRightSidebar = useCallback(() => {
+    setRightSidebarOpen(prev => !prev);
+  }, []);
+
   return (
     <main className="flex h-screen flex-col bg-gray-50">
       {/* Floating Header */}
-      <div className="px-6 pt-6 pb-0">
-        <div className="flex justify-between items-center px-6 py-3 bg-white/80 backdrop-blur-lg rounded-2xl border border-gray-200/50 shadow-lg shadow-gray-200/50">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center">
-              <img src="/logo.svg" alt="VlowGen Logo" className="w-full h-full object-contain" />
-            </div>
-            <div>
-              <h1 className="text-base font-bold text-gray-900">VlowGen</h1>
-              <p className="text-xs text-gray-500">AI Workflow Platform</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            {/* Mode indicator */}
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-lg">
-              <div className={`w-2 h-2 rounded-full ${appMode === 'chat' ? 'bg-green-500' : 'bg-blue-500'} animate-pulse`}></div>
-              <span className="text-xs font-medium text-gray-700">
-                {appMode === 'chat' ? '💬 AI Chat Mode' : '📊 Workflow Editor'}
-              </span>
-            </div>
-            
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-              <ConnectButton />
-            </div>
-          </div>
-        </div>
-      </div>
+      <AppHeader appMode={appMode} />
 
       {/* Main content */}
       {appMode === 'chat' ? (
@@ -134,7 +156,7 @@ export default function Home() {
             {/* Floating button to open right sidebar when collapsed */}
             {!rightSidebarOpen && (
               <button
-                onClick={() => setRightSidebarOpen(true)}
+                onClick={toggleRightSidebar}
                 className="absolute top-8 right-8 p-3 bg-white/90 backdrop-blur-sm rounded-xl border border-gray-200/50 shadow-lg hover:shadow-xl transition-all z-10 group hover:scale-105"
                 aria-label="Open session history"
               >
@@ -144,52 +166,22 @@ export default function Home() {
           </div>
           {rightSidebarOpen && (
             <div className="w-80 flex-shrink-0">
-              <SessionHistory onToggle={() => setRightSidebarOpen(false)} />
+              <SessionHistory onToggle={toggleRightSidebar} />
             </div>
           )}
         </div>
       ) : (
         /* Workflow Mode - Canvas with sidebars */
         <div className="flex flex-1 overflow-hidden px-6 pb-6 pt-4 gap-6">
-          {/* Left Sidebar */}
+          {/* Left Sidebar - AI Chat Only */}
           <div className="w-80 flex-shrink-0 flex flex-col bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            {/* Mode Toggle */}
-            <div className="flex p-2 bg-gray-50 gap-1">
-              <button
-                onClick={() => setSidebarMode('chat')}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium transition-all rounded-lg ${
-                  sidebarMode === 'chat'
-                    ? 'text-blue-600 bg-white shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                }`}
-              >
-                <MessageSquare className="w-4 h-4" />
-                <span>AI Chat</span>
-              </button>
-              <button
-                onClick={() => setSidebarMode('nodes')}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium transition-all rounded-lg ${
-                  sidebarMode === 'nodes'
-                    ? 'text-blue-600 bg-white shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                }`}
-              >
-                <Blocks className="w-4 h-4" />
-                <span>Manual</span>
-              </button>
-            </div>
-
-            {/* Content based on mode */}
+            {/* AI Chat Content */}
             <div className="flex-1 overflow-hidden">
-              {sidebarMode === 'chat' ? (
-                <ChatInterface 
-                  onWorkflowGenerated={handleWorkflowGenerated}
-                  onContinueToWorkflow={handleContinueToWorkflow}
-                  workflow={workflow}
-                />
-              ) : (
-                <NodePalette />
-              )}
+              <ChatInterface 
+                onWorkflowGenerated={handleWorkflowGenerated}
+                onContinueToWorkflow={handleContinueToWorkflow}
+                workflow={workflow}
+              />
             </div>
           </div>
 
@@ -207,7 +199,7 @@ export default function Home() {
               {/* Floating button to open right sidebar when collapsed */}
               {!rightSidebarOpen && (
                 <button
-                  onClick={() => setRightSidebarOpen(true)}
+                  onClick={toggleRightSidebar}
                   className="absolute top-4 right-4 p-3 bg-white/90 backdrop-blur-sm rounded-xl border border-gray-200/50 shadow-lg hover:shadow-xl transition-all z-10 group hover:scale-105"
                   aria-label="Open session history"
                 >
@@ -219,7 +211,7 @@ export default function Home() {
             {/* Right Sidebar */}
             {rightSidebarOpen && (
               <div className="w-80 flex-shrink-0">
-                <SessionHistory onToggle={() => setRightSidebarOpen(false)} />
+                <SessionHistory onToggle={toggleRightSidebar} />
               </div>
             )}
           </div>

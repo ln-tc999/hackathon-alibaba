@@ -1,7 +1,25 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { Send, Sparkles, Loader2, Download, ArrowRight } from 'lucide-react';
+import { useState, useRef, useEffect, useMemo, useCallback, memo } from 'react';
+import { 
+  Send, 
+  Sparkles, 
+  Loader2, 
+  Download, 
+  ArrowRight, 
+  Bot, 
+  CheckCircle2, 
+  Zap, 
+  Image as ImageIcon, 
+  Twitter, 
+  Instagram, 
+  FileText, 
+  Wand2, 
+  Video, 
+  Eye, 
+  Palette,
+  MessageSquare
+} from 'lucide-react';
 import type { Workflow } from '@vlowgen/shared';
 
 interface Message {
@@ -19,6 +37,35 @@ interface ChatInterfaceProps {
   centered?: boolean;
 }
 
+// Memoized Message Component for better performance
+const MessageBubble = memo(({ 
+  message, 
+  isUser 
+}: { 
+  message: Message; 
+  isUser: boolean;
+}) => (
+  <div
+    className={`max-w-[85%] rounded-2xl px-4 py-2.5 shadow-sm ${
+      isUser
+        ? 'bg-blue-600 text-white'
+        : 'bg-gray-50 text-gray-900 border border-gray-200'
+    }`}
+  >
+    <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+    <span className={`text-xs mt-1.5 block ${
+      isUser ? 'text-blue-100' : 'text-gray-500'
+    }`}>
+      {message.timestamp.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+      })}
+    </span>
+  </div>
+));
+
+MessageBubble.displayName = 'MessageBubble';
+
 export default function ChatInterface({ 
   onWorkflowGenerated, 
   onContinueToWorkflow,
@@ -29,7 +76,7 @@ export default function ChatInterface({
     {
       id: '1',
       role: 'assistant',
-      content: 'Hi! I\'m your AI workflow assistant. 🤖\n\nJust tell me what you want to create, and I\'ll:\n✨ Build an optimized workflow\n📊 Show you each step visually\n🚀 Execute it automatically\n\nTry: "Create a viral meme and post to Instagram"',
+      content: 'Hi! I\'m your AI assistant.\n\nTell me what you want to create, and I\'ll build an optimized workflow automatically.\n\nTry: "Create a viral meme and post to Instagram"',
       timestamp: new Date(),
     },
   ]);
@@ -37,9 +84,9 @@ export default function ChatInterface({
   const [isGenerating, setIsGenerating] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
@@ -151,7 +198,7 @@ export default function ChatInterface({
       const assistantMessage: Message = {
         id: `msg-${Date.now()}-assistant`,
         role: 'assistant',
-        content: `Perfect! I've created an optimized workflow for you:\n\n✨ **Workflow Steps:**\n1. 📝 Your prompt: "${input}"\n2. 🎨 AI Prompt Enhancer - Optimizing for better results\n3. 🖼️ Image Generation - Creating high-quality image\n4. 📱 Multi-platform Post - Twitter & Instagram\n\n💡 **Why this workflow?**\nI added a Prompt Enhancer to automatically improve your prompt with professional details like lighting, composition, and style. This ensures your generated image looks amazing!\n\nClick "Open Editor" below to see the visual workflow and execute it.`,
+        content: `Perfect! I've created your workflow:\n\n${input}\n\nSteps:\n1. Prompt enhancement\n2. Image generation\n3. Multi-platform posting\n\nClick "Open Editor" to review and execute.`,
         timestamp: new Date(),
         workflow,
       };
@@ -178,7 +225,7 @@ export default function ChatInterface({
     }
   };
 
-  const handleDownloadWorkflow = () => {
+  const handleDownloadWorkflow = useCallback(() => {
     if (!workflow) return;
     
     const dataStr = JSON.stringify(workflow, null, 2);
@@ -189,23 +236,26 @@ export default function ChatInterface({
     link.download = `${workflow.name || 'workflow'}.json`;
     link.click();
     URL.revokeObjectURL(url);
-  };
+  }, [workflow]);
 
-  const getNodeLabel = (nodeType: string): string => {
-    const labels: Record<string, string> = {
-      'prompt-text': '📝 Prompt',
-      'prompt-enhancer-image': '✨ AI Enhancer',
-      'prompt-enhancer-video': '🎬 Video Enhancer',
-      'vision-analyzer': '👁️ Vision AI',
-      'wan2': '🖼️ Image Gen',
-      'openrouter': '🎨 Image Gen',
-      'twitter': '🐦 Twitter',
-      'instagram': '📸 Instagram',
+  const getNodeLabel = useCallback((nodeType: string): { icon: JSX.Element; label: string } => {
+    const iconMap: Record<string, { icon: JSX.Element; label: string }> = {
+      'prompt-text': { icon: <FileText className="w-3 h-3" />, label: 'Prompt' },
+      'prompt-enhancer-image': { icon: <Wand2 className="w-3 h-3" />, label: 'AI Enhancer' },
+      'prompt-enhancer-video': { icon: <Video className="w-3 h-3" />, label: 'Video Enhancer' },
+      'vision-analyzer': { icon: <Eye className="w-3 h-3" />, label: 'Vision AI' },
+      'wan2': { icon: <ImageIcon className="w-3 h-3" />, label: 'Image Gen' },
+      'openrouter': { icon: <Palette className="w-3 h-3" />, label: 'Image Gen' },
+      'twitter': { icon: <Twitter className="w-3 h-3" />, label: 'Twitter' },
+      'instagram': { icon: <Instagram className="w-3 h-3" />, label: 'Instagram' },
     };
-    return labels[nodeType] || '❓ Unknown';
-  };
+    return iconMap[nodeType] || { icon: <Sparkles className="w-3 h-3" />, label: 'Unknown' };
+  }, []);
 
-  const hasGeneratedWorkflow = workflow && workflow.nodes.length > 0;
+  const hasGeneratedWorkflow = useMemo(() => 
+    workflow && workflow.nodes.length > 0, 
+    [workflow]
+  );
 
   if (centered) {
     return (
@@ -213,14 +263,14 @@ export default function ChatInterface({
         <div className="w-full max-w-4xl space-y-8">
           {/* Welcome Header */}
           <div className="text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4">
-              <img src="/logo.svg" alt="VlowGen Logo" className="w-full h-full object-contain" />
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 bg-gradient-to-br from-blue-500 to-indigo-600">
+              <Bot className="w-10 h-10 text-white" />
             </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Welcome to VlowGen
+              VlowGen
             </h1>
             <p className="text-gray-600 max-w-md mx-auto">
-              AI that shows its work. Describe your workflow and watch as AI builds it step-by-step with visual nodes.
+              AI-powered workflow automation. Describe what you want, and watch it build automatically.
             </p>
           </div>
 
@@ -254,21 +304,26 @@ export default function ChatInterface({
                             <span className="text-xs font-semibold text-blue-900">Workflow Preview</span>
                           </div>
                           <div className="flex items-center gap-2 overflow-x-auto pb-2">
-                            {message.workflow.nodes.map((node, idx) => (
-                              <div key={node.id} className="flex items-center gap-2 flex-shrink-0">
-                                <div className="px-3 py-2 bg-white rounded-lg border border-blue-200 shadow-sm">
-                                  <div className="text-xs font-medium text-gray-700 whitespace-nowrap">
-                                    {getNodeLabel(node.type)}
+                            {message.workflow.nodes.map((node, idx) => {
+                              const { icon, label } = getNodeLabel(node.type);
+                              return (
+                                <div key={node.id} className="flex items-center gap-2 flex-shrink-0">
+                                  <div className="px-3 py-2 bg-white rounded-lg border border-blue-200 shadow-sm">
+                                    <div className="flex items-center gap-1.5 text-xs font-medium text-gray-700 whitespace-nowrap">
+                                      {icon}
+                                      <span>{label}</span>
+                                    </div>
                                   </div>
+                                  {idx < message.workflow!.nodes.length - 1 && (
+                                    <ArrowRight className="w-3 h-3 text-blue-400" />
+                                  )}
                                 </div>
-                                {idx < message.workflow!.nodes.length - 1 && (
-                                  <div className="text-blue-400">→</div>
-                                )}
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
-                          <div className="mt-3 text-xs text-blue-700">
-                            {message.workflow!.nodes.length} nodes • {message.workflow!.edges.length} connections
+                          <div className="mt-3 flex items-center gap-2 text-xs text-blue-700">
+                            <CheckCircle2 className="w-3 h-3" />
+                            <span>{message.workflow!.nodes.length} nodes • {message.workflow!.edges.length} connections</span>
                           </div>
                         </div>
                         
@@ -316,7 +371,7 @@ export default function ChatInterface({
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="E.g., Create a workflow that generates an image and posts to Twitter"
+                placeholder="Describe what you want to create..."
                 disabled={isGenerating}
                 className="flex-1 px-4 py-3 text-sm border-0 focus:outline-none focus:ring-0 disabled:bg-white disabled:text-gray-500"
               />
@@ -333,28 +388,31 @@ export default function ChatInterface({
 
           {/* Quick Actions */}
           <div className="text-center">
-            <p className="text-sm text-gray-500 mb-3">Try these examples:</p>
+            <p className="text-sm text-gray-500 mb-3 flex items-center justify-center gap-2">
+              <Zap className="w-4 h-4" />
+              <span>Quick examples:</span>
+            </p>
             <div className="flex flex-wrap gap-2 justify-center">
               <button
                 onClick={() => setInput('Create a professional product photo and post to Instagram')}
-                className="px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all"
+                className="px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all flex items-center gap-2"
               >
-                <Sparkles className="w-3 h-3 inline mr-1" />
-                Product Photo → Instagram
+                <Instagram className="w-3 h-3" />
+                <span>Product Photo</span>
               </button>
               <button
                 onClick={() => setInput('Generate a viral meme about AI and share on Twitter')}
-                className="px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all"
+                className="px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all flex items-center gap-2"
               >
-                <Sparkles className="w-3 h-3 inline mr-1" />
-                Viral Meme → Twitter
+                <Twitter className="w-3 h-3" />
+                <span>Viral Meme</span>
               </button>
               <button
                 onClick={() => setInput('Create cinematic video of a dragon and post everywhere')}
-                className="px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all"
+                className="px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all flex items-center gap-2"
               >
-                <Sparkles className="w-3 h-3 inline mr-1" />
-                Video → Multi-platform
+                <Video className="w-3 h-3" />
+                <span>Video Content</span>
               </button>
             </div>
           </div>
@@ -368,12 +426,12 @@ export default function ChatInterface({
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center">
-            <img src="/logo.svg" alt="VlowGen Logo" className="w-full h-full object-contain" />
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+            <Bot className="w-5 h-5 text-white" />
           </div>
           <div>
             <h2 className="text-sm font-semibold text-gray-900">AI Assistant</h2>
-            <p className="text-xs text-gray-500">Workflow Generator</p>
+            <p className="text-xs text-gray-500">Autonomous Workflow Builder</p>
           </div>
         </div>
       </div>
@@ -385,23 +443,7 @@ export default function ChatInterface({
             key={message.id}
             className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
-            <div
-              className={`max-w-[85%] rounded-2xl px-4 py-2.5 shadow-sm ${
-                message.role === 'user'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-50 text-gray-900 border border-gray-200'
-              }`}
-            >
-              <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
-              <span className={`text-xs mt-1.5 block ${
-                message.role === 'user' ? 'text-blue-100' : 'text-gray-500'
-              }`}>
-                {message.timestamp.toLocaleTimeString('en-US', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </span>
-            </div>
+            <MessageBubble message={message} isUser={message.role === 'user'} />
           </div>
         ))}
         {isGenerating && (
