@@ -1,0 +1,19 @@
+{
+  "name": "social-post-test",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "tsx test-all-platforms.ts",
+    "test:html-image": "tsx test-html-to-image.ts",
+    "check-status": "tsx check-composio-status.ts"
+  },
+  "dependencies": {
+    "axios": "^1.13.5",
+    "node-html-to-image": "^4.0.0",
+    "form-data": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.33",
+    "tsx": "^4.21.0"
+  }
+}

@@ -13,14 +13,21 @@
     "type-check": "pnpm -r type-check"
   },
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "test/*"
   ],
   "devDependencies": {
+    "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
+    "axios": "^1.6.0",
     "eslint": "^8.0.0",
     "eslint-config-prettier": "^9.0.0",
+    "form-data": "^4.0.5",
+    "node-html-to-image": "^5.0.0",
     "prettier": "^3.0.0",
+    "puppeteer": "^24.37.5",
+    "tsx": "^4.0.0",
     "typescript": "^5.0.0"
   },
   "engines": {
