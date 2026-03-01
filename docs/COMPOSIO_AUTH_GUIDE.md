@@ -5,7 +5,7 @@ Guide lengkap untuk setup authentication Twitter dan TikTok di Composio mengguna
 ## Prerequisites
 
 - Akun Composio (https://app.composio.dev/)
-- Composio API Key: `ak_C4a5-yJQmd8bjd5wsB9E`
+- Composio API Key: `your-api-key`
 
 ---
 
