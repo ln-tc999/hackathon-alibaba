@@ -31,7 +31,6 @@ All notable changes to VlowGen Platform will be documented in this file.
 - Workflow execution engine
 - Real-time execution status tracking
 - Error handling and validation
-- Web3 wallet integration with RainbowKit
 - Docker deployment support
 - Comprehensive test coverage
 

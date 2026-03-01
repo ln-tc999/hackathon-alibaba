@@ -2,6 +2,7 @@
 
 import { useCallback } from 'react';
 import { NodeProps } from 'reactflow';
+import { Image } from 'lucide-react';
 import type { OpenRouterNodeData } from '@vlowgen/shared';
 import BaseNode from './BaseNode';
 
@@ -47,7 +48,7 @@ export default function OpenRouterNode({ data, selected }: NodeProps<OpenRouterN
     <BaseNode
       selected={selected}
       error={executionError}
-      icon="🖼️"
+      icon={Image}
       title="OpenRouter Image Generation"
     >
       <div className="space-y-3">

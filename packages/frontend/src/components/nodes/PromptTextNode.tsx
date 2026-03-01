@@ -2,6 +2,7 @@
 
 import { useCallback } from 'react';
 import { NodeProps } from 'reactflow';
+import { FileText } from 'lucide-react';
 import type { PromptTextNodeData } from '@vlowgen/shared';
 import BaseNode from './BaseNode';
 
@@ -28,7 +29,7 @@ export default function PromptTextNode({ data, selected }: NodeProps<PromptTextN
     <BaseNode
       selected={selected}
       error={executionError}
-      icon="📝"
+      icon={FileText}
       title="Prompt Text"
     >
       <div className="space-y-2">

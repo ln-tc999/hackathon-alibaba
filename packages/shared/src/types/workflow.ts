@@ -2,7 +2,15 @@
  * Core workflow data types for VlowGen platform
  */
 
-export type NodeType = 'prompt-text' | 'wan2' | 'openrouter' | 'twitter';
+export type NodeType = 
+  | 'prompt-text' 
+  | 'wan2' 
+  | 'openrouter' 
+  | 'twitter'
+  | 'instagram'
+  | 'prompt-enhancer-image'
+  | 'prompt-enhancer-video'
+  | 'vision-analyzer';
 
 export interface Workflow {
   id: string;
@@ -20,7 +28,15 @@ export interface WorkflowNode {
   data: NodeData;
 }
 
-export type NodeData = PromptTextNodeData | Wan2NodeData | OpenRouterNodeData | TwitterNodeData;
+export type NodeData = 
+  | PromptTextNodeData 
+  | Wan2NodeData 
+  | OpenRouterNodeData 
+  | TwitterNodeData
+  | InstagramNodeData
+  | PromptEnhancerImageNodeData
+  | PromptEnhancerVideoNodeData
+  | VisionAnalyzerNodeData;
 
 export interface PromptTextNodeData {
   type: 'prompt-text';
@@ -46,6 +62,37 @@ export interface TwitterNodeData {
   type: 'twitter';
   authenticated: boolean;
   accountHandle?: string;
+}
+
+export interface InstagramNodeData {
+  type: 'instagram';
+  authenticated: boolean;
+  accountHandle?: string;
+}
+
+export interface PromptEnhancerImageNodeData {
+  type: 'prompt-enhancer-image';
+  userPrompt: string;
+  enhancedPrompt?: string;
+}
+
+export interface PromptEnhancerVideoNodeData {
+  type: 'prompt-enhancer-video';
+  userPrompt: string;
+  enhancedPrompt?: string;
+}
+
+export interface VisionAnalyzerNodeData {
+  type: 'vision-analyzer';
+  imageUrl?: string;
+  videoUrl?: string;
+  uploadedFile?: {
+    name: string;
+    size: number;
+    type: string;
+  };
+  niche?: string;
+  analyzedPrompt?: string;
 }
 
 export interface WorkflowEdge {

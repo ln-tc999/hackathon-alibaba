@@ -31,6 +31,7 @@ export interface ServiceCredentials {
   wan2ApiKey?: string;
   openRouterApiKey?: string;
   composioApiKey?: string;
+  composioApiUrl?: string;
   twitterToken?: string;
 }
 

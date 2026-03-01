@@ -2,6 +2,7 @@
 
 import { useCallback } from 'react';
 import { NodeProps } from 'reactflow';
+import { Twitter } from 'lucide-react';
 import type { TwitterNodeData } from '@vlowgen/shared';
 import BaseNode from './BaseNode';
 
@@ -23,7 +24,7 @@ export default function TwitterNode({ data, selected }: NodeProps<TwitterNodeDat
     <BaseNode
       selected={selected}
       error={executionError}
-      icon="🐦"
+      icon={Twitter}
       title="Twitter Post"
     >
       <div className="space-y-3">

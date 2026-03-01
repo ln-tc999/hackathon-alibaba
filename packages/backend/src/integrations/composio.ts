@@ -13,9 +13,20 @@ export interface PostToTwitterParams {
   token: string;
 }
 
+export interface PostToInstagramParams {
+  imageUrl: string;
+  caption?: string;
+  token?: string;
+}
+
 export interface PostToTwitterResponse {
   tweetUrl: string;
   tweetId: string;
+}
+
+export interface PostToInstagramResponse {
+  postUrl?: string;
+  postId?: string;
 }
 
 export interface TwitterAuthUrlResponse {
@@ -199,6 +210,62 @@ export class ComposioClient {
         throw new Error(`Composio API network error: ${axiosError.message}`);
       }
       
+      throw error;
+    }
+  }
+
+  /**
+   * Post content to Instagram via Composio
+   * 
+   * @param params - Post parameters including image URL and caption
+   * @returns Promise resolving to post URL and ID
+   * @throws Error if API request fails or returns an error
+   */
+  async postToInstagram(params: PostToInstagramParams): Promise<PostToInstagramResponse> {
+    try {
+      const requestBody: any = {
+        image_url: params.imageUrl,
+      };
+
+      if (params.caption) {
+        requestBody.caption = params.caption;
+      }
+
+      if (params.token) {
+        requestBody.token = params.token;
+      }
+
+      const response = await this.client.post<ComposioApiPostResponse>(
+        '/v1/instagram/post',
+        requestBody
+      );
+
+      return {
+        postUrl: response.data.data?.url,
+        postId: response.data.data?.id,
+      };
+    } catch (error) {
+      // Map API errors to standard error format
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError;
+        
+        if (axiosError.code === 'ECONNABORTED') {
+          throw new Error('Composio API request timeout after 30 seconds');
+        }
+        
+        if (axiosError.response) {
+          const status = axiosError.response.status;
+          const data = axiosError.response.data as any;
+          
+          throw new Error(
+            `Composio API error (${status}): ${data?.message || axiosError.message}`
+          );
+        }
+        
+        throw new Error(`Composio API network error: ${axiosError.message}`);
+      }
+      
+      // Re-throw non-Axios errors
       throw error;
     }
   }
