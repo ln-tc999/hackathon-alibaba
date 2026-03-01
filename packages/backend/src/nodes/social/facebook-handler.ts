@@ -1,5 +1,5 @@
 import { FacebookNodeData } from '@vlowgen/shared';
-import { BaseSocialMediaHandler } from './base-social-handler';
+import { BaseSocialMediaHandler } from '../base/social-handler';
 
 export class FacebookNodeHandler extends BaseSocialMediaHandler {
   get platformName(): string {

@@ -1,5 +1,5 @@
 import type { VisionAnalyzerNodeData, WorkflowNode, NodeExecutionResult, ExecutionContext } from '@vlowgen/shared';
-import { NodeHandler } from './handler';
+import { NodeHandler } from '../base/handler';
 
 const VISION_ANALYZER_SYSTEM_PROMPT = `You are a Master Visual Trend Analyst and Meme Formatter.
 You will be provided with an image (a currently viral meme or trending photo) and a specific niche/theme from the user.

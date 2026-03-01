@@ -1,5 +1,5 @@
 import { PromptEnhancerVideoNodeData } from '@vlowgen/shared';
-import { BasePromptEnhancer } from './base-prompt-enhancer';
+import { BasePromptEnhancer } from '../base/prompt-enhancer';
 
 const VIDEO_ENHANCEMENT_SYSTEM_PROMPT = `You are a Master Video Director and Expert AI Prompt Engineer.
 Your task is to take the user's short idea and expand it into a highly detailed, descriptive prompt optimized for AI video generation.

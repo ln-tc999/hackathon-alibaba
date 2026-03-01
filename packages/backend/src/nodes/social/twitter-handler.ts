@@ -1,5 +1,5 @@
 import { TwitterNodeData } from '@vlowgen/shared';
-import { BaseSocialMediaHandler } from './base-social-handler';
+import { BaseSocialMediaHandler } from '../base/social-handler';
 
 export class TwitterNodeHandler extends BaseSocialMediaHandler {
   get platformName(): string {

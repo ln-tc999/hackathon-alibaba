@@ -17,17 +17,17 @@ import {
 } from '@vlowgen/shared';
 import { WorkflowExecutionEngine } from '../engine/execution-engine';
 import { WorkflowValidator } from '../engine/validator';
-import { PromptTextNodeHandler } from '../nodes/prompt-text-handler';
-import { Wan2NodeHandler } from '../nodes/wan2-handler';
-import { OpenRouterNodeHandler } from '../nodes/openrouter-handler';
-import { TwitterNodeHandler } from '../nodes/twitter-handler';
-import { InstagramNodeHandler } from '../nodes/instagram-handler';
-import { FacebookNodeHandler } from '../nodes/facebook-handler';
-import { TikTokNodeHandler } from '../nodes/tiktok-handler';
-import { YouTubeNodeHandler } from '../nodes/youtube-handler';
-import { PromptEnhancerImageHandler } from '../nodes/prompt-enhancer-image-handler';
-import { PromptEnhancerVideoHandler } from '../nodes/prompt-enhancer-video-handler';
-import { VisionAnalyzerHandler } from '../nodes/vision-analyzer-handler';
+import { PromptTextNodeHandler } from '../nodes/prompt/text-handler';
+import { Wan2NodeHandler } from '../nodes/ai/wan2-handler';
+import { OpenRouterNodeHandler } from '../nodes/ai/openrouter-handler';
+import { TwitterNodeHandler } from '../nodes/social/twitter-handler';
+import { InstagramNodeHandler } from '../nodes/social/instagram-handler';
+import { FacebookNodeHandler } from '../nodes/social/facebook-handler';
+import { TikTokNodeHandler } from '../nodes/social/tiktok-handler';
+import { YouTubeNodeHandler } from '../nodes/social/youtube-handler';
+import { PromptEnhancerImageHandler } from '../nodes/prompt/enhancer-image-handler';
+import { PromptEnhancerVideoHandler } from '../nodes/prompt/enhancer-video-handler';
+import { VisionAnalyzerHandler } from '../nodes/ai/vision-analyzer-handler';
 import { ComposioClient } from '../integrations/composio';
 
 const router: RouterType = Router();

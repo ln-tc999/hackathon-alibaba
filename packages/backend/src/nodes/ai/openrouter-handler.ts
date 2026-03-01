@@ -1,28 +1,26 @@
 /**
- * Wan2.1 Node Handler
+ * OpenRouter Node Handler
  * 
- * Handles execution of wan2 nodes which generate images from text prompts
- * using Alibaba Cloud's Wan2.1 AI service.
- * 
- * Requirements: 9.1, 9.2
+ * Handles execution of openrouter nodes which generate images from text prompts
+ * using OpenRouter AI service.
  */
 
 import {
   WorkflowNode,
   NodeExecutionResult,
   ExecutionContext,
-  Wan2NodeData
+  OpenRouterNodeData
 } from '@vlowgen/shared';
-import { NodeHandler } from './handler';
-import { Wan2Client } from '../integrations/wan2';
+import { NodeHandler } from '../base/handler';
+import { OpenRouterClient } from '../../integrations/openrouter';
 
-export class Wan2NodeHandler implements NodeHandler {
-  private wan2Client: Wan2Client | null = null;
+export class OpenRouterNodeHandler implements NodeHandler {
+  private openRouterClient: OpenRouterClient | null = null;
 
   /**
-   * Execute a wan2 node
+   * Execute an openrouter node
    * 
-   * @param node - The wan2 node to execute
+   * @param node - The openrouter node to execute
    * @param inputs - Input data from upstream nodes (should contain prompt text)
    * @param context - Execution context with credentials
    * @returns Promise resolving to node execution result
@@ -35,7 +33,7 @@ export class Wan2NodeHandler implements NodeHandler {
     const startTime = new Date().toISOString();
 
     try {
-      // Extract prompt from input data (Requirement 9.1)
+      // Extract prompt from input data
       // Input should come from upstream prompt-text node
       const inputValues = Object.values(inputs);
       
@@ -44,7 +42,7 @@ export class Wan2NodeHandler implements NodeHandler {
         return {
           nodeId: node.id,
           status: 'error',
-          error: 'No input provided to Wan2 node. Connect a prompt-text node.',
+          error: 'No input provided to OpenRouter node. Connect a prompt-text node.',
           startTime,
           endTime,
           duration: new Date(endTime).getTime() - new Date(startTime).getTime()
@@ -66,36 +64,37 @@ export class Wan2NodeHandler implements NodeHandler {
         };
       }
 
-      // Get Wan2 API credentials
-      if (!context.credentials.wan2ApiKey) {
+      // Get OpenRouter API credentials
+      if (!context.credentials.openRouterApiKey) {
         const endTime = new Date().toISOString();
         return {
           nodeId: node.id,
           status: 'error',
-          error: 'Wan2 API key not provided in execution context',
+          error: 'OpenRouter API key not provided in execution context',
           startTime,
           endTime,
           duration: new Date(endTime).getTime() - new Date(startTime).getTime()
         };
       }
 
-      // Initialize Wan2 client if not already done
-      if (!this.wan2Client) {
-        this.wan2Client = new Wan2Client(context.credentials.wan2ApiKey);
+      // Initialize OpenRouter client if not already done
+      if (!this.openRouterClient) {
+        this.openRouterClient = new OpenRouterClient(context.credentials.openRouterApiKey);
       }
 
       // Extract node configuration
-      const nodeData = node.data as Wan2NodeData;
+      const nodeData = node.data as OpenRouterNodeData;
 
-      // Call Wan2Client with prompt and node configuration (Requirement 9.1)
-      const result = await this.wan2Client.generateImage({
+      // Call OpenRouterClient with prompt and node configuration
+      const result = await this.openRouterClient.generateImage({
         prompt,
         model: nodeData.model,
-        size: nodeData.size,
-        style: nodeData.style
+        width: nodeData.width,
+        height: nodeData.height,
+        negative_prompt: nodeData.negative_prompt
       });
 
-      // Return image URL in output (Requirement 9.2)
+      // Return image URL in output
       const endTime = new Date().toISOString();
       return {
         nodeId: node.id,
@@ -106,12 +105,12 @@ export class Wan2NodeHandler implements NodeHandler {
         duration: new Date(endTime).getTime() - new Date(startTime).getTime()
       };
     } catch (error) {
-      // Propagate errors from Wan2 service (Requirement 9.4)
+      // Propagate errors from OpenRouter service
       const endTime = new Date().toISOString();
       return {
         nodeId: node.id,
         status: 'error',
-        error: error instanceof Error ? error.message : 'Unknown error in Wan2 node',
+        error: error instanceof Error ? error.message : 'Unknown error in OpenRouter node',
         startTime,
         endTime,
         duration: new Date(endTime).getTime() - new Date(startTime).getTime()

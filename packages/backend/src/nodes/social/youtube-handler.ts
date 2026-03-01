@@ -1,5 +1,5 @@
 import { YouTubeNodeData } from '@vlowgen/shared';
-import { BaseSocialMediaHandler } from './base-social-handler';
+import { BaseSocialMediaHandler } from '../base/social-handler';
 
 export class YouTubeNodeHandler extends BaseSocialMediaHandler {
   get platformName(): string {

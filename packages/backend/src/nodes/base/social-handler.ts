@@ -4,7 +4,7 @@ import {
   ExecutionContext,
 } from '@vlowgen/shared';
 import { NodeHandler } from './handler';
-import { ComposioClient } from '../integrations/composio';
+import { ComposioClient } from '../../integrations/composio';
 
 export abstract class BaseSocialMediaHandler implements NodeHandler {
   protected composioClient: ComposioClient | null = null;
