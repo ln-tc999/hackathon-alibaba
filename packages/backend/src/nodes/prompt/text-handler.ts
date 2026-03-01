@@ -13,7 +13,7 @@ import {
   ExecutionContext,
   PromptTextNodeData
 } from '@vlowgen/shared';
-import { NodeHandler } from './handler';
+import { NodeHandler } from '../base/handler';
 
 export class PromptTextNodeHandler implements NodeHandler {
   /**

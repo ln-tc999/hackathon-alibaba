@@ -1,5 +1,5 @@
 import { TikTokNodeData } from '@vlowgen/shared';
-import { BaseSocialMediaHandler } from './base-social-handler';
+import { BaseSocialMediaHandler } from '../base/social-handler';
 
 export class TikTokNodeHandler extends BaseSocialMediaHandler {
   get platformName(): string {

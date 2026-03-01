@@ -4,9 +4,10 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { TwitterNodeHandler } from './twitter-handler';
+
 import { WorkflowNode, ExecutionContext } from '@vlowgen/shared';
-import { ComposioClient } from '../integrations/composio';
+import { ComposioClient } from '../../integrations/composio';
+import { TwitterNodeHandler } from '../social/twitter-handler';
 
 // Mock the ComposioClient
 vi.mock('../integrations/composio');

@@ -1,5 +1,5 @@
 import { PromptEnhancerImageNodeData } from '@vlowgen/shared';
-import { BasePromptEnhancer } from './base-prompt-enhancer';
+import { BasePromptEnhancer } from '../base/prompt-enhancer';
 
 const IMAGE_ENHANCEMENT_SYSTEM_PROMPT = `You are a Master Art Director and Expert AI Prompt Engineer.
 Your task is to take the user's short idea and expand it into a highly detailed, descriptive prompt optimized for a high-end AI image generator (like Midjourney or Wan2.1).
