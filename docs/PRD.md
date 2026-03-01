@@ -48,9 +48,9 @@ Web3 Enthusiasts & NFT Artists: Pengguna yang ingin men-generasi koleksi seni AI
 
 5.1. Modul Autentikasi & Akun
 
-REQ-1.1: Sistem harus mendukung Web3 Login menggunakan RainbowKit (MetaMask, WalletConnect, dll) dan/atau Web2 Login (Google).
+REQ-1.1: Sistem harus mendukung autentikasi pengguna (Google OAuth atau email/password).
 
-REQ-1.2: Sistem profil pengguna otomatis berbasis wallet address atau email.
+REQ-1.2: Sistem profil pengguna otomatis berbasis email atau user ID.
 
 REQ-1.3: Dompet internal (kredit virtual) untuk melacak biaya eksekusi setiap Node (misal: AI Node butuh 2 kredit, Publish Node butuh 1 kredit).
 
@@ -120,7 +120,7 @@ AI Models: Alibaba Cloud Wan2.1 API, Qwen
 
 Social Distribution: Composio SDK & API.
 
-Web3 Integration: Wagmi, Viem, Foundry, RainbowKit.
+Web3 Integration: Smart contracts untuk payment dan NFT minting (akan diimplementasikan di fase mendatang).
 
 8. Business Model (Pricing Tiers)
 
@@ -136,7 +136,7 @@ Platform menggunakan model bisnis Freemium dan Pay-as-you-go:
 
 Phase 1: MVP Hackathon (Bulan 1)
 
-Setup Next.js, RainbowKit, dan instalasi React Flow.
+Setup Next.js dan instalasi React Flow.
 
 Membangun UI Node Canvas dasar (bisa tambah node dan sambungkan edge).
 

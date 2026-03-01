@@ -21,26 +21,33 @@ export class PromptEnhancerVideoHandler implements NodeHandler {
     inputs: Record<string, any>,
     context: ExecutionContext
   ): Promise<NodeExecutionResult> {
+    const startTime = new Date().toISOString();
     const data = node.data as PromptEnhancerVideoNodeData;
     const { userPrompt } = data;
 
     if (!userPrompt || userPrompt.trim() === '') {
+      const endTime = new Date().toISOString();
       return {
         nodeId: node.id,
         status: 'error',
         error: 'User prompt is required',
-        executedAt: new Date().toISOString(),
+        startTime,
+        endTime,
+        duration: new Date(endTime).getTime() - new Date(startTime).getTime()
       };
     }
 
     // Use OpenRouter API to enhance the prompt
     const openRouterApiKey = context.credentials.openRouterApiKey;
     if (!openRouterApiKey) {
+      const endTime = new Date().toISOString();
       return {
         nodeId: node.id,
         status: 'error',
         error: 'OpenRouter API key is required for prompt enhancement',
-        executedAt: new Date().toISOString(),
+        startTime,
+        endTime,
+        duration: new Date(endTime).getTime() - new Date(startTime).getTime()
       };
     }
 
@@ -72,11 +79,14 @@ export class PromptEnhancerVideoHandler implements NodeHandler {
 
       if (!response.ok) {
         const errorData = await response.json() as any;
+        const endTime = new Date().toISOString();
         return {
           nodeId: node.id,
           status: 'error',
           error: `OpenRouter API error: ${errorData.error?.message || response.statusText}`,
-          executedAt: new Date().toISOString(),
+          startTime,
+          endTime,
+          duration: new Date(endTime).getTime() - new Date(startTime).getTime()
         };
       }
 
@@ -84,26 +94,35 @@ export class PromptEnhancerVideoHandler implements NodeHandler {
       const enhancedPrompt = result.choices[0]?.message?.content?.trim();
 
       if (!enhancedPrompt) {
+        const endTime = new Date().toISOString();
         return {
           nodeId: node.id,
           status: 'error',
           error: 'Failed to generate enhanced prompt',
-          executedAt: new Date().toISOString(),
+          startTime,
+          endTime,
+          duration: new Date(endTime).getTime() - new Date(startTime).getTime()
         };
       }
 
+      const endTime = new Date().toISOString();
       return {
         nodeId: node.id,
         status: 'success',
         output: { enhancedPrompt },
-        executedAt: new Date().toISOString(),
+        startTime,
+        endTime,
+        duration: new Date(endTime).getTime() - new Date(startTime).getTime()
       };
     } catch (error) {
+      const endTime = new Date().toISOString();
       return {
         nodeId: node.id,
         status: 'error',
         error: `Prompt enhancement failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        executedAt: new Date().toISOString(),
+        startTime,
+        endTime,
+        duration: new Date(endTime).getTime() - new Date(startTime).getTime()
       };
     }
   }

@@ -23,26 +23,33 @@ export class VisionAnalyzerHandler implements NodeHandler {
     inputs: Record<string, any>,
     context: ExecutionContext
   ): Promise<NodeExecutionResult> {
+    const startTime = new Date().toISOString();
     const data = node.data as VisionAnalyzerNodeData;
     const { imageUrl, videoUrl, niche } = data;
 
     if (!imageUrl && !videoUrl) {
+      const endTime = new Date().toISOString();
       return {
         nodeId: node.id,
         status: 'error',
         error: 'Image URL or Video URL is required for vision analysis',
-        executedAt: new Date().toISOString(),
+        startTime,
+        endTime,
+        duration: new Date(endTime).getTime() - new Date(startTime).getTime()
       };
     }
 
     // Use OpenRouter API with vision model
     const openRouterApiKey = context.credentials.openRouterApiKey;
     if (!openRouterApiKey) {
+      const endTime = new Date().toISOString();
       return {
         nodeId: node.id,
         status: 'error',
         error: 'OpenRouter API key is required for vision analysis',
-        executedAt: new Date().toISOString(),
+        startTime,
+        endTime,
+        duration: new Date(endTime).getTime() - new Date(startTime).getTime()
       };
     }
 
@@ -96,11 +103,14 @@ export class VisionAnalyzerHandler implements NodeHandler {
 
       if (!response.ok) {
         const errorData = await response.json() as any;
+        const endTime = new Date().toISOString();
         return {
           nodeId: node.id,
           status: 'error',
           error: `OpenRouter API error: ${errorData.error?.message || response.statusText}`,
-          executedAt: new Date().toISOString(),
+          startTime,
+          endTime,
+          duration: new Date(endTime).getTime() - new Date(startTime).getTime()
         };
       }
 
@@ -108,26 +118,35 @@ export class VisionAnalyzerHandler implements NodeHandler {
       const analyzedPrompt = result.choices[0]?.message?.content?.trim();
 
       if (!analyzedPrompt) {
+        const endTime = new Date().toISOString();
         return {
           nodeId: node.id,
           status: 'error',
           error: 'Failed to analyze content and generate prompt',
-          executedAt: new Date().toISOString(),
+          startTime,
+          endTime,
+          duration: new Date(endTime).getTime() - new Date(startTime).getTime()
         };
       }
 
+      const endTime = new Date().toISOString();
       return {
         nodeId: node.id,
         status: 'success',
         output: { analyzedPrompt },
-        executedAt: new Date().toISOString(),
+        startTime,
+        endTime,
+        duration: new Date(endTime).getTime() - new Date(startTime).getTime()
       };
     } catch (error) {
+      const endTime = new Date().toISOString();
       return {
         nodeId: node.id,
         status: 'error',
         error: `Vision analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        executedAt: new Date().toISOString(),
+        startTime,
+        endTime,
+        duration: new Date(endTime).getTime() - new Date(startTime).getTime()
       };
     }
   }

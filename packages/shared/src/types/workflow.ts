@@ -86,7 +86,11 @@ export interface VisionAnalyzerNodeData {
   type: 'vision-analyzer';
   imageUrl?: string;
   videoUrl?: string;
-  uploadedFile?: File;
+  uploadedFile?: {
+    name: string;
+    size: number;
+    type: string;
+  };
   niche?: string;
   analyzedPrompt?: string;
 }

@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useMemo, memo } from 'react';
 import dynamic from 'next/dynamic';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
 import ChatInterface from '@/components/chat/ChatInterface';
 import type { Workflow, ExecutionResult } from '@vlowgen/shared';
 import { executeWorkflow } from '@/lib/api-client';
@@ -43,15 +42,11 @@ const AppHeader = memo(({ appMode }: { appMode: AppMode }) => (
       
       <div className="flex items-center gap-3">
         {/* Mode indicator */}
-        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
           <Zap className="w-3.5 h-3.5 text-green-600" />
           <span className="text-xs font-semibold text-green-700">
             {appMode === 'chat' ? 'AI Mode' : 'Building'}
           </span>
-        </div>
-        
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-          <ConnectButton />
         </div>
       </div>
     </div>

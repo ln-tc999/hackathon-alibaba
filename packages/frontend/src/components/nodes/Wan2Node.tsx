@@ -2,6 +2,7 @@
 
 import { useCallback } from 'react';
 import { NodeProps } from 'reactflow';
+import { Palette } from 'lucide-react';
 import type { Wan2NodeData } from '@vlowgen/shared';
 import BaseNode from './BaseNode';
 
@@ -40,7 +41,7 @@ export default function Wan2Node({ data, selected }: NodeProps<Wan2NodeData & { 
     <BaseNode
       selected={selected}
       error={executionError}
-      icon="🎨"
+      icon={Palette}
       title="Wan2.1 Image Generation"
     >
       <div className="space-y-3">

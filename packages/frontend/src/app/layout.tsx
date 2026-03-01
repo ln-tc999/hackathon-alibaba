@@ -2,7 +2,6 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Space_Grotesk } from 'next/font/google';
 import { Toaster } from 'sonner';
-import { WalletProvider } from '@/components/wallet/WalletProvider';
 
 const spaceGrotesk = Space_Grotesk({ 
   subsets: ['latin'],
@@ -57,10 +56,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`min-h-screen bg-background antialiased ${spaceGrotesk.className}`}>
-        <WalletProvider>
-          {children}
-          <Toaster />
-        </WalletProvider>
+        {children}
+        <Toaster />
       </body>
     </html>
   );
