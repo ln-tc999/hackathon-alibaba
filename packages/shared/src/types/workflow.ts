@@ -8,6 +8,9 @@ export type NodeType =
   | 'openrouter' 
   | 'twitter'
   | 'instagram'
+  | 'facebook'
+  | 'tiktok'
+  | 'youtube'
   | 'prompt-enhancer-image'
   | 'prompt-enhancer-video'
   | 'vision-analyzer';
@@ -34,6 +37,9 @@ export type NodeData =
   | OpenRouterNodeData 
   | TwitterNodeData
   | InstagramNodeData
+  | FacebookNodeData
+  | TikTokNodeData
+  | YouTubeNodeData
   | PromptEnhancerImageNodeData
   | PromptEnhancerVideoNodeData
   | VisionAnalyzerNodeData;
@@ -68,6 +74,24 @@ export interface InstagramNodeData {
   type: 'instagram';
   authenticated: boolean;
   accountHandle?: string;
+}
+
+export interface FacebookNodeData {
+  type: 'facebook';
+  authenticated: boolean;
+  accountHandle?: string;
+}
+
+export interface TikTokNodeData {
+  type: 'tiktok';
+  authenticated: boolean;
+  accountHandle?: string;
+}
+
+export interface YouTubeNodeData {
+  type: 'youtube';
+  authenticated: boolean;
+  channelName?: string;
 }
 
 export interface PromptEnhancerImageNodeData {

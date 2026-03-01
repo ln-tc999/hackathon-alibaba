@@ -27,6 +27,9 @@ import Wan2Node from '../nodes/Wan2Node';
 import OpenRouterNode from '../nodes/OpenRouterNode';
 import TwitterNode from '../nodes/TwitterNode';
 import InstagramNode from '../nodes/InstagramNode';
+import FacebookNode from '../nodes/FacebookNode';
+import TikTokNode from '../nodes/TikTokNode';
+import YouTubeNode from '../nodes/YouTubeNode';
 import PromptEnhancerImageNode from '../nodes/PromptEnhancerImageNode';
 import PromptEnhancerVideoNode from '../nodes/PromptEnhancerVideoNode';
 import VisionAnalyzerNode from '../nodes/VisionAnalyzerNode';
@@ -62,6 +65,9 @@ function WorkflowCanvasInner({
       'openrouter': OpenRouterNode,
       'twitter': TwitterNode,
       'instagram': InstagramNode,
+      'facebook': FacebookNode,
+      'tiktok': TikTokNode,
+      'youtube': YouTubeNode,
       'prompt-enhancer-image': PromptEnhancerImageNode,
       'prompt-enhancer-video': PromptEnhancerVideoNode,
       'vision-analyzer': VisionAnalyzerNode,
@@ -200,6 +206,21 @@ function WorkflowCanvasInner({
       case 'instagram':
         return {
           type: 'instagram',
+          authenticated: false,
+        };
+      case 'facebook':
+        return {
+          type: 'facebook',
+          authenticated: false,
+        };
+      case 'tiktok':
+        return {
+          type: 'tiktok',
+          authenticated: false,
+        };
+      case 'youtube':
+        return {
+          type: 'youtube',
           authenticated: false,
         };
       case 'prompt-enhancer-image':

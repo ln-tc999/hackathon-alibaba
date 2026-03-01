@@ -21,6 +21,13 @@ import { PromptTextNodeHandler } from '../nodes/prompt-text-handler';
 import { Wan2NodeHandler } from '../nodes/wan2-handler';
 import { OpenRouterNodeHandler } from '../nodes/openrouter-handler';
 import { TwitterNodeHandler } from '../nodes/twitter-handler';
+import { InstagramNodeHandler } from '../nodes/instagram-handler';
+import { FacebookNodeHandler } from '../nodes/facebook-handler';
+import { TikTokNodeHandler } from '../nodes/tiktok-handler';
+import { YouTubeNodeHandler } from '../nodes/youtube-handler';
+import { PromptEnhancerImageHandler } from '../nodes/prompt-enhancer-image-handler';
+import { PromptEnhancerVideoHandler } from '../nodes/prompt-enhancer-video-handler';
+import { VisionAnalyzerHandler } from '../nodes/vision-analyzer-handler';
 import { ComposioClient } from '../integrations/composio';
 
 const router: RouterType = Router();
@@ -67,6 +74,13 @@ router.post('/execute', async (req: Request, res: Response) => {
     engine.registerNodeHandler('wan2', new Wan2NodeHandler());
     engine.registerNodeHandler('openrouter', new OpenRouterNodeHandler());
     engine.registerNodeHandler('twitter', new TwitterNodeHandler());
+    engine.registerNodeHandler('instagram', new InstagramNodeHandler());
+    engine.registerNodeHandler('facebook', new FacebookNodeHandler());
+    engine.registerNodeHandler('tiktok', new TikTokNodeHandler());
+    engine.registerNodeHandler('youtube', new YouTubeNodeHandler());
+    engine.registerNodeHandler('prompt-enhancer-image', new PromptEnhancerImageHandler());
+    engine.registerNodeHandler('prompt-enhancer-video', new PromptEnhancerVideoHandler());
+    engine.registerNodeHandler('vision-analyzer', new VisionAnalyzerHandler());
 
     // Execute workflow
     const executionResult = await engine.execute(requestBody.workflow, {
