@@ -19,6 +19,25 @@ export interface PostToInstagramParams {
   token?: string;
 }
 
+export interface PostToFacebookParams {
+  text: string;
+  mediaUrl?: string;
+  token?: string;
+}
+
+export interface PostToTikTokParams {
+  videoUrl: string;
+  caption?: string;
+  token?: string;
+}
+
+export interface UploadToYouTubeParams {
+  videoUrl: string;
+  title: string;
+  description?: string;
+  token?: string;
+}
+
 export interface PostToTwitterResponse {
   tweetUrl: string;
   tweetId: string;
@@ -27,6 +46,21 @@ export interface PostToTwitterResponse {
 export interface PostToInstagramResponse {
   postUrl?: string;
   postId?: string;
+}
+
+export interface PostToFacebookResponse {
+  postUrl?: string;
+  postId?: string;
+}
+
+export interface PostToTikTokResponse {
+  postUrl?: string;
+  postId?: string;
+}
+
+export interface UploadToYouTubeResponse {
+  videoUrl?: string;
+  videoId?: string;
 }
 
 export interface TwitterAuthUrlResponse {
@@ -266,6 +300,169 @@ export class ComposioClient {
       }
       
       // Re-throw non-Axios errors
+      throw error;
+    }
+  }
+
+  /**
+   * Post content to Facebook via Composio
+   * 
+   * @param params - Post parameters including text and optional media URL
+   * @returns Promise resolving to post URL and ID
+   * @throws Error if API request fails or returns an error
+   */
+  async postToFacebook(params: PostToFacebookParams): Promise<PostToFacebookResponse> {
+    try {
+      const requestBody: any = {
+        text: params.text,
+      };
+
+      if (params.mediaUrl) {
+        requestBody.media_url = params.mediaUrl;
+      }
+
+      if (params.token) {
+        requestBody.token = params.token;
+      }
+
+      const response = await this.client.post<ComposioApiPostResponse>(
+        '/v1/facebook/post',
+        requestBody
+      );
+
+      return {
+        postUrl: response.data.data?.url,
+        postId: response.data.data?.id,
+      };
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError;
+        
+        if (axiosError.code === 'ECONNABORTED') {
+          throw new Error('Composio API request timeout after 30 seconds');
+        }
+        
+        if (axiosError.response) {
+          const status = axiosError.response.status;
+          const data = axiosError.response.data as any;
+          
+          throw new Error(
+            `Composio API error (${status}): ${data?.message || axiosError.message}`
+          );
+        }
+        
+        throw new Error(`Composio API network error: ${axiosError.message}`);
+      }
+      
+      throw error;
+    }
+  }
+
+  /**
+   * Post video to TikTok via Composio
+   * 
+   * @param params - Post parameters including video URL and caption
+   * @returns Promise resolving to post URL and ID
+   * @throws Error if API request fails or returns an error
+   */
+  async postToTikTok(params: PostToTikTokParams): Promise<PostToTikTokResponse> {
+    try {
+      const requestBody: any = {
+        video_url: params.videoUrl,
+      };
+
+      if (params.caption) {
+        requestBody.caption = params.caption;
+      }
+
+      if (params.token) {
+        requestBody.token = params.token;
+      }
+
+      const response = await this.client.post<ComposioApiPostResponse>(
+        '/v1/tiktok/post',
+        requestBody
+      );
+
+      return {
+        postUrl: response.data.data?.url,
+        postId: response.data.data?.id,
+      };
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError;
+        
+        if (axiosError.code === 'ECONNABORTED') {
+          throw new Error('Composio API request timeout after 30 seconds');
+        }
+        
+        if (axiosError.response) {
+          const status = axiosError.response.status;
+          const data = axiosError.response.data as any;
+          
+          throw new Error(
+            `Composio API error (${status}): ${data?.message || axiosError.message}`
+          );
+        }
+        
+        throw new Error(`Composio API network error: ${axiosError.message}`);
+      }
+      
+      throw error;
+    }
+  }
+
+  /**
+   * Upload video to YouTube via Composio
+   * 
+   * @param params - Upload parameters including video URL, title, and description
+   * @returns Promise resolving to video URL and ID
+   * @throws Error if API request fails or returns an error
+   */
+  async uploadToYouTube(params: UploadToYouTubeParams): Promise<UploadToYouTubeResponse> {
+    try {
+      const requestBody: any = {
+        video_url: params.videoUrl,
+        title: params.title,
+      };
+
+      if (params.description) {
+        requestBody.description = params.description;
+      }
+
+      if (params.token) {
+        requestBody.token = params.token;
+      }
+
+      const response = await this.client.post<ComposioApiPostResponse>(
+        '/v1/youtube/upload',
+        requestBody
+      );
+
+      return {
+        videoUrl: response.data.data?.url,
+        videoId: response.data.data?.id,
+      };
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError;
+        
+        if (axiosError.code === 'ECONNABORTED') {
+          throw new Error('Composio API request timeout after 30 seconds');
+        }
+        
+        if (axiosError.response) {
+          const status = axiosError.response.status;
+          const data = axiosError.response.data as any;
+          
+          throw new Error(
+            `Composio API error (${status}): ${data?.message || axiosError.message}`
+          );
+        }
+        
+        throw new Error(`Composio API network error: ${axiosError.message}`);
+      }
+      
       throw error;
     }
   }

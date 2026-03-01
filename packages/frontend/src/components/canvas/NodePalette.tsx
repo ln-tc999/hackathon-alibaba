@@ -1,6 +1,6 @@
 'use client';
 
-import { FileText, Image, Layers, Twitter, Sparkles, Video, Eye, Instagram } from 'lucide-react';
+import { FileText, Image, Layers, Twitter, Sparkles, Video, Eye, Instagram, Facebook, Music, Youtube } from 'lucide-react';
 import type { NodeType } from '@vlowgen/shared';
 
 interface NodeTypeInfo {
@@ -58,6 +58,24 @@ const NODE_TYPES: NodeTypeInfo[] = [
     label: 'Instagram Post',
     description: 'Post content to Instagram',
     icon: Instagram,
+  },
+  {
+    type: 'facebook',
+    label: 'Facebook Post',
+    description: 'Post content to Facebook',
+    icon: Facebook,
+  },
+  {
+    type: 'tiktok',
+    label: 'TikTok Post',
+    description: 'Post videos to TikTok',
+    icon: Music,
+  },
+  {
+    type: 'youtube',
+    label: 'YouTube Upload',
+    description: 'Upload videos to YouTube',
+    icon: Youtube,
   },
 ];
 

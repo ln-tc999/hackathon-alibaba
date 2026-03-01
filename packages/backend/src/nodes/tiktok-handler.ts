@@ -1,29 +1,29 @@
-import { InstagramNodeData } from '@vlowgen/shared';
+import { TikTokNodeData } from '@vlowgen/shared';
 import { BaseSocialMediaHandler } from './base-social-handler';
 
-export class InstagramNodeHandler extends BaseSocialMediaHandler {
+export class TikTokNodeHandler extends BaseSocialMediaHandler {
   get platformName(): string {
-    return 'Instagram';
+    return 'TikTok';
   }
 
   get requiresMedia(): 'image' | 'video' | 'any' | 'none' {
-    return 'image';
+    return 'video';
   }
 
   protected async postToSocialMedia(
     text: string,
-    imageUrl: string,
-    _videoUrl: string
+    _imageUrl: string,
+    videoUrl: string
   ): Promise<string> {
     if (!this.composioClient) {
       throw new Error('Composio client not initialized');
     }
 
-    const result = await this.composioClient.postToInstagram({
-      imageUrl,
+    const result = await this.composioClient.postToTikTok({
+      videoUrl,
       caption: text || 'Posted via VlowGen',
     });
 
-    return result.postUrl || 'Posted successfully to Instagram';
+    return result.postUrl || 'Posted successfully to TikTok';
   }
 }

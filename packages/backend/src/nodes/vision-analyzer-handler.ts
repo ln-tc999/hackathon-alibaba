@@ -1,10 +1,6 @@
 import type { VisionAnalyzerNodeData, WorkflowNode, NodeExecutionResult, ExecutionContext } from '@vlowgen/shared';
 import { NodeHandler } from './handler';
 
-/**
- * System prompt for Vision Analysis
- * Based on PROMPT.md specification
- */
 const VISION_ANALYZER_SYSTEM_PROMPT = `You are a Master Visual Trend Analyst and Meme Formatter.
 You will be provided with an image (a currently viral meme or trending photo) and a specific niche/theme from the user.
 Your task is to analyze the core visual joke, emotion, or layout of the provided image, and then write a NEW image generation prompt that REPLICATES this viral format but adapts it entirely to the user's niche.
@@ -18,6 +14,30 @@ RULES:
 6. Output ONLY the final image prompt. No conversational text.`;
 
 export class VisionAnalyzerHandler implements NodeHandler {
+  private createErrorResult(nodeId: string, error: string, startTime: string): NodeExecutionResult {
+    const endTime = new Date().toISOString();
+    return {
+      nodeId,
+      status: 'error',
+      error,
+      startTime,
+      endTime,
+      duration: new Date(endTime).getTime() - new Date(startTime).getTime()
+    };
+  }
+
+  private createSuccessResult(nodeId: string, output: any, startTime: string): NodeExecutionResult {
+    const endTime = new Date().toISOString();
+    return {
+      nodeId,
+      status: 'success',
+      output,
+      startTime,
+      endTime,
+      duration: new Date(endTime).getTime() - new Date(startTime).getTime()
+    };
+  }
+
   async execute(
     node: WorkflowNode,
     inputs: Record<string, any>,
@@ -28,29 +48,20 @@ export class VisionAnalyzerHandler implements NodeHandler {
     const { imageUrl, videoUrl, niche } = data;
 
     if (!imageUrl && !videoUrl) {
-      const endTime = new Date().toISOString();
-      return {
-        nodeId: node.id,
-        status: 'error',
-        error: 'Image URL or Video URL is required for vision analysis',
-        startTime,
-        endTime,
-        duration: new Date(endTime).getTime() - new Date(startTime).getTime()
-      };
+      return this.createErrorResult(
+        node.id,
+        'Image URL or Video URL is required for vision analysis',
+        startTime
+      );
     }
 
-    // Use OpenRouter API with vision model
     const openRouterApiKey = context.credentials.openRouterApiKey;
     if (!openRouterApiKey) {
-      const endTime = new Date().toISOString();
-      return {
-        nodeId: node.id,
-        status: 'error',
-        error: 'OpenRouter API key is required for vision analysis',
-        startTime,
-        endTime,
-        duration: new Date(endTime).getTime() - new Date(startTime).getTime()
-      };
+      return this.createErrorResult(
+        node.id,
+        'OpenRouter API key is required for vision analysis',
+        startTime
+      );
     }
 
     try {
@@ -58,10 +69,9 @@ export class VisionAnalyzerHandler implements NodeHandler {
         ? `Analyze this ${videoUrl ? 'video' : 'image'} and create a new prompt adapted to this niche: ${niche}`
         : `Analyze this ${videoUrl ? 'video' : 'image'} and create a new prompt that replicates its format and style.`;
 
-      // Choose model based on content type
       const model = videoUrl 
-        ? 'nvidia/nemotron-nano-12b-v2-vl:free' // Video to text
-        : 'qwen/qwen3-vl-30b-a3b-thinking'; // Image to text
+        ? 'nvidia/nemotron-nano-12b-v2-vl:free'
+        : 'qwen/qwen3-vl-30b-a3b-thinking';
 
       const contentUrl = videoUrl || imageUrl;
 
@@ -76,23 +86,12 @@ export class VisionAnalyzerHandler implements NodeHandler {
         body: JSON.stringify({
           model,
           messages: [
-            {
-              role: 'system',
-              content: VISION_ANALYZER_SYSTEM_PROMPT,
-            },
+            { role: 'system', content: VISION_ANALYZER_SYSTEM_PROMPT },
             {
               role: 'user',
               content: [
-                {
-                  type: 'image_url',
-                  image_url: {
-                    url: contentUrl,
-                  },
-                },
-                {
-                  type: 'text',
-                  text: userMessage,
-                },
+                { type: 'image_url', image_url: { url: contentUrl } },
+                { type: 'text', text: userMessage },
               ],
             },
           ],
@@ -103,51 +102,31 @@ export class VisionAnalyzerHandler implements NodeHandler {
 
       if (!response.ok) {
         const errorData = await response.json() as any;
-        const endTime = new Date().toISOString();
-        return {
-          nodeId: node.id,
-          status: 'error',
-          error: `OpenRouter API error: ${errorData.error?.message || response.statusText}`,
-          startTime,
-          endTime,
-          duration: new Date(endTime).getTime() - new Date(startTime).getTime()
-        };
+        return this.createErrorResult(
+          node.id,
+          `OpenRouter API error: ${errorData.error?.message || response.statusText}`,
+          startTime
+        );
       }
 
       const result = await response.json() as any;
       const analyzedPrompt = result.choices[0]?.message?.content?.trim();
 
       if (!analyzedPrompt) {
-        const endTime = new Date().toISOString();
-        return {
-          nodeId: node.id,
-          status: 'error',
-          error: 'Failed to analyze content and generate prompt',
-          startTime,
-          endTime,
-          duration: new Date(endTime).getTime() - new Date(startTime).getTime()
-        };
+        return this.createErrorResult(
+          node.id,
+          'Failed to analyze content and generate prompt',
+          startTime
+        );
       }
 
-      const endTime = new Date().toISOString();
-      return {
-        nodeId: node.id,
-        status: 'success',
-        output: { analyzedPrompt },
-        startTime,
-        endTime,
-        duration: new Date(endTime).getTime() - new Date(startTime).getTime()
-      };
+      return this.createSuccessResult(node.id, { analyzedPrompt }, startTime);
     } catch (error) {
-      const endTime = new Date().toISOString();
-      return {
-        nodeId: node.id,
-        status: 'error',
-        error: `Vision analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        startTime,
-        endTime,
-        duration: new Date(endTime).getTime() - new Date(startTime).getTime()
-      };
+      return this.createErrorResult(
+        node.id,
+        `Vision analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        startTime
+      );
     }
   }
 }

@@ -1,9 +1,9 @@
-import { TwitterNodeData } from '@vlowgen/shared';
+import { FacebookNodeData } from '@vlowgen/shared';
 import { BaseSocialMediaHandler } from './base-social-handler';
 
-export class TwitterNodeHandler extends BaseSocialMediaHandler {
+export class FacebookNodeHandler extends BaseSocialMediaHandler {
   get platformName(): string {
-    return 'Twitter';
+    return 'Facebook';
   }
 
   get requiresMedia(): 'image' | 'video' | 'any' | 'none' {
@@ -13,18 +13,17 @@ export class TwitterNodeHandler extends BaseSocialMediaHandler {
   protected async postToSocialMedia(
     text: string,
     imageUrl: string,
-    _videoUrl: string
+    videoUrl: string
   ): Promise<string> {
     if (!this.composioClient) {
       throw new Error('Composio client not initialized');
     }
 
-    const result = await this.composioClient.postToTwitter({
-      text: text || undefined,
-      imageUrl: imageUrl || undefined,
-      token: '',
+    const result = await this.composioClient.postToFacebook({
+      text: text || 'Posted via VlowGen',
+      mediaUrl: imageUrl || videoUrl || undefined,
     });
 
-    return result.tweetUrl || 'Posted successfully to Twitter';
+    return result.postUrl || 'Posted successfully to Facebook';
   }
 }
