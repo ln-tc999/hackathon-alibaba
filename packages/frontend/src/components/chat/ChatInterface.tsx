@@ -311,7 +311,6 @@ export default function ChatInterface({
       'prompt-enhancer-video': { icon: <Video className="w-3 h-3" />, label: 'Video Enhancer' },
       'vision-analyzer': { icon: <Eye className="w-3 h-3" />, label: 'Vision AI' },
       'wan2': { icon: <ImageIcon className="w-3 h-3" />, label: 'Image Gen' },
-      'openrouter': { icon: <Palette className="w-3 h-3" />, label: 'Image Gen' },
       'twitter': { icon: <Twitter className="w-3 h-3" />, label: 'Twitter' },
       'instagram': { icon: <Instagram className="w-3 h-3" />, label: 'Instagram' },
     };
