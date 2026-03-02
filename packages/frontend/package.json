@@ -12,12 +12,14 @@
   },
   "dependencies": {
     "@vlowgen/shared": "workspace:*",
+    "idb": "^8.0.3",
     "lucide-react": "^0.575.0",
     "next": "^14.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "reactflow": "^11.11.4",
-    "sonner": "^2.0.7"
+    "sonner": "^2.0.7",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

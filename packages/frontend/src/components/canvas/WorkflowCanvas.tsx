@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useMemo, useEffect } from 'react';
+import { useCallback, useRef, useMemo, useEffect, useState } from 'react';
 import ReactFlow, {
   Node,
   Edge,
@@ -34,6 +34,8 @@ import PromptEnhancerImageNode from '../nodes/PromptEnhancerImageNode';
 import PromptEnhancerVideoNode from '../nodes/PromptEnhancerVideoNode';
 import VisionAnalyzerNode from '../nodes/VisionAnalyzerNode';
 import { DEMO_WORKFLOW } from '../../lib/demo-workflow';
+import { saveWorkflow, updateWorkflow } from '../../lib/workflow-api';
+import { initializeUser } from '../../lib/user';
 
 interface WorkflowCanvasProps {
   workflow?: Workflow;
@@ -93,6 +95,57 @@ function WorkflowCanvasInner({
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [workflowId, setWorkflowId] = useState<string | null>(workflow?.id || null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Initialize user on mount
+  useEffect(() => {
+    initializeUser();
+  }, []);
+
+  // Auto-save workflow when nodes or edges change
+  useEffect(() => {
+    if (nodes.length === 0 && edges.length === 0) return;
+
+    const saveTimer = setTimeout(async () => {
+      try {
+        setIsSaving(true);
+        
+        const workflowData: Workflow = {
+          id: workflowId || '',
+          name: workflow?.name || 'Untitled Workflow',
+          nodes: nodes.map((node) => ({
+            id: node.id,
+            type: node.type as NodeType,
+            position: node.position,
+            data: node.data as NodeData,
+          })),
+          edges: edges.map((edge) => ({
+            id: edge.id,
+            source: edge.source,
+            target: edge.target,
+            sourceHandle: edge.sourceHandle || undefined,
+            targetHandle: edge.targetHandle || undefined,
+          })),
+        };
+
+        if (workflowId) {
+          await updateWorkflow(workflowId, workflowData);
+        } else {
+          await saveWorkflow(workflowData);
+          if (workflowData.id) {
+            setWorkflowId(workflowData.id);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to save workflow:', error);
+      } finally {
+        setIsSaving(false);
+      }
+    }, 2000); // Auto-save after 2 seconds of inactivity
+
+    return () => clearTimeout(saveTimer);
+  }, [nodes, edges, workflowId, workflow?.name]);
 
   // Update node styles based on execution results
   // Highlights failed nodes with red border (Requirement 15.2)
@@ -401,6 +454,14 @@ function WorkflowCanvasInner({
         <Controls />
         <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
       </ReactFlow>
+      
+      {/* Save indicator */}
+      {isSaving && (
+        <div className="absolute top-4 left-4 z-10 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-2">
+          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+          <span className="text-xs font-medium text-blue-700">Saving...</span>
+        </div>
+      )}
       
       {/* Toolbar with execute button */}
       <div className="absolute top-4 right-4 z-10 flex gap-2">

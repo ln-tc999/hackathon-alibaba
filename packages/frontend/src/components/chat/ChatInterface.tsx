@@ -21,6 +21,9 @@ import {
   MessageSquare
 } from 'lucide-react';
 import type { Workflow } from '@vlowgen/shared';
+import { saveChatSession } from '@/lib/db';
+import { getUserId } from '@/lib/user';
+import { sessionEvents } from '@/lib/session-events';
 
 interface Message {
   id: string;
@@ -31,6 +34,7 @@ interface Message {
 }
 
 interface ChatInterfaceProps {
+  sessionId?: string;
   onWorkflowGenerated: (workflow: Workflow) => void;
   onContinueToWorkflow?: () => void;
   workflow?: Workflow;
@@ -67,6 +71,7 @@ const MessageBubble = memo(({
 MessageBubble.displayName = 'MessageBubble';
 
 export default function ChatInterface({ 
+  sessionId,
   onWorkflowGenerated, 
   onContinueToWorkflow,
   workflow,
@@ -83,6 +88,40 @@ export default function ChatInterface({
   const [input, setInput] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Load session messages when sessionId changes
+  useEffect(() => {
+    const loadSession = async () => {
+      if (!sessionId || sessionId.startsWith('session_')) {
+        // New session, reset to default message
+        setMessages([
+          {
+            id: '1',
+            role: 'assistant',
+            content: 'Hi! I\'m your AI assistant.\n\nTell me what you want to create, and I\'ll build an optimized workflow automatically.\n\nTry: "Create a viral meme and post to Instagram"',
+            timestamp: new Date(),
+          },
+        ]);
+        return;
+      }
+
+      // Load existing session
+      const { getChatSession } = await import('@/lib/db');
+      const session = await getChatSession(sessionId);
+      
+      if (session && session.messages.length > 0) {
+        const loadedMessages: Message[] = session.messages.map((m, idx) => ({
+          id: `msg-${idx}`,
+          role: m.role,
+          content: m.content,
+          timestamp: new Date(m.timestamp),
+        }));
+        setMessages(loadedMessages);
+      }
+    };
+
+    loadSession();
+  }, [sessionId]);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -203,8 +242,35 @@ export default function ChatInterface({
         workflow,
       };
 
-      setMessages(prev => [...prev, assistantMessage]);
+      const updatedMessages = [...messages, userMessage, assistantMessage];
+      setMessages(updatedMessages);
       onWorkflowGenerated(workflow);
+
+      // Save workflow first, then save session
+      if (sessionId) {
+        const userId = getUserId();
+        const title = input.slice(0, 50) + (input.length > 50 ? '...' : '');
+        
+        // Save workflow to IndexedDB
+        const { saveWorkflow: saveWorkflowToDb } = await import('@/lib/workflow-api');
+        await saveWorkflowToDb(workflow);
+        
+        // Then save chat session with workflow reference
+        await saveChatSession(
+          sessionId,
+          userId,
+          title,
+          updatedMessages.map(m => ({
+            role: m.role,
+            content: m.content,
+            timestamp: m.timestamp.getTime(),
+          })),
+          workflow.id
+        );
+        
+        // Notify session list to refresh
+        sessionEvents.emit();
+      }
     } catch (error) {
       const errorMessage: Message = {
         id: `msg-${Date.now()}-error`,

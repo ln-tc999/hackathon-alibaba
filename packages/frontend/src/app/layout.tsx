@@ -41,11 +41,12 @@ export const metadata: Metadata = {
     title: 'VlowGen Platform - AI Workflow Automation',
     description: 'Fully autonomous AI that builds and executes workflows',
   },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 5,
-  },
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({

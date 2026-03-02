@@ -1,5 +1,6 @@
 import type { VisionAnalyzerNodeData, WorkflowNode, NodeExecutionResult, ExecutionContext } from '@vlowgen/shared';
 import { NodeHandler } from '../base/handler';
+import { rateLimiter } from '../../services/rate-limiter.service';
 
 const VISION_ANALYZER_SYSTEM_PROMPT = `You are a Master Visual Trend Analyst and Meme Formatter.
 You will be provided with an image (a currently viral meme or trending photo) and a specific niche/theme from the user.
@@ -46,6 +47,19 @@ export class VisionAnalyzerHandler implements NodeHandler {
     const startTime = new Date().toISOString();
     const data = node.data as VisionAnalyzerNodeData;
     const { imageUrl, videoUrl, niche } = data;
+
+    // Check rate limit
+    const userId = context.userId || 'anonymous';
+    const rateLimit = rateLimiter.checkLimit(userId, 'visionAnalysis');
+    
+    if (!rateLimit.allowed) {
+      const resetDate = new Date(rateLimit.resetAt).toLocaleString();
+      return this.createErrorResult(
+        node.id,
+        `Rate limit exceeded. You can analyze ${rateLimiter['configs'].visionAnalysis.maxRequests} images per day. Resets at ${resetDate}`,
+        startTime
+      );
+    }
 
     if (!imageUrl && !videoUrl) {
       return this.createErrorResult(

@@ -20,8 +20,8 @@ export interface Workflow {
   name: string;
   nodes: WorkflowNode[];
   edges: WorkflowEdge[];
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface WorkflowNode {

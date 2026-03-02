@@ -25,6 +25,7 @@ export interface ExecutionResult {
 export interface ExecutionContext {
   credentials: ServiceCredentials;
   logger?: Logger;
+  userId?: string;
 }
 
 export interface ServiceCredentials {
