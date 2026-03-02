@@ -11,11 +11,72 @@ import BaseNode from './BaseNode';
  * Requirements: 5.3, 5.6, 15.1, 15.2
  */
 export default function TwitterNode({ data, selected }: NodeProps<TwitterNodeData & { error?: string }>) {
-  const handleConnectTwitter = useCallback(() => {
-    // TODO: Implement OAuth flow when backend integration is ready
-    // This will open a popup or redirect to Composio OAuth flow
-    console.log('Connect Twitter clicked');
-    // For now, this is a placeholder that will be implemented in future tasks
+  const handleConnectTwitter = useCallback(async () => {
+    try {
+      const response = await fetch('/api/composio/connect', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          platform: 'twitter',
+          userId: 'default-user',
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        alert(`Failed to connect Twitter: ${error.error || 'Unknown error'}`);
+        return;
+      }
+
+      const data = await response.json();
+      
+      if (data.redirectUrl) {
+        const width = 600;
+        const height = 700;
+        const left = window.screen.width / 2 - width / 2;
+        const top = window.screen.height / 2 - height / 2;
+        
+        const popup = window.open(
+          data.redirectUrl,
+          'Twitter OAuth',
+          `width=${width},height=${height},left=${left},top=${top}`
+        );
+        
+        if (!popup) {
+          alert('Popup blocked! Please allow popups for this site.');
+          return;
+        }
+
+        const pollInterval = setInterval(async () => {
+          if (popup.closed) {
+            clearInterval(pollInterval);
+            
+            try {
+              const statusResponse = await fetch(
+                `/api/composio/status?userId=default-user&platform=twitter`
+              );
+              
+              if (statusResponse.ok) {
+                const statusData = await statusResponse.json();
+                
+                if (statusData.connected) {
+                  alert('Twitter connected successfully!');
+                  window.location.reload();
+                }
+              }
+            } catch (error) {
+              // Silent fail
+            }
+          }
+        }, 1000);
+        
+        setTimeout(() => clearInterval(pollInterval), 300000);
+      }
+    } catch (error) {
+      alert('Failed to connect Twitter. Please try again.');
+    }
   }, []);
 
   const executionError = (data as any).error;
@@ -55,8 +116,14 @@ export default function TwitterNode({ data, selected }: NodeProps<TwitterNodeDat
         {/* Connect button */}
         {!data.authenticated && (
           <button
-            onClick={handleConnectTwitter}
-            className="w-full px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-md hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleConnectTwitter();
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+            type="button"
+            className="nodrag nopan w-full px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-md hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer"
           >
             Connect Twitter
           </button>
@@ -65,8 +132,14 @@ export default function TwitterNode({ data, selected }: NodeProps<TwitterNodeDat
         {/* Disconnect option when connected */}
         {data.authenticated && (
           <button
-            onClick={handleConnectTwitter}
-            className="w-full px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleConnectTwitter();
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+            type="button"
+            className="nodrag nopan w-full px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 cursor-pointer"
           >
             Reconnect
           </button>
