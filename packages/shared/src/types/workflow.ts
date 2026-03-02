@@ -5,7 +5,6 @@
 export type NodeType = 
   | 'prompt-text' 
   | 'wan2' 
-  | 'openrouter' 
   | 'twitter'
   | 'instagram'
   | 'facebook'
@@ -34,7 +33,6 @@ export interface WorkflowNode {
 export type NodeData = 
   | PromptTextNodeData 
   | Wan2NodeData 
-  | OpenRouterNodeData 
   | TwitterNodeData
   | InstagramNodeData
   | FacebookNodeData
@@ -54,14 +52,6 @@ export interface Wan2NodeData {
   model: 'wanx-v1' | 'wanx-v2';
   size: '1024x1024' | '512x512';
   style?: string;
-}
-
-export interface OpenRouterNodeData {
-  type: 'openrouter';
-  model: string;
-  width: number;
-  height: number;
-  negative_prompt?: string;
 }
 
 export interface TwitterNodeData {
