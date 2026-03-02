@@ -1,6 +1,6 @@
 'use client';
 
-import { memo } from 'react';
+import { memo, useCallback } from 'react';
 import { Handle, Position } from 'reactflow';
 import BaseNode from './BaseNode';
 import { Instagram } from 'lucide-react';
@@ -13,6 +13,81 @@ interface InstagramNodeProps {
 }
 
 function InstagramNode({ id, data, selected }: InstagramNodeProps) {
+  const handleConnect = useCallback(async () => {
+    try {
+      // Call API to initiate OAuth flow
+      const response = await fetch('/api/composio/connect', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          platform: 'instagram',
+          userId: 'default-user',
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        alert(`Failed to connect Instagram: ${error.error || 'Unknown error'}`);
+        return;
+      }
+
+      const responseData = await response.json();
+      
+      // Open OAuth popup
+      if (responseData.redirectUrl) {
+        const width = 600;
+        const height = 700;
+        const left = window.screen.width / 2 - width / 2;
+        const top = window.screen.height / 2 - height / 2;
+        
+        const popup = window.open(
+          responseData.redirectUrl,
+          'Instagram OAuth',
+          `width=${width},height=${height},left=${left},top=${top}`
+        );
+        
+        if (!popup) {
+          alert('Popup blocked! Please allow popups for this site.');
+          return;
+        }
+
+        // Poll for popup close and check connection status
+        const pollInterval = setInterval(async () => {
+          if (popup.closed) {
+            clearInterval(pollInterval);
+            
+            // Check if connection was successful
+            try {
+              const statusResponse = await fetch(
+                `/api/composio/status?userId=default-user&platform=instagram`
+              );
+              
+              if (statusResponse.ok) {
+                const statusData = await statusResponse.json();
+                
+                if (statusData.connected) {
+                  alert('Instagram connected successfully!');
+                  window.location.reload();
+                }
+              }
+            } catch (error) {
+              // Silent fail
+            }
+          }
+        }, 1000);
+        
+        // Clear interval after 5 minutes
+        setTimeout(() => clearInterval(pollInterval), 300000);
+      } else {
+        alert('No redirect URL received from server');
+      }
+    } catch (error) {
+      alert('Failed to connect Instagram. Please try again.');
+    }
+  }, []);
+
   return (
     <BaseNode
       id={id}
@@ -49,7 +124,19 @@ function InstagramNode({ id, data, selected }: InstagramNodeProps) {
         )}
 
         {!data.authenticated && (
-          <button className="w-full px-3 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-medium rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all">
+          <button 
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('Button physically clicked!');
+              handleConnect();
+            }}
+            onMouseDown={(e) => {
+              e.stopPropagation();
+            }}
+            type="button"
+            className="nodrag nopan w-full px-3 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-medium rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all cursor-pointer"
+          >
             Connect Instagram
           </button>
         )}
