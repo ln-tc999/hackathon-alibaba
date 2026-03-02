@@ -16,9 +16,10 @@ export async function POST(request: NextRequest) {
     }
 
     const composioApiKey = process.env.COMPOSIO_API_KEY;
+    
     if (!composioApiKey) {
       return NextResponse.json(
-        { error: 'Composio API key not configured' },
+        { error: 'Composio API key not configured. Please add COMPOSIO_API_KEY to .env.local and restart the server.' },
         { status: 500 }
       );
     }
@@ -33,31 +34,50 @@ export async function POST(request: NextRequest) {
     };
 
     const authConfigId = authConfigMap[platform.toLowerCase()];
-    if (!authConfigId) {
+    
+    if (!authConfigId || authConfigId.startsWith('your_')) {
       return NextResponse.json(
-        { error: `Auth config not found for platform: ${platform}` },
+        { 
+          error: `Auth config not configured for platform: ${platform}. Please add ${platform.toUpperCase()}_AUTH_CONFIG_ID to your .env.local file.` 
+        },
         { status: 400 }
       );
     }
 
-    // Initiate connection with Composio
-    const response = await fetch('https://api.composio.dev/api/v1/connectedAccounts', {
+    // Initiate connection with Composio using v3 API
+    const callbackUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/composio/callback`;
+    
+    const requestBody = {
+      auth_config: {
+        id: authConfigId,
+      },
+      connection: {
+        user_id: userId,
+      },
+      redirect_url: callbackUrl,
+    };
+    
+    const response = await fetch('https://backend.composio.dev/api/v3/connected_accounts', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'X-API-Key': composioApiKey,
       },
-      body: JSON.stringify({
-        integrationId: authConfigId,
-        entityId: userId,
-        redirectUrl: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/composio/callback`,
-      }),
+      body: JSON.stringify(requestBody),
     });
-
+    
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorText = await response.text();
+      
+      let errorData;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch {
+        errorData = { message: errorText };
+      }
+      
       return NextResponse.json(
-        { error: errorData.message || 'Failed to initiate connection' },
+        { error: errorData.error?.message || errorData.message || 'Failed to initiate connection' },
         { status: response.status }
       );
     }
@@ -65,13 +85,13 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
 
     return NextResponse.json({
-      redirectUrl: data.redirectUrl,
-      connectionId: data.connectionRequest?.id,
+      redirectUrl: data.redirect_url || data.redirectUrl,
+      connectionId: data.id,
+      status: data.status,
     });
   } catch (error) {
-    console.error('Composio connect error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 500 }
     );
   }
