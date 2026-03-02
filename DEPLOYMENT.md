@@ -53,10 +53,9 @@ nano .env.production
 Update the following variables:
 - `NEXT_PUBLIC_API_URL` - Your domain or VPS IP with port 3001
 - `NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID` - Your WalletConnect project ID
-- `NEXT_PUBLIC_OPENROUTER_API_KEY` - Your OpenRouter API key (for frontend)
-- `WAN2_API_KEY` - Your Alibaba Cloud Wan2.1 API key (optional)
-- `OPENROUTER_API_KEY` - Your OpenRouter API key (for backend)
-- `COMPOSIO_API_KEY` - Your Composio API key
+- `DASHSCOPE_API_KEY` - Your Alibaba Cloud DashScope API key (for Qwen models)
+- `WAN2_API_KEY` - Your Alibaba Cloud Wan2.1 API key (for image generation)
+- `COMPOSIO_API_KEY` - Your Composio API key (for social media integrations)
 
 ### 4. Deploy the Application
 
@@ -177,7 +176,7 @@ git pull origin main
 ```
 
 ### Backup Considerations
-Since this is a stateless application, regular code backups are sufficient. The main data is stored in external services (Alibaba Cloud, OpenRouter, Composio).
+Since this is a stateless application, regular code backups are sufficient. The main data is stored in external services (Alibaba Cloud, Composio).
 
 ## Troubleshooting
 

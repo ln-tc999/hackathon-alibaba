@@ -54,17 +54,18 @@ export abstract class BasePromptEnhancer implements NodeHandler {
       return this.createErrorResult(node.id, 'User prompt is required', startTime);
     }
 
-    const openRouterApiKey = context.credentials.openRouterApiKey;
-    if (!openRouterApiKey) {
+    // Use Qwen for prompt enhancement via DashScope
+    const dashscopeApiKey = process.env.DASHSCOPE_API_KEY;
+    if (!dashscopeApiKey) {
       return this.createErrorResult(
         node.id,
-        'OpenRouter API key is required for prompt enhancement',
+        'DASHSCOPE_API_KEY environment variable is required for prompt enhancement',
         startTime
       );
     }
 
     try {
-      const enhancedPrompt = await this.enhancePrompt(userPrompt, openRouterApiKey);
+      const enhancedPrompt = await this.enhancePrompt(userPrompt, dashscopeApiKey);
       return this.createSuccessResult(node.id, { enhancedPrompt }, startTime);
     } catch (error) {
       return this.createErrorResult(
@@ -76,16 +77,15 @@ export abstract class BasePromptEnhancer implements NodeHandler {
   }
 
   private async enhancePrompt(userPrompt: string, apiKey: string): Promise<string> {
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    // Use Qwen via OpenAI-compatible endpoint
+    const response = await fetch('https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
-        'HTTP-Referer': 'https://vlowgen.com',
-        'X-Title': 'VlowGen Prompt Enhancer',
       },
       body: JSON.stringify({
-        model: 'anthropic/claude-3.5-sonnet',
+        model: 'qwen-plus',
         messages: [
           { role: 'system', content: this.systemPrompt },
           { role: 'user', content: userPrompt },
@@ -97,7 +97,7 @@ export abstract class BasePromptEnhancer implements NodeHandler {
 
     if (!response.ok) {
       const errorData = await response.json() as any;
-      throw new Error(`OpenRouter API error: ${errorData.error?.message || response.statusText}`);
+      throw new Error(`Qwen API error: ${errorData.error?.message || response.statusText}`);
     }
 
     const result = await response.json() as any;

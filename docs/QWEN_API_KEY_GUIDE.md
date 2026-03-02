@@ -9,84 +9,108 @@ Guide lengkap untuk mendapatkan API key Qwen dari Alibaba Cloud Model Studio dan
 Sebelum mulai, pastikan kamu punya:
 - ✅ Akun Alibaba Cloud (daftar di https://www.alibabacloud.com/)
 - ✅ Akun sudah diverifikasi (email & phone)
-- ✅ Akun sudah punya payment method (untuk some models)
+- ✅ Model Studio service sudah diaktifkan (gratis, hanya bayar untuk API calls)
 
 ---
 
 ## 🔑 Step 1: Login ke Alibaba Cloud
 
-1. **Buka Model Studio Console:**
-   ```
-   https://modelstudio.console.alibabacloud.com
-   ```
+1. **Buka Model Studio Console berdasarkan region:**
+   - **Singapore (Recommended untuk international):**
+     ```
+     https://bailian.console.alibabacloud.com/?regionId=ap-southeast-1
+     ```
+   - **US (Virginia):**
+     ```
+     https://bailian.console.alibabacloud.com/?regionId=us-east-1
+     ```
+   - **China (Beijing):**
+     ```
+     https://bailian.console.aliyun.com/?regionId=cn-beijing
+     ```
 
 2. **Login dengan akun Alibaba Cloud:**
    - Email: [your-email@domain.com]
    - Password: [your-password]
    - 2FA verification (jika aktif)
 
-3. **Set Region (PENTING!):**
-   - Di pojok kanan atas, pilih region:
-     - **Singapore (ap-southeast-1)** - Recommended untuk international
-     - **Beijing (cn-beijing)** - Untuk China region
-   - API key berbeda per region!
+3. **⚠️ PENTING - Region:**
+   - API key berbeda per region dan tidak bisa digunakan lintas region!
+   - Pilih region yang paling dekat dengan user kamu
+   - Base URL juga berbeda per region
 
 ---
 
 ## 🎯 Step 2: Activate Model Studio Service
 
 1. **Jika service belum aktif:**
-   - Kamu akan melihat halaman "Activate Service"
-   - Klik tombol **"Activate Now"** atau **"Enable Service"**
+   - Kamu akan melihat message di bagian atas halaman untuk activate service
+   - Klik tombol **"Activate"** untuk claim free quota
+   - ⚠️ Aktivasi service GRATIS, kamu hanya bayar untuk API calls yang melebihi free quota
 
-2. **Set Workspace:**
-   - Pilih workspace default atau buat workspace baru
-   - Workspace name: `default` atau `vlowgen`
-   - Klik **"Confirm"** atau **"Activate"**
+2. **Jika tidak ada prompt activation:**
+   - Service sudah aktif, langsung lanjut ke step berikutnya
 
-3. **Tunggu activation selesai:**
-   - Biasanya 1-2 menit
-   - Refresh page jika perlu
+3. **Tentang Workspace:**
+   - Default workspace otomatis dibuat saat activation
+   - Kamu bisa buat sub-workspace untuk team collaboration atau cost allocation
+   - Setiap workspace bisa punya max 20 API keys
+   - Setiap account bisa punya max 10 workspaces (termasuk default)
 
 ---
 
 ## 🔑 Step 3: Create API Key
 
-1. **Navigate ke API Key page:**
-   - Di sidebar kiri, klik **"API-KEY"**
-   - Atau langsung ke: `https://modelstudio.console.alibabacloud.com/api-key`
+1. **Navigate ke Key Management page:**
+   - **Singapore:** https://bailian.console.alibabacloud.com/?regionId=ap-southeast-1#/api-key
+   - **US (Virginia):** https://bailian.console.alibabacloud.com/?regionId=us-east-1#/api-key
+   - **China (Beijing):** https://bailian.console.aliyun.com/?regionId=cn-beijing#/api-key
+   
+   Atau di sidebar kiri, klik **"API-Key"** atau **"Key Management"**
 
 2. **Create New API Key:**
-   - Klik tombol **"Create API Key"** atau **"Create My API Key"**
+   - Klik tombol **"Create API Key"**
    - Modal akan muncul
 
 3. **Configure API Key:**
-   ```
-   API Key Name: vlowgen-platform
-   Description: API key for VlowGen AI content generation platform
-   Workspace: default (atau workspace kamu)
-   ```
+   - **Owner Account:** Pilih Alibaba Cloud account (digit-only ID) atau RAM user
+     - Pilih account untuk personal use
+     - Pilih RAM user untuk team member (easier permission management)
+   - **Workspace:** Pilih **"Default workspace"** (recommended untuk start)
+   - **Description:** (Optional) Contoh: "VlowGen AI content generation platform"
 
-4. **Klik "Create" atau "Confirm"**
+4. **Klik "OK" atau "Confirm"**
+
+5. **⚠️ PENTING tentang Permissions:**
+   - API key permissions ditentukan oleh workspace-nya
+   - Semua API keys di workspace yang sama punya permissions yang sama
+   - Default workspace: bisa call semua models & applications
+   - Sub-workspace: hanya bisa call models yang sudah di-authorize
 
 ---
 
 ## 📋 Step 4: Copy API Key
 
 1. **API Key akan muncul setelah create:**
-   ```
-   API Key: sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-   ```
+   - Klik icon **copy** (📋) atau tombol **"View"** di kolom Actions
+   - API key format: `sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
 
 2. **⚠️ PENTING: Copy API Key SEKARANG!**
-   - API key hanya ditampilkan sekali!
+   - Untuk security, API key bisa di-view kapan saja dengan klik "View"
+   - Tapi tetap simpan di tempat aman untuk easy access
    - Jangan close tab sebelum copy
-   - Simpan di tempat aman
 
 3. **Simpan API Key:**
-   - Copy ke password manager (1Password, Bitwarden, dll)
+   - Copy ke password manager (1Password, Bitwarden, dll) - RECOMMENDED
    - ATAU simpan di file `.env` (hanya untuk development)
-   - Jangan commit ke Git!
+   - ⚠️ Jangan commit ke Git!
+   - ⚠️ Jangan share publicly!
+
+4. **Limits:**
+   - Max 20 API keys per workspace
+   - Max 10 workspaces per account
+   - Jika sudah max, delete API key lama sebelum create yang baru
+   - API keys valid permanently sampai kamu delete manual
 
 ---
 
@@ -97,23 +121,37 @@ Sebelum mulai, pastikan kamu punya:
 1. **Buat file `.env.local` di root project:**
 ```bash
 # Qwen API Configuration
-QWEN_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-QWEN_API_URL=https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation
+# Pilih salah satu region:
+
+# Singapore (International - Recommended)
+DASHSCOPE_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+QWEN_API_URL=https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/text-generation/generation
+QWEN_BASE_URL=https://dashscope-intl.aliyuncs.com/compatible-mode/v1
+
+# US (Virginia)
+# DASHSCOPE_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+# QWEN_API_URL=https://dashscope-us.aliyuncs.com/api/v1/services/aigc/text-generation/generation
+# QWEN_BASE_URL=https://dashscope-us.aliyuncs.com/compatible-mode/v1
+
+# China (Beijing)
+# DASHSCOPE_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+# QWEN_API_URL=https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation
+# QWEN_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
 ```
 
-2. **Atau untuk Vision models (Qwen-VL):**
+2. **Untuk Vision models (Qwen-VL):**
 ```bash
-# Qwen Vision API Configuration
-QWEN_VL_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-QWEN_VL_API_URL=https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation
+# Qwen Vision API Configuration (tambahkan ke .env.local)
+QWEN_VL_API_URL=https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation
 ```
 
 3. **Update `.env.local` di frontend:**
 ```bash
 # Di packages/frontend/.env.local
-NEXT_PUBLIC_QWEN_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-NEXT_PUBLIC_QWEN_IMAGE_MODEL=qwen-max
-NEXT_PUBLIC_QWEN_VISION_MODEL=qwen-vl-max
+NEXT_PUBLIC_DASHSCOPE_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+NEXT_PUBLIC_QWEN_BASE_URL=https://dashscope-intl.aliyuncs.com/compatible-mode/v1
+NEXT_PUBLIC_QWEN_TEXT_MODEL=qwen-plus
+NEXT_PUBLIC_QWEN_VISION_MODEL=qwen-vl-plus
 ```
 
 ### Option B: Backend Configuration
@@ -121,8 +159,8 @@ NEXT_PUBLIC_QWEN_VISION_MODEL=qwen-vl-max
 1. **Update backend config:**
 ```typescript
 // packages/backend/src/integrations/qwen.ts
-const QWEN_API_KEY = process.env.QWEN_API_KEY || 'your-default-key';
-const QWEN_API_URL = process.env.QWEN_API_URL || 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation';
+const DASHSCOPE_API_KEY = process.env.DASHSCOPE_API_KEY || '';
+const QWEN_BASE_URL = process.env.QWEN_BASE_URL || 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1';
 ```
 
 2. **Restart backend server:**
@@ -134,96 +172,114 @@ pnpm dev
 
 ## 🧪 Step 6: Test API Key
 
-### Test 1: Quick Test dengan cURL
+### Test 1: Quick Test dengan cURL (Singapore Region)
 
 ```bash
-curl -X POST https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation \
-  -H "Authorization: Bearer YOUR_API_KEY" \
+# Linux/macOS
+curl -X POST https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions \
+  -H "Authorization: Bearer $DASHSCOPE_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "qwen-max",
-    "input": {
-      "prompt": "Hello, this is a test!"
-    }
+    "model": "qwen-plus",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a helpful assistant."
+      },
+      {
+        "role": "user",
+        "content": "Hello, this is a test!"
+      }
+    ]
   }'
+
+# Windows (CMD)
+curl -X POST "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions" ^
+  -H "Authorization: Bearer %DASHSCOPE_API_KEY%" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"model\": \"qwen-plus\", \"messages\": [{\"role\": \"system\", \"content\": \"You are a helpful assistant.\"}, {\"role\": \"user\", \"content\": \"Hello, this is a test!\"}]}"
 ```
 
-### Test 2: Test dengan Node.js
+### Test 2: Test dengan Node.js (OpenAI SDK Compatible)
 
 ```javascript
-// test-qwen.js
-const axios = require('axios');
+// test-qwen.mjs
+import OpenAI from 'openai';
 
-const apiKey = 'sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
+const apiKey = process.env.DASHSCOPE_API_KEY || 'sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
 
 async function testQwen() {
   try {
-    const response = await axios.post(
-      'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation',
-      {
-        model: 'qwen-max',
-        input: {
-          prompt: 'Write a short poem about AI'
-        }
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
+    const client = new OpenAI({
+      apiKey: apiKey,
+      baseURL: 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1'
+    });
+
+    const completion = await client.chat.completions.create({
+      model: 'qwen-plus',
+      messages: [
+        { role: 'system', content: 'You are a helpful assistant.' },
+        { role: 'user', content: 'Write a short poem about AI' }
+      ]
+    });
 
     console.log('✅ Success!');
-    console.log('Response:', response.data);
+    console.log('Response:', completion.choices[0].message.content);
   } catch (error) {
-    console.error('❌ Error:', error.response?.data || error.message);
+    console.error('❌ Error:', error.message);
   }
 }
 
 testQwen();
 ```
 
-Run:
+Install dependencies & run:
 ```bash
-node test-qwen.js
+npm install openai
+node test-qwen.mjs
 ```
 
 ### Test 3: Test Vision Model (Qwen-VL)
 
 ```javascript
-// test-qwen-vl.js
-const axios = require('axios');
+// test-qwen-vl.mjs
+import OpenAI from 'openai';
 
-const apiKey = 'sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
+const apiKey = process.env.DASHSCOPE_API_KEY || 'sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
 
 async function testQwenVL() {
   try {
-    const response = await axios.post(
-      'https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation',
-      {
-        model: 'qwen-vl-max',
-        input: {
-          prompt: 'Describe this image',
-          image: 'https://example.com/test-image.jpg'
+    const client = new OpenAI({
+      apiKey: apiKey,
+      baseURL: 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1'
+    });
+
+    const completion = await client.chat.completions.create({
+      model: 'qwen-vl-plus',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: 'Describe this image' },
+            { type: 'image_url', image_url: { url: 'https://example.com/test-image.jpg' } }
+          ]
         }
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
+      ]
+    });
 
     console.log('✅ Vision API Success!');
-    console.log('Response:', response.data);
+    console.log('Response:', completion.choices[0].message.content);
   } catch (error) {
-    console.error('❌ Error:', error.response?.data || error.message);
+    console.error('❌ Error:', error.message);
   }
 }
 
 testQwenVL();
+```
+
+Run:
+```bash
+node test-qwen-vl.mjs
 ```
 
 ---
@@ -256,33 +312,49 @@ pnpm dev
 
 ## 🎨 Step 8: Configure Models di VlowGen
 
-### Text Generation Models:
+### Text Generation Models (Updated 2026):
 
-| Model | Use Case | Cost |
-|-------|----------|------|
-| `qwen-max` | General purpose, complex tasks | Higher |
-| `qwen-plus` | Balanced performance | Medium |
-| `qwen-turbo` | Fast, simple tasks | Lower |
-| `qwen-max-longcontext` | Long context (32k) | Higher |
+| Model | Use Case | Context Length | Cost |
+|-------|----------|----------------|------|
+| `qwen-max` | Most capable, complex reasoning | 32k tokens | Higher |
+| `qwen-plus` | Balanced performance & cost | 32k tokens | Medium |
+| `qwen-turbo` | Fast responses, simple tasks | 8k tokens | Lower |
+| `qwen-long` | Extra long context | 1M tokens | Higher |
 
 ### Vision Models:
 
 | Model | Use Case | Cost |
 |-------|----------|------|
-| `qwen-vl-max` | High-quality image analysis | Higher |
-| `qwen-vl-plus` | Balanced image analysis | Medium |
+| `qwen-vl-max` | High-quality image/video analysis | Higher |
+| `qwen-vl-plus` | Balanced vision analysis | Medium |
 
 ### Update `.env.local`:
 
 ```bash
-# Text Generation
-NEXT_PUBLIC_QWEN_TEXT_MODEL=qwen-max
+# Text Generation (pilih berdasarkan kebutuhan)
+NEXT_PUBLIC_QWEN_TEXT_MODEL=qwen-plus
 
 # Vision Analysis
-NEXT_PUBLIC_QWEN_VISION_MODEL=qwen-vl-max
+NEXT_PUBLIC_QWEN_VISION_MODEL=qwen-vl-plus
 
-# Image Generation (Wan2.1 - separate)
+# Base URL (sesuaikan dengan region)
+NEXT_PUBLIC_QWEN_BASE_URL=https://dashscope-intl.aliyuncs.com/compatible-mode/v1
+
+# Image Generation (Wan2.1 - separate service)
 NEXT_PUBLIC_WAN2_API_KEY=your_wan2_key
+```
+
+### Region-Specific Base URLs:
+
+```bash
+# Singapore (International)
+https://dashscope-intl.aliyuncs.com/compatible-mode/v1
+
+# US (Virginia)
+https://dashscope-us.aliyuncs.com/compatible-mode/v1
+
+# China (Beijing)
+https://dashscope.aliyuncs.com/compatible-mode/v1
 ```
 
 ---
@@ -292,28 +364,52 @@ NEXT_PUBLIC_WAN2_API_KEY=your_wan2_key
 ### Error: "Invalid API Key"
 
 **Check:**
-1. ✅ API key benar (copy-paste ulang)
-2. ✅ Region sesuai (Singapore vs Beijing)
-3. ✅ Service sudah activated
-4. ✅ Workspace benar
+1. ✅ API key benar (copy-paste ulang dari console)
+2. ✅ Region sesuai (Singapore/Virginia/Beijing)
+3. ✅ Base URL sesuai dengan region API key
+4. ✅ Service sudah activated
+5. ✅ Environment variable sudah di-set dengan benar
 
 **Fix:**
 ```bash
-# Regenerate API key di console
-# Update di .env.local
+# Verify environment variable
+echo $DASHSCOPE_API_KEY  # Linux/macOS
+echo %DASHSCOPE_API_KEY%  # Windows CMD
+echo $env:DASHSCOPE_API_KEY  # Windows PowerShell
+
+# Jika kosong, set ulang:
+export DASHSCOPE_API_KEY="sk-xxx"  # Linux/macOS
+set DASHSCOPE_API_KEY=sk-xxx  # Windows CMD
+$env:DASHSCOPE_API_KEY="sk-xxx"  # Windows PowerShell
+
 # Restart server
 ```
+
+### Error: "Model.AccessDenied"
+
+**Penyebab:**
+- Menggunakan API key dari sub-workspace
+- Sub-workspace belum di-authorize untuk access model tertentu
+
+**Fix:**
+1. Gunakan API key dari default workspace, ATAU
+2. Root account admin harus grant authorization ke sub-workspace
+3. Lihat dokumentasi: [Set model calling permissions](https://www.alibabacloud.com/help/en/model-studio/user-guide/permission-management)
 
 ### Error: "Insufficient Balance"
 
 **Check:**
-1. ✅ Akun punya credit/balance
+1. ✅ Free quota sudah habis
 2. ✅ Payment method sudah ditambahkan
-3. ✅ Service sudah activated
+3. ✅ Account balance cukup
 
 **Fix:**
+- Check quota di console (pilih region kamu):
+  - Singapore: https://bailian.console.alibabacloud.com/?regionId=ap-southeast-1
+  - US: https://bailian.console.alibabacloud.com/?regionId=us-east-1
+  - Beijing: https://bailian.console.aliyun.com/?regionId=cn-beijing
 - Top up credit di: https://account.alibabacloud.com/
-- Atau gunakan free tier models
+- Atau gunakan model dengan cost lebih rendah (qwen-turbo)
 
 ### Error: "Model Not Found"
 
@@ -436,63 +532,83 @@ heroku config:set QWEN_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ### Official Resources:
 
 1. **Alibaba Cloud Model Studio:**
-   - Console: https://modelstudio.console.alibabacloud.com
+   - Console (Singapore): https://bailian.console.alibabacloud.com/?regionId=ap-southeast-1
+   - Console (US): https://bailian.console.alibabacloud.com/?regionId=us-east-1
+   - Console (Beijing): https://bailian.console.aliyun.com/?regionId=cn-beijing
    - Docs: https://www.alibabacloud.com/help/en/model-studio
 
 2. **API Reference:**
+   - Getting Started: https://www.alibabacloud.com/help/en/model-studio/getting-started/first-api-call-to-qwen
    - Text Generation: https://www.alibabacloud.com/help/en/model-studio/qwen-api-reference
-   - Vision: https://www.alibabacloud.com/help/en/model-studio/user-guide/vision
+   - Vision Models: https://www.alibabacloud.com/help/en/model-studio/user-guide/vision
+   - API Key Management: https://www.alibabacloud.com/help/en/model-studio/user-guide/api-key-management
 
 3. **SDKs:**
    - Python: `pip install dashscope`
-   - Node.js: `npm install @alicloud/dashscope`
+   - Node.js (OpenAI Compatible): `npm install openai`
+   - Java: Maven/Gradle dependency `com.alibaba:dashscope-sdk-java`
 
 4. **Community:**
-   - Discord: Qwen Community
-   - Forum: Alibaba Cloud Community
+   - Qwen GitHub: https://github.com/QwenLM
+   - Alibaba Cloud Forum: https://www.alibabacloud.com/forum
 
 ### Quick Links:
 
-- **Get API Key:** https://modelstudio.console.alibabacloud.com/api-key
-- **View Quota:** https://modelstudio.console.alibabacloud.com/quota
+- **Get API Key:**
+  - Singapore: https://bailian.console.alibabacloud.com/?regionId=ap-southeast-1#/api-key
+  - US: https://bailian.console.alibabacloud.com/?regionId=us-east-1#/api-key
+  - Beijing: https://bailian.console.aliyun.com/?regionId=cn-beijing#/api-key
 - **Billing:** https://account.alibabacloud.com/
 - **Support:** https://www.alibabacloud.com/support
+- **Error Codes:** https://www.alibabacloud.com/help/en/model-studio/developer-reference/error-code
 
 ---
 
 ## ✅ Quick Checklist
 
 - [ ] Login ke Alibaba Cloud
-- [ ] Activate Model Studio service
-- [ ] Navigate ke API-KEY page
-- [ ] Create new API key
+- [ ] Pilih region (Singapore/US/Beijing)
+- [ ] Activate Model Studio service (gratis)
+- [ ] Navigate ke Key Management page
+- [ ] Create new API key dengan default workspace
 - [ ] Copy API key (simpan di tempat aman!)
-- [ ] Add to `.env.local`
+- [ ] Set environment variable `DASHSCOPE_API_KEY`
+- [ ] Configure base URL sesuai region
 - [ ] Test API dengan cURL/Node.js
 - [ ] Verify di VlowGen app
-- [ ] Configure models
-- [ ] Deploy to production
+- [ ] Configure models (qwen-plus, qwen-vl-plus)
+- [ ] Deploy to production dengan secrets management
 
 ---
 
 ## 🎉 Done!
 
 Sekarang kamu bisa:
-1. ✅ Generate text dengan Qwen LLM
-2. ✅ Analyze images dengan Qwen-VL
-3. ✅ Integrate ke VlowGen workflow
-4. ✅ Automate content generation
+1. ✅ Generate text dengan Qwen LLM (qwen-plus, qwen-max, qwen-turbo, qwen-long)
+2. ✅ Analyze images/videos dengan Qwen-VL (qwen-vl-plus, qwen-vl-max)
+3. ✅ Integrate ke VlowGen workflow dengan OpenAI-compatible API
+4. ✅ Automate content generation dengan multi-region support
 
-**API Key:**
-```
-QWEN_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+**Environment Variables:**
+```bash
+DASHSCOPE_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+QWEN_BASE_URL=https://dashscope-intl.aliyuncs.com/compatible-mode/v1
 ```
 
 **Next Steps:**
 - Test di VlowGen workflow
 - Create AI-powered nodes
 - Build automation flows
+- Monitor usage & costs di console
+
+**Important Notes:**
+- API keys berbeda per region (Singapore/US/Beijing)
+- Free quota available untuk new users
+- OpenAI SDK compatible untuk easy integration
+- Max 20 API keys per workspace, 10 workspaces per account
 
 ---
 
 **Built with ❤️ using Alibaba Cloud Qwen**
+
+**Last Updated:** March 2026 - Based on official Alibaba Cloud Model Studio documentation

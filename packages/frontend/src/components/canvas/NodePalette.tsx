@@ -42,12 +42,6 @@ const NODE_TYPES: NodeTypeInfo[] = [
     icon: Image,
   },
   {
-    type: 'openrouter',
-    label: 'OpenRouter Image',
-    description: 'Generate images with OpenRouter',
-    icon: Layers,
-  },
-  {
     type: 'twitter',
     label: 'Twitter Post',
     description: 'Post content to Twitter',

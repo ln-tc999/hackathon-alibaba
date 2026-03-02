@@ -19,7 +19,6 @@ import { WorkflowExecutionEngine } from '../engine/execution-engine';
 import { WorkflowValidator } from '../engine/validator';
 import { PromptTextNodeHandler } from '../nodes/prompt/text-handler';
 import { Wan2NodeHandler } from '../nodes/ai/wan2-handler';
-import { OpenRouterNodeHandler } from '../nodes/ai/openrouter-handler';
 import { TwitterNodeHandler } from '../nodes/social/twitter-handler';
 import { InstagramNodeHandler } from '../nodes/social/instagram-handler';
 import { FacebookNodeHandler } from '../nodes/social/facebook-handler';
@@ -72,7 +71,6 @@ router.post('/execute', async (req: Request, res: Response) => {
     // Register node handlers
     engine.registerNodeHandler('prompt-text', new PromptTextNodeHandler());
     engine.registerNodeHandler('wan2', new Wan2NodeHandler());
-    engine.registerNodeHandler('openrouter', new OpenRouterNodeHandler());
     engine.registerNodeHandler('twitter', new TwitterNodeHandler());
     engine.registerNodeHandler('instagram', new InstagramNodeHandler());
     engine.registerNodeHandler('facebook', new FacebookNodeHandler());

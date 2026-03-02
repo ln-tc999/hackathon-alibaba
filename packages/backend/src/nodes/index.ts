@@ -7,7 +7,6 @@ export { PromptEnhancerImageHandler } from './prompt/enhancer-image-handler';
 export { PromptEnhancerVideoHandler } from './prompt/enhancer-video-handler';
 
 export { Wan2NodeHandler } from './ai/wan2-handler';
-export { OpenRouterNodeHandler } from './ai/openrouter-handler';
 export { VisionAnalyzerHandler } from './ai/vision-analyzer-handler';
 
 export { TwitterNodeHandler } from './social/twitter-handler';
