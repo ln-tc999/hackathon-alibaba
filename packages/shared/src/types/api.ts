@@ -9,6 +9,7 @@ import { ValidationError } from './validation';
 export interface ExecuteWorkflowRequest {
   workflow: Workflow;
   credentials: ServiceCredentials;
+  userId?: string;
 }
 
 export interface ExecuteWorkflowResponse {

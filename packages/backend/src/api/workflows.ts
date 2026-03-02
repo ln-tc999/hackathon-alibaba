@@ -84,7 +84,8 @@ router.post('/execute', async (req: Request, res: Response) => {
 
     // Execute workflow
     const executionResult = await engine.execute(requestBody.workflow, {
-      credentials: requestBody.credentials
+      credentials: requestBody.credentials,
+      userId: requestBody.userId || 'anonymous',
     });
 
     // Return execution results

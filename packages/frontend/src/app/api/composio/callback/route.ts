@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
   if (status === 'success' && connectedAccountId) {
     redirectUrl.searchParams.set('connection', 'success');
     redirectUrl.searchParams.set('accountId', connectedAccountId);
+    redirectUrl.searchParams.set('platform', searchParams.get('app') || 'unknown');
   } else {
     redirectUrl.searchParams.set('connection', 'failed');
     if (error) {

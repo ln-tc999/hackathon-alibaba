@@ -15,6 +15,7 @@ import {
 } from '@vlowgen/shared';
 import { NodeHandler } from '../base/handler';
 import { Wan2Client } from '../../integrations/wan2';
+import { rateLimiter } from '../../services/rate-limiter.service';
 
 export class Wan2NodeHandler implements NodeHandler {
   private wan2Client: Wan2Client | null = null;
@@ -35,6 +36,23 @@ export class Wan2NodeHandler implements NodeHandler {
     const startTime = new Date().toISOString();
 
     try {
+      // Check rate limit
+      const userId = context.userId || 'anonymous';
+      const rateLimit = rateLimiter.checkLimit(userId, 'imageGeneration');
+      
+      if (!rateLimit.allowed) {
+        const endTime = new Date().toISOString();
+        const resetDate = new Date(rateLimit.resetAt).toLocaleString();
+        return {
+          nodeId: node.id,
+          status: 'error',
+          error: `Rate limit exceeded. You can generate ${rateLimiter['configs'].imageGeneration.maxRequests} images per day. Resets at ${resetDate}`,
+          startTime,
+          endTime,
+          duration: new Date(endTime).getTime() - new Date(startTime).getTime()
+        };
+      }
+
       // Extract prompt from input data (Requirement 9.1)
       // Input should come from upstream prompt-text node
       const inputValues = Object.values(inputs);

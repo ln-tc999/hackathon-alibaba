@@ -24,9 +24,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get connected accounts for this user
+    // Get connected accounts for this user using v3 API
     const response = await fetch(
-      `https://api.composio.dev/api/v1/connectedAccounts?entityId=${userId}`,
+      `https://backend.composio.dev/api/v3/connected_accounts?user_id=${userId}`,
       {
         headers: {
           'X-API-Key': composioApiKey,
@@ -41,19 +41,27 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const accounts = await response.json();
+    const data = await response.json();
+    const accounts = data.items || data;
     
     // Find account for the requested platform
     const platformAccount = accounts.find(
-      (acc: any) => acc.appName?.toLowerCase() === platform.toLowerCase()
+      (acc: any) => {
+        const appName = acc.toolkit?.slug || acc.appName || '';
+        return appName.toLowerCase() === platform.toLowerCase();
+      }
     );
 
+    const isConnected = !!platformAccount && platformAccount.status === 'ACTIVE';
+
     return NextResponse.json({
-      connected: !!platformAccount,
+      connected: isConnected,
       account: platformAccount || null,
+      accountHandle: platformAccount?.state?.val?.username || 
+                     platformAccount?.state?.val?.name ||
+                     platformAccount?.id,
     });
   } catch (error) {
-    console.error('Composio status check error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

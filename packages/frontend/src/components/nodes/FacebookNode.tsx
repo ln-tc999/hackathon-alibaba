@@ -1,6 +1,6 @@
 'use client';
 
-import { memo } from 'react';
+import { memo, useCallback } from 'react';
 import { Handle, Position } from 'reactflow';
 import BaseNode from './BaseNode';
 import { Facebook } from 'lucide-react';
@@ -13,6 +13,73 @@ interface FacebookNodeProps {
 }
 
 function FacebookNode({ id, data, selected }: FacebookNodeProps) {
+  const handleConnect = useCallback(async () => {
+    try {
+      const response = await fetch('/api/composio/connect', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          platform: 'facebook',
+          userId: 'default-user',
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        alert(`Failed to connect Facebook: ${error.error || 'Unknown error'}`);
+        return;
+      }
+
+      const data = await response.json();
+      
+      if (data.redirectUrl) {
+        const width = 600;
+        const height = 700;
+        const left = window.screen.width / 2 - width / 2;
+        const top = window.screen.height / 2 - height / 2;
+        
+        const popup = window.open(
+          data.redirectUrl,
+          'Facebook OAuth',
+          `width=${width},height=${height},left=${left},top=${top}`
+        );
+        
+        if (!popup) {
+          alert('Popup blocked! Please allow popups for this site.');
+          return;
+        }
+
+        const pollInterval = setInterval(async () => {
+          if (popup.closed) {
+            clearInterval(pollInterval);
+            
+            try {
+              const statusResponse = await fetch(
+                `/api/composio/status?userId=default-user&platform=facebook`
+              );
+              
+              if (statusResponse.ok) {
+                const statusData = await statusResponse.json();
+                
+                if (statusData.connected) {
+                  alert('Facebook connected successfully!');
+                  window.location.reload();
+                }
+              }
+            } catch (error) {
+              // Silent fail
+            }
+          }
+        }, 1000);
+        
+        setTimeout(() => clearInterval(pollInterval), 300000);
+      }
+    } catch (error) {
+      alert('Failed to connect Facebook. Please try again.');
+    }
+  }, []);
   return (
     <BaseNode
       id={id}
@@ -49,7 +116,16 @@ function FacebookNode({ id, data, selected }: FacebookNodeProps) {
         )}
 
         {!data.authenticated && (
-          <button className="w-full px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-all">
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleConnect();
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+            type="button"
+            className="nodrag nopan w-full px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-all cursor-pointer"
+          >
             Connect Facebook
           </button>
         )}
