@@ -1,29 +1,27 @@
 /**
- * Wan2.1 Node Handler
+ * Wan2 Video Node Handler
  * 
- * Handles execution of wan2 nodes which generate images from text prompts
- * using Alibaba Cloud's Wan2.1 AI service.
- * 
- * Requirements: 9.1, 9.2
+ * Handles execution of wan2-video nodes which generate videos from text prompts
+ * using Alibaba Cloud's Wan2 Video AI service.
  */
 
 import {
   WorkflowNode,
   NodeExecutionResult,
   ExecutionContext,
-  Wan2NodeData
+  Wan2VideoNodeData
 } from '@vlowgen/shared';
 import { NodeHandler } from '../base/handler';
-import { Wan2Client } from '../../integrations/wan2';
+import { Wan2VideoClient } from '../../integrations/wan2-video';
 import { rateLimiter } from '../../services/rate-limiter.service';
 
-export class Wan2NodeHandler implements NodeHandler {
-  private wan2Client: Wan2Client | null = null;
+export class Wan2VideoNodeHandler implements NodeHandler {
+  private wan2VideoClient: Wan2VideoClient | null = null;
 
   /**
-   * Execute a wan2 node
+   * Execute a wan2-video node
    * 
-   * @param node - The wan2 node to execute
+   * @param node - The wan2-video node to execute
    * @param inputs - Input data from upstream nodes (should contain prompt text)
    * @param context - Execution context with credentials
    * @returns Promise resolving to node execution result
@@ -38,7 +36,7 @@ export class Wan2NodeHandler implements NodeHandler {
     try {
       // Check rate limit
       const userId = context.userId || 'anonymous';
-      const rateLimit = rateLimiter.checkLimit(userId, 'imageGeneration');
+      const rateLimit = rateLimiter.checkLimit(userId, 'videoGeneration');
       
       if (!rateLimit.allowed) {
         const endTime = new Date().toISOString();
@@ -46,15 +44,14 @@ export class Wan2NodeHandler implements NodeHandler {
         return {
           nodeId: node.id,
           status: 'error',
-          error: `Rate limit exceeded. You can generate ${rateLimiter['configs'].imageGeneration.maxRequests} images per day. Resets at ${resetDate}`,
+          error: `Rate limit exceeded. You can generate ${rateLimiter['configs'].videoGeneration.maxRequests} videos per day. Resets at ${resetDate}`,
           startTime,
           endTime,
           duration: new Date(endTime).getTime() - new Date(startTime).getTime()
         };
       }
 
-      // Extract prompt from input data (Requirement 9.1)
-      // Input should come from upstream prompt-text node
+      // Extract prompt from input data
       const inputValues = Object.values(inputs);
       
       if (inputValues.length === 0) {
@@ -62,7 +59,7 @@ export class Wan2NodeHandler implements NodeHandler {
         return {
           nodeId: node.id,
           status: 'error',
-          error: 'No input provided to Wan2 node. Connect a prompt-text node.',
+          error: 'No input provided to Wan2 Video node. Connect a prompt-text node.',
           startTime,
           endTime,
           duration: new Date(endTime).getTime() - new Date(startTime).getTime()
@@ -84,54 +81,53 @@ export class Wan2NodeHandler implements NodeHandler {
         };
       }
 
-      // Get DashScope API key from environment (same key used for Qwen and Wan2)
-      const dashscopeApiKey = process.env.DASHSCOPE_API_KEY || context.credentials.wan2ApiKey;
+      // Get DashScope API key from environment
+      const dashscopeApiKey = process.env.DASHSCOPE_API_KEY;
       
       if (!dashscopeApiKey) {
         const endTime = new Date().toISOString();
         return {
           nodeId: node.id,
           status: 'error',
-          error: 'DASHSCOPE_API_KEY environment variable is required for Wan2 image generation',
+          error: 'DASHSCOPE_API_KEY environment variable is required for Wan2 video generation',
           startTime,
           endTime,
           duration: new Date(endTime).getTime() - new Date(startTime).getTime()
         };
       }
 
-      // Initialize Wan2 client if not already done
-      if (!this.wan2Client) {
-        this.wan2Client = new Wan2Client(dashscopeApiKey);
+      // Initialize Wan2 Video client if not already done
+      if (!this.wan2VideoClient) {
+        this.wan2VideoClient = new Wan2VideoClient(dashscopeApiKey);
       }
 
       // Extract node configuration
-      const nodeData = node.data as Wan2NodeData;
+      const nodeData = node.data as Wan2VideoNodeData;
 
-      // Call Wan2Client with prompt and node configuration (Requirement 9.1)
-      const result = await this.wan2Client.generateImage({
+      // Call Wan2VideoClient with prompt and node configuration
+      const result = await this.wan2VideoClient.generateVideo({
         prompt,
         model: nodeData.model,
         size: nodeData.size,
-        style: nodeData.style
+        negativePrompt: nodeData.negativePrompt
       });
 
-      // Return image URL in output (Requirement 9.2)
+      // Return video URL in output
       const endTime = new Date().toISOString();
       return {
         nodeId: node.id,
         status: 'success',
-        output: result.imageUrl,
+        output: result.videoUrl,
         startTime,
         endTime,
         duration: new Date(endTime).getTime() - new Date(startTime).getTime()
       };
     } catch (error) {
-      // Propagate errors from Wan2 service (Requirement 9.4)
       const endTime = new Date().toISOString();
       return {
         nodeId: node.id,
         status: 'error',
-        error: error instanceof Error ? error.message : 'Unknown error in Wan2 node',
+        error: error instanceof Error ? error.message : 'Unknown error in Wan2 Video node',
         startTime,
         endTime,
         duration: new Date(endTime).getTime() - new Date(startTime).getTime()

@@ -9,7 +9,7 @@ import axios, { AxiosInstance, AxiosError } from 'axios';
 
 export interface Wan2GenerateParams {
   prompt: string;
-  model: 'wanx-v1' | 'wanx-v2';
+  model: 'wanx-v1' | 'wanx-v2' | 'wan2.1-t2i-turbo' | 'wan2.1-t2i-plus' | 'wan2.6-t2i';
   size: '1024x1024' | '512x512';
   style?: string;
 }

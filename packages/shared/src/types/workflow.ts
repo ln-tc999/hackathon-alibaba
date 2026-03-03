@@ -5,6 +5,7 @@
 export type NodeType = 
   | 'prompt-text' 
   | 'wan2' 
+  | 'wan2-video'
   | 'twitter'
   | 'instagram'
   | 'facebook'
@@ -33,6 +34,7 @@ export interface WorkflowNode {
 export type NodeData = 
   | PromptTextNodeData 
   | Wan2NodeData 
+  | Wan2VideoNodeData
   | TwitterNodeData
   | InstagramNodeData
   | FacebookNodeData
@@ -49,9 +51,16 @@ export interface PromptTextNodeData {
 
 export interface Wan2NodeData {
   type: 'wan2';
-  model: 'wanx-v1' | 'wanx-v2';
+  model: 'wanx-v1' | 'wanx-v2' | 'wan2.1-t2i-turbo' | 'wan2.1-t2i-plus' | 'wan2.6-t2i';
   size: '1024x1024' | '512x512';
   style?: string;
+}
+
+export interface Wan2VideoNodeData {
+  type: 'wan2-video';
+  model: 'wan2.1-t2v-turbo' | 'wan2.1-t2v-plus';
+  size: '832*480' | '720*1280' | '1280*720';
+  negativePrompt?: string;
 }
 
 export interface TwitterNodeData {
