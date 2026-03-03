@@ -52,7 +52,7 @@ export interface PromptTextNodeData {
 export interface Wan2NodeData {
   type: 'wan2';
   model: 'wanx-v1' | 'wanx-v2' | 'wan2.1-t2i-turbo' | 'wan2.1-t2i-plus' | 'wan2.6-t2i';
-  size: '1024x1024' | '512x512';
+  size: '1024*1024' | '512*512' | '720*1280' | '1280*720';
   style?: string;
 }
 

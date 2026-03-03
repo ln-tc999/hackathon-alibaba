@@ -16,7 +16,7 @@ export const GET: APIRoute = async ({ request }) => {
             );
         }
 
-        const composioApiKey = import.meta.env.COMPOSIO_API_KEY;
+        const composioApiKey = process.env.COMPOSIO_API_KEY || import.meta.env.COMPOSIO_API_KEY;
         if (!composioApiKey) {
             return new Response(
                 JSON.stringify({ error: 'Composio API key not configured' }),

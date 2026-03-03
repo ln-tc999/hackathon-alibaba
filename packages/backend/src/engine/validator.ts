@@ -138,13 +138,50 @@ export class WorkflowValidator {
           break;
 
         case 'twitter':
+        case 'instagram':
+        case 'facebook':
+        case 'tiktok':
+        case 'youtube':
           if (!node.data.authenticated) {
             errors.push({
               type: 'configuration',
               nodeId: node.id,
-              message: 'Twitter node requires authentication'
+              message: `${node.data.type} node requires authentication`
             });
           }
+          break;
+
+        case 'wan2-video':
+          if (!node.data.model) {
+            errors.push({
+              type: 'configuration',
+              nodeId: node.id,
+              message: 'Wan2 Video node must specify a model'
+            });
+          }
+          if (!node.data.size) {
+            errors.push({
+              type: 'configuration',
+              nodeId: node.id,
+              message: 'Wan2 Video node must specify a video size'
+            });
+          }
+          break;
+
+        case 'prompt-enhancer-image':
+        case 'prompt-enhancer-video':
+          if (!node.data.userPrompt || node.data.userPrompt.trim() === '') {
+            errors.push({
+              type: 'configuration',
+              nodeId: node.id,
+              message: 'Prompt enhancer node must have non-empty user prompt'
+            });
+          }
+          break;
+
+        case 'vision-analyzer':
+          // Vision analyzer can have imageUrl, videoUrl, or uploadedFile
+          // No strict validation needed as it can be configured during execution
           break;
 
         default:
