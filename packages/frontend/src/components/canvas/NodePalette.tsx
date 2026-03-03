@@ -42,6 +42,12 @@ const NODE_TYPES: NodeTypeInfo[] = [
     icon: Image,
   },
   {
+    type: 'wan2-video',
+    label: 'Wan2.1 Video',
+    description: 'Generate 5s videos (cheapest)',
+    icon: Video,
+  },
+  {
     type: 'twitter',
     label: 'Twitter Post',
     description: 'Post content to Twitter',

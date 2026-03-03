@@ -23,6 +23,7 @@ export interface ConnectionRule {
  */
 export const CONNECTION_RULES: ConnectionRule[] = [
   { sourceType: 'prompt-text', targetType: 'wan2', allowed: true },
+  { sourceType: 'prompt-text', targetType: 'wan2-video', allowed: true },
   { sourceType: 'prompt-text', targetType: 'twitter', allowed: false },
   { sourceType: 'prompt-text', targetType: 'prompt-text', allowed: false },
   { sourceType: 'wan2', targetType: 'twitter', allowed: true },
@@ -32,6 +33,14 @@ export const CONNECTION_RULES: ConnectionRule[] = [
   { sourceType: 'wan2', targetType: 'youtube', allowed: true },
   { sourceType: 'wan2', targetType: 'prompt-text', allowed: false },
   { sourceType: 'wan2', targetType: 'wan2', allowed: false },
+  { sourceType: 'wan2-video', targetType: 'twitter', allowed: true },
+  { sourceType: 'wan2-video', targetType: 'instagram', allowed: true },
+  { sourceType: 'wan2-video', targetType: 'facebook', allowed: true },
+  { sourceType: 'wan2-video', targetType: 'tiktok', allowed: true },
+  { sourceType: 'wan2-video', targetType: 'youtube', allowed: true },
+  { sourceType: 'wan2-video', targetType: 'prompt-text', allowed: false },
+  { sourceType: 'wan2-video', targetType: 'wan2', allowed: false },
+  { sourceType: 'wan2-video', targetType: 'wan2-video', allowed: false },
   { sourceType: 'twitter', targetType: 'prompt-text', allowed: false },
   { sourceType: 'twitter', targetType: 'wan2', allowed: false },
   { sourceType: 'twitter', targetType: 'twitter', allowed: false },

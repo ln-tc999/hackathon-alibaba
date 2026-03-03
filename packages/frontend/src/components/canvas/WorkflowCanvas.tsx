@@ -24,6 +24,7 @@ import type { Workflow, WorkflowNode, WorkflowEdge, NodeType, NodeData, Executio
 import { CONNECTION_RULES } from '@vlowgen/shared';
 import PromptTextNode from '../nodes/PromptTextNode';
 import Wan2Node from '../nodes/Wan2Node';
+import { Wan2VideoNode } from '../nodes/Wan2VideoNode';
 import TwitterNode from '../nodes/TwitterNode';
 import InstagramNode from '../nodes/InstagramNode';
 import FacebookNode from '../nodes/FacebookNode';
@@ -63,6 +64,7 @@ function WorkflowCanvasInner({
     () => ({
       'prompt-text': PromptTextNode,
       'wan2': Wan2Node,
+      'wan2-video': Wan2VideoNode,
       'twitter': TwitterNode,
       'instagram': InstagramNode,
       'facebook': FacebookNode,
@@ -239,7 +241,7 @@ function WorkflowCanvasInner({
       case 'wan2':
         return {
           type: 'wan2',
-          model: 'wanx-v1',
+          model: 'wan2.1-t2i-turbo',
           size: '1024x1024',
         };
       case 'twitter':

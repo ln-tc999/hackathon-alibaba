@@ -16,6 +16,10 @@ export class RateLimiterService {
       maxRequests: 5,
       windowMs: 24 * 60 * 60 * 1000, // 24 hours
     },
+    videoGeneration: {
+      maxRequests: 3, // Lower limit for video (more expensive)
+      windowMs: 24 * 60 * 60 * 1000, // 24 hours
+    },
     visionAnalysis: {
       maxRequests: 10,
       windowMs: 24 * 60 * 60 * 1000,

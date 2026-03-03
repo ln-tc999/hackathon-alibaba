@@ -69,11 +69,12 @@ export class VisionAnalyzerHandler implements NodeHandler {
       );
     }
 
-    const openRouterApiKey = context.credentials.openRouterApiKey;
-    if (!openRouterApiKey) {
+    // Use Qwen VL for vision analysis
+    const dashscopeApiKey = process.env.DASHSCOPE_API_KEY;
+    if (!dashscopeApiKey) {
       return this.createErrorResult(
         node.id,
-        'OpenRouter API key is required for vision analysis',
+        'DASHSCOPE_API_KEY environment variable is required for vision analysis',
         startTime
       );
     }
@@ -83,22 +84,17 @@ export class VisionAnalyzerHandler implements NodeHandler {
         ? `Analyze this ${videoUrl ? 'video' : 'image'} and create a new prompt adapted to this niche: ${niche}`
         : `Analyze this ${videoUrl ? 'video' : 'image'} and create a new prompt that replicates its format and style.`;
 
-      const model = videoUrl 
-        ? 'nvidia/nemotron-nano-12b-v2-vl:free'
-        : 'qwen/qwen3-vl-30b-a3b-thinking';
-
       const contentUrl = videoUrl || imageUrl;
 
-      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      // Use Qwen VL Plus for vision analysis
+      const response = await fetch('https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${openRouterApiKey}`,
-          'HTTP-Referer': 'https://vlowgen.com',
-          'X-Title': 'VlowGen Vision Analyzer',
+          'Authorization': `Bearer ${dashscopeApiKey}`,
         },
         body: JSON.stringify({
-          model,
+          model: 'qwen-vl-plus',
           messages: [
             { role: 'system', content: VISION_ANALYZER_SYSTEM_PROMPT },
             {
@@ -118,7 +114,7 @@ export class VisionAnalyzerHandler implements NodeHandler {
         const errorData = await response.json() as any;
         return this.createErrorResult(
           node.id,
-          `OpenRouter API error: ${errorData.error?.message || response.statusText}`,
+          `Qwen VL API error: ${errorData.error?.message || response.statusText}`,
           startTime
         );
       }
