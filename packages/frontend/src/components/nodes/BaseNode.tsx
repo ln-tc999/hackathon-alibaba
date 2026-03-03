@@ -1,7 +1,7 @@
 
 import { ReactNode, useState } from 'react';
-import { Handle, Position } from 'reactflow';
-import { AlertCircle } from 'lucide-react';
+import { Handle, Position, useReactFlow, useNodeId, Node, Edge } from 'reactflow';
+import { AlertCircle, Trash2 } from 'lucide-react';
 
 interface BaseNodeProps {
   id?: string;
@@ -30,12 +30,23 @@ export default function BaseNode({
   const [showErrorTooltip, setShowErrorTooltip] = useState(false);
   const hasError = !!error;
 
+  const id = useNodeId();
+  const { setNodes, setEdges } = useReactFlow();
+
+  const handleDelete = () => {
+    if (id) {
+      setNodes((nds) => nds.filter((n) => n.id !== id));
+      setEdges((eds) => eds.filter((e) => e.source !== id && e.target !== id));
+    }
+  };
+
   const colorClasses = {
     blue: 'border-blue-500',
     purple: 'border-purple-500',
     indigo: 'border-indigo-500',
     emerald: 'border-emerald-500',
     pink: 'border-pink-500',
+    rose: 'border-rose-500',
   };
 
   return (
@@ -55,18 +66,21 @@ export default function BaseNode({
       />
 
       {/* Node header */}
-      <div className={`px-4 py-2 border-b ${hasError ? 'border-red-200 bg-red-100' : 'border-gray-100 bg-gray-50'}`}>
+      <div className={`px-4 py-2 border-b flex items-center justify-between ${hasError ? 'border-red-200 bg-red-100' : 'border-gray-100 bg-gray-50'}`}>
         <div className="flex items-center gap-2">
           {Icon && <Icon className="w-4 h-4 text-gray-600" />}
           <span className="font-semibold text-sm">{title}</span>
+        </div>
+
+        <div className="flex items-center gap-2">
           {hasError && (
             <div
-              className="ml-auto relative"
+              className="relative"
               onMouseEnter={() => setShowErrorTooltip(true)}
               onMouseLeave={() => setShowErrorTooltip(false)}
             >
               <AlertCircle className="w-4 h-4 text-red-600 cursor-help" />
-              
+
               {/* Error tooltip */}
               {showErrorTooltip && (
                 <div className="absolute top-full right-0 mt-2 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-xl z-50">
@@ -78,6 +92,14 @@ export default function BaseNode({
               )}
             </div>
           )}
+
+          <button
+            onClick={handleDelete}
+            className="text-gray-400 hover:text-red-500 transition-colors"
+            title="Delete node"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
         </div>
       </div>
 

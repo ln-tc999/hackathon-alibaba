@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { ErrorResponse } from '@vlowgen/shared';
 import workflowRouter from './api/workflows';
+import imageHistoryRouter from './api/image-history';
 
 // Load environment variables from packages/backend/.env
 dotenv.config({ path: path.join(__dirname, '../.env') });
@@ -32,6 +33,7 @@ app.get('/health', (req: Request, res: Response) => {
 
 // API routes
 app.use('/api/workflows', workflowRouter);
+app.use('/api/image-history', imageHistoryRouter);
 // OAuth routes are also in the workflow router, mounted at /api
 app.use('/api', workflowRouter);
 

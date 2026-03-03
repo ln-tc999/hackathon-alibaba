@@ -46,7 +46,24 @@ export class VisionAnalyzerHandler implements NodeHandler {
   ): Promise<NodeExecutionResult> {
     const startTime = new Date().toISOString();
     const data = node.data as VisionAnalyzerNodeData;
-    const { imageUrl, videoUrl, niche } = data;
+    let { imageUrl, videoUrl, niche } = data;
+
+    // Check if image URL comes from previous node (e.g., Wan2 output)
+    const inputValues = Object.values(inputs);
+    if (inputValues.length > 0) {
+      const input = inputValues[0];
+      
+      // Handle input from Wan2 node (which returns an object with imageUrl)
+      if (typeof input === 'object' && input !== null && 'imageUrl' in input) {
+        imageUrl = input.imageUrl;
+        console.log('[VisionAnalyzer] Using image from previous node:', imageUrl);
+      }
+      // Handle direct URL string input
+      else if (typeof input === 'string' && input.startsWith('http')) {
+        imageUrl = input;
+        console.log('[VisionAnalyzer] Using URL from previous node:', imageUrl);
+      }
+    }
 
     // Check rate limit
     const userId = context.userId || 'anonymous';
@@ -64,7 +81,7 @@ export class VisionAnalyzerHandler implements NodeHandler {
     if (!imageUrl && !videoUrl) {
       return this.createErrorResult(
         node.id,
-        'Image URL or Video URL is required for vision analysis',
+        'Image URL or Video URL is required for vision analysis. Connect a Wan2 node or provide a URL.',
         startTime
       );
     }

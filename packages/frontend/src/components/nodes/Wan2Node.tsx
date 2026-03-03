@@ -42,6 +42,7 @@ export default function Wan2Node({ data, selected }: NodeProps<Wan2NodeData & { 
       error={executionError}
       icon={Palette}
       title="Wan2.1 Image Generation"
+      color="purple"
     >
       <div className="space-y-3">
         {/* Model selection */}
@@ -72,8 +73,8 @@ export default function Wan2Node({ data, selected }: NodeProps<Wan2NodeData & { 
             onChange={handleSizeChange}
             className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="1024x1024">1024x1024</option>
-            <option value="512x512">512x512</option>
+            <option value="1024*1024">1024x1024</option>
+            <option value="512*512">512x512</option>
           </select>
         </div>
 

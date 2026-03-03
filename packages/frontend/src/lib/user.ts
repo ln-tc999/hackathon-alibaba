@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { getOrCreateUser } from './db';
+import { initializeFingerprint, getVisitorId } from './fingerprint';
 
 const USER_ID_KEY = 'vlowgen_user_id';
 
@@ -20,6 +21,13 @@ export function getUserId(): string {
 
 export async function initializeUser(): Promise<string> {
   const userId = getUserId();
+  
+  // Initialize Fingerprint.com for device tracking
+  await initializeFingerprint();
+  
+  const visitorId = getVisitorId();
+  console.log('[User] Initialized with user ID:', userId, 'visitor ID:', visitorId);
+  
   await getOrCreateUser(userId);
   return userId;
 }

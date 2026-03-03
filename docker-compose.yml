@@ -1,4 +1,25 @@
 services:
+  # MinIO Object Storage
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio-data:/data
+    restart: unless-stopped
+    networks:
+      - vlowgen-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
   # Frontend service (Astro)
   frontend:
     build:
@@ -14,6 +35,7 @@ services:
       - PUBLIC_WAN2_API_KEY=${PUBLIC_WAN2_API_KEY}
       - PUBLIC_OPENROUTER_API_KEY=${PUBLIC_OPENROUTER_API_KEY}
       - PUBLIC_COMPOSIO_API_KEY=${PUBLIC_COMPOSIO_API_KEY}
+      - PUBLIC_FINGERPRINT_API_KEY=${PUBLIC_FINGERPRINT_API_KEY}
       - COMPOSIO_API_KEY=${COMPOSIO_API_KEY}
       - TWITTER_AUTH_CONFIG_ID=${TWITTER_AUTH_CONFIG_ID}
       - FACEBOOK_AUTH_CONFIG_ID=${FACEBOOK_AUTH_CONFIG_ID}
@@ -22,6 +44,7 @@ services:
       - YOUTUBE_AUTH_CONFIG_ID=${YOUTUBE_AUTH_CONFIG_ID}
     depends_on:
       - backend
+      - minio
     restart: unless-stopped
     networks:
       - vlowgen-network
@@ -40,6 +63,14 @@ services:
       - WAN2_API_URL=${WAN2_API_URL}
       - COMPOSIO_API_KEY=${COMPOSIO_API_KEY}
       - COMPOSIO_API_URL=${COMPOSIO_API_URL}
+      - MINIO_ENDPOINT=minio
+      - MINIO_PORT=9000
+      - MINIO_USE_SSL=false
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - MINIO_BUCKET_NAME=vlowgen-images
+    depends_on:
+      - minio
     restart: unless-stopped
     networks:
       - vlowgen-network
@@ -47,3 +78,6 @@ services:
 networks:
   vlowgen-network:
     driver: bridge
+
+volumes:
+  minio-data:

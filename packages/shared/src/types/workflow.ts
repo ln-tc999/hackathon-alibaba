@@ -6,6 +6,7 @@ export type NodeType =
   | 'prompt-text' 
   | 'wan2' 
   | 'wan2-video'
+  | 'preview'
   | 'twitter'
   | 'instagram'
   | 'facebook'
@@ -35,6 +36,7 @@ export type NodeData =
   | PromptTextNodeData 
   | Wan2NodeData 
   | Wan2VideoNodeData
+  | PreviewNodeData
   | TwitterNodeData
   | InstagramNodeData
   | FacebookNodeData
@@ -54,6 +56,7 @@ export interface Wan2NodeData {
   model: 'wanx-v1' | 'wanx-v2' | 'wan2.1-t2i-turbo' | 'wan2.1-t2i-plus' | 'wan2.6-t2i';
   size: '1024*1024' | '512*512' | '720*1280' | '1280*720';
   style?: string;
+  negativePrompt?: string;
 }
 
 export interface Wan2VideoNodeData {
@@ -63,34 +66,52 @@ export interface Wan2VideoNodeData {
   negativePrompt?: string;
 }
 
+export interface PreviewNodeData {
+  type: 'preview';
+  mediaType: 'image' | 'video' | 'auto';
+  showMetadata?: boolean;
+  previewUrl?: string;
+  approved?: boolean;
+}
+
 export interface TwitterNodeData {
   type: 'twitter';
   authenticated: boolean;
   accountHandle?: string;
+  connectionStatus?: 'connected' | 'disconnected' | 'checking';
+  requiresAuth?: boolean;
 }
 
 export interface InstagramNodeData {
   type: 'instagram';
   authenticated: boolean;
   accountHandle?: string;
+  connectionStatus?: 'connected' | 'disconnected' | 'checking';
+  requiresAuth?: boolean;
 }
 
 export interface FacebookNodeData {
   type: 'facebook';
   authenticated: boolean;
   accountHandle?: string;
+  connectionStatus?: 'connected' | 'disconnected' | 'checking';
+  requiresAuth?: boolean;
 }
 
 export interface TikTokNodeData {
   type: 'tiktok';
   authenticated: boolean;
   accountHandle?: string;
+  connectionStatus?: 'connected' | 'disconnected' | 'checking';
+  requiresAuth?: boolean;
 }
 
 export interface YouTubeNodeData {
   type: 'youtube';
   authenticated: boolean;
   channelName?: string;
+  connectionStatus?: 'connected' | 'disconnected' | 'checking';
+  requiresAuth?: boolean;
 }
 
 export interface PromptEnhancerImageNodeData {

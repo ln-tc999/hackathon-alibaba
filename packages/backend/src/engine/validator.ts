@@ -187,6 +187,10 @@ export class WorkflowValidator {
           // No strict validation needed as it can be configured during execution
           break;
 
+        case 'preview':
+          // Preview node passes through media - no strict validation needed
+          break;
+
         default:
           errors.push({
             type: 'configuration',

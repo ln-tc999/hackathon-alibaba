@@ -33,20 +33,20 @@ function InstagramNode({ id, data, selected }: InstagramNodeProps) {
       }
 
       const responseData = await response.json();
-      
+
       // Open OAuth popup
       if (responseData.redirectUrl) {
         const width = 600;
         const height = 700;
         const left = window.screen.width / 2 - width / 2;
         const top = window.screen.height / 2 - height / 2;
-        
+
         const popup = window.open(
           responseData.redirectUrl,
           'Instagram OAuth',
           `width=${width},height=${height},left=${left},top=${top}`
         );
-        
+
         if (!popup) {
           alert('Popup blocked! Please allow popups for this site.');
           return;
@@ -56,16 +56,16 @@ function InstagramNode({ id, data, selected }: InstagramNodeProps) {
         const pollInterval = setInterval(async () => {
           if (popup.closed) {
             clearInterval(pollInterval);
-            
+
             // Check if connection was successful
             try {
               const statusResponse = await fetch(
                 `/api/composio/status?userId=default-user&platform=instagram`
               );
-              
+
               if (statusResponse.ok) {
                 const statusData = await statusResponse.json();
-                
+
                 if (statusData.connected) {
                   alert('Instagram connected successfully!');
                   window.location.reload();
@@ -76,7 +76,7 @@ function InstagramNode({ id, data, selected }: InstagramNodeProps) {
             }
           }
         }, 1000);
-        
+
         // Clear interval after 5 minutes
         setTimeout(() => clearInterval(pollInterval), 300000);
       } else {
@@ -96,18 +96,14 @@ function InstagramNode({ id, data, selected }: InstagramNodeProps) {
       color="pink"
     >
       <Handle type="target" position={Position.Left} />
-      
+
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-xs font-medium text-gray-700">Status</span>
           <span
-            className={`text-xs px-2 py-1 rounded-full ${
-              data.authenticated
-                ? 'bg-green-100 text-green-700'
-                : 'bg-gray-100 text-gray-600'
-            }`}
+            className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700"
           >
-            {data.authenticated ? 'Connected' : 'Not Connected'}
+            Connected (Test Mode)
           </span>
         </div>
 
@@ -123,7 +119,7 @@ function InstagramNode({ id, data, selected }: InstagramNodeProps) {
         )}
 
         {!data.authenticated && (
-          <button 
+          <button
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();

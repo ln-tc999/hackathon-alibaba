@@ -30,6 +30,7 @@ export default function PromptTextNode({ data, selected }: NodeProps<PromptTextN
       error={executionError}
       icon={FileText}
       title="Prompt Text"
+      color="blue"
     >
       <div className="space-y-2">
         <textarea

@@ -81,7 +81,7 @@ function createWorkflow(platform) {
 const testCredentials = {
   wan2ApiKey: process.env.DASHSCOPE_API_KEY || 'sk-466ebab0feed41f7880c3b7ca509d15b',
   composioApiKey: process.env.COMPOSIO_API_KEY || 'ak_C4a5-yJQmd8bjd5wsB9E',
-  composioApiUrl: 'https://api.composio.dev'
+  composioApiUrl: 'https://backend.composio.dev/api'
 };
 
 async function testPlatform(platform) {

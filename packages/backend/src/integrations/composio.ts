@@ -8,6 +8,7 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 
 export interface PostToTwitterParams {
+  connectedAccountId?: string;
   text?: string;
   imageUrl?: string;
   token: string;
@@ -100,6 +101,29 @@ export class ComposioClient {
   }
 
   /**
+   * Get first connected account ID for a platform
+   */
+  async getConnectedAccountId(appName: string): Promise<string> {
+    try {
+      const response = await this.client.get('/v1/connectedAccounts', {
+        params: { appNames: appName }
+      });
+      
+      const accounts = response.data.items || [];
+      if (accounts.length === 0) {
+        throw new Error(`No connected ${appName} account found. Please complete OAuth first.`);
+      }
+      
+      return accounts[0].id;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Failed to get connected account: ${error.message}`);
+      }
+      throw error;
+    }
+  }
+
+  /**
    * Set default connected account ID for all requests
    */
   setDefaultConnectedAccountId(accountId: string) {
@@ -115,33 +139,20 @@ export class ComposioClient {
    */
   async postToTwitter(params: PostToTwitterParams): Promise<PostToTwitterResponse> {
     try {
+      const connectedAccountId = params.connectedAccountId || this.defaultConnectedAccountId;
+      
       const input: any = {};
 
       if (params.text) {
         input.text = params.text;
       }
 
-      // Upload media first if provided
-      if (params.imageUrl) {
-        const mediaResponse = await this.client.post<ComposioApiResponse>(
-          '/v2/actions/TWITTER_UPLOAD_MEDIA/execute',
-          {
-            connectedAccountId: this.defaultConnectedAccountId,
-            input: {
-              media_url: params.imageUrl,
-            },
-          }
-        );
-
-        if (mediaResponse.data.successful || mediaResponse.data.successfull) {
-          input.media_ids = [mediaResponse.data.data?.media_id_string];
-        }
-      }
-
+      // For Twitter, we'll post text only for now
+      // Media upload requires a different flow with Twitter API v2
       const response = await this.client.post<ComposioApiResponse>(
         '/v2/actions/TWITTER_CREATION_OF_A_POST/execute',
         {
-          connectedAccountId: this.defaultConnectedAccountId,
+          connectedAccountId,
           input,
         }
       );

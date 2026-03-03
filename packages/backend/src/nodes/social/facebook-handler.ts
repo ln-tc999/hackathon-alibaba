@@ -19,9 +19,14 @@ export class FacebookNodeHandler extends BaseSocialMediaHandler {
       throw new Error('Composio client not initialized');
     }
 
+    // Get connected Facebook account ID
+    const connectedAccountId = await this.composioClient.getConnectedAccountId('FACEBOOK');
+    this.composioClient.setDefaultConnectedAccountId(connectedAccountId);
+
     const result = await this.composioClient.postToFacebook({
       text: text || 'Posted via VlowGen',
       mediaUrl: imageUrl || videoUrl || undefined,
+      connectedAccountId,
     });
 
     return result.postUrl || 'Posted successfully to Facebook';
