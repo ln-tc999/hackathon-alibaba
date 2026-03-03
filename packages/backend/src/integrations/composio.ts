@@ -312,6 +312,7 @@ export class ComposioClient {
       }
 
       // Step 1: Create media container
+      console.log('[Composio] Creating Instagram media container...');
       const containerResponse = await this.client.post<ComposioApiResponse>(
         '/v2/actions/INSTAGRAM_CREATE_MEDIA_CONTAINER/execute',
         {
@@ -333,7 +334,14 @@ export class ComposioClient {
         throw new Error('Failed to get container ID from response');
       }
 
-      // Step 2: Publish the media container
+      console.log('[Composio] Media container created:', containerId);
+
+      // Step 2: Wait for media to be ready (Instagram needs time to process)
+      console.log('[Composio] Waiting for media to be ready...');
+      await this.waitForMediaReady(connectedAccountId, igUserId, containerId);
+
+      // Step 3: Publish the media container
+      console.log('[Composio] Publishing media container...');
       const publishResponse = await this.client.post<ComposioApiResponse>(
         '/v2/actions/INSTAGRAM_CREATE_POST/execute',
         {
@@ -348,6 +356,8 @@ export class ComposioClient {
       if (!publishResponse.data.successful && !publishResponse.data.successfull) {
         throw new Error(publishResponse.data.error || 'Failed to publish post');
       }
+
+      console.log('[Composio] Post published successfully');
 
       return {
         postUrl: publishResponse.data.data?.permalink,
@@ -375,6 +385,79 @@ export class ComposioClient {
       
       throw error;
     }
+  }
+
+  /**
+   * Wait for Instagram media container to be ready for publishing
+   * Polls the container status until it's ready or timeout
+   * 
+   * @param connectedAccountId - Connected account ID
+   * @param igUserId - Instagram user ID
+   * @param containerId - Media container ID
+   * @param maxAttempts - Maximum number of polling attempts (default: 15)
+   * @param delayMs - Delay between attempts in milliseconds (default: 1000)
+   */
+  private async waitForMediaReady(
+    connectedAccountId: string,
+    igUserId: string,
+    containerId: string,
+    maxAttempts: number = 15,
+    delayMs: number = 1000
+  ): Promise<void> {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      console.log(`[Composio] Checking media status (attempt ${attempt}/${maxAttempts})...`);
+      
+      try {
+        // Check container status
+        const statusResponse = await this.client.post<ComposioApiResponse>(
+          '/v2/actions/INSTAGRAM_GET_MEDIA_CONTAINER_STATUS/execute',
+          {
+            connectedAccountId,
+            input: {
+              ig_user_id: igUserId,
+              container_id: containerId,
+            },
+          }
+        );
+
+        const status = statusResponse.data.data?.status_code;
+        console.log(`[Composio] Media status: ${status}`);
+
+        // Status codes:
+        // - "FINISHED" or "PUBLISHED": Media is ready
+        // - "IN_PROGRESS": Still processing
+        // - "ERROR": Processing failed
+        if (status === 'FINISHED' || status === 'PUBLISHED') {
+          console.log('[Composio] Media is ready for publishing');
+          return;
+        }
+
+        if (status === 'ERROR') {
+          const errorMessage = statusResponse.data.data?.error_message || 'Unknown error';
+          throw new Error(`Media processing failed on Instagram: ${errorMessage}`);
+        }
+
+        // Wait before next attempt (exponential backoff for first few attempts)
+        if (attempt < maxAttempts) {
+          const waitTime = attempt <= 3 ? delayMs : delayMs * 1.5;
+          console.log(`[Composio] Media not ready yet, waiting ${waitTime}ms...`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+        }
+      } catch (error) {
+        // If status check fails, wait and retry
+        console.warn(`[Composio] Status check failed (attempt ${attempt}):`, error);
+        if (attempt < maxAttempts) {
+          await new Promise(resolve => setTimeout(resolve, delayMs));
+        } else {
+          // Last attempt failed, try to publish anyway
+          console.warn('[Composio] Status check failed, attempting to publish anyway...');
+        }
+      }
+    }
+
+    // If we reach here, media is still not ready after max attempts
+    // Try to publish anyway - Instagram might accept it
+    console.warn('[Composio] Media status check timeout, attempting to publish anyway...');
   }
 
   /**

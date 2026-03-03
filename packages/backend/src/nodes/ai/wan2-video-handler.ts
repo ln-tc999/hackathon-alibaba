@@ -112,12 +112,18 @@ export class Wan2VideoNodeHandler implements NodeHandler {
         negativePrompt: nodeData.negativePrompt
       });
 
-      // Return video URL in output
+      console.log('[Wan2VideoHandler] Video generated:', result.videoUrl);
+
+      // Return video URL in output (consistent format with image handler)
       const endTime = new Date().toISOString();
       return {
         nodeId: node.id,
         status: 'success',
-        output: result.videoUrl,
+        output: {
+          videoUrl: result.videoUrl,
+          prompt,
+          model: nodeData.model || 'wan2-video',
+        },
         startTime,
         endTime,
         duration: new Date(endTime).getTime() - new Date(startTime).getTime()

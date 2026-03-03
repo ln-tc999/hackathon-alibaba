@@ -45,14 +45,51 @@ export class PreviewNodeHandler implements NodeHandler {
         };
       }
 
-      const mediaUrl = inputValues[0];
+      let mediaUrl: string;
+      let mediaType: 'image' | 'video' = 'image';
+      const input = inputValues[0];
 
-      if (typeof mediaUrl !== 'string' || !mediaUrl.trim()) {
+      // Handle different input formats
+      if (typeof input === 'string') {
+        // Direct URL string
+        mediaUrl = input;
+      } else if (typeof input === 'object' && input !== null) {
+        // Object from Wan2Handler or video handler
+        if ('imageUrl' in input) {
+          mediaUrl = input.imageUrl;
+          mediaType = 'image';
+        } else if ('videoUrl' in input) {
+          mediaUrl = input.videoUrl;
+          mediaType = 'video';
+        } else {
+          const endTime = new Date().toISOString();
+          return {
+            nodeId: node.id,
+            status: 'error',
+            error: 'Invalid input format. Expected object with imageUrl or videoUrl property.',
+            startTime,
+            endTime,
+            duration: new Date(endTime).getTime() - new Date(startTime).getTime()
+          };
+        }
+      } else {
         const endTime = new Date().toISOString();
         return {
           nodeId: node.id,
           status: 'error',
-          error: 'Invalid media URL. Expected non-empty string.',
+          error: 'Invalid media input. Expected string URL or object with imageUrl/videoUrl.',
+          startTime,
+          endTime,
+          duration: new Date(endTime).getTime() - new Date(startTime).getTime()
+        };
+      }
+
+      if (!mediaUrl || !mediaUrl.trim()) {
+        const endTime = new Date().toISOString();
+        return {
+          nodeId: node.id,
+          status: 'error',
+          error: 'Empty media URL received.',
           startTime,
           endTime,
           duration: new Date(endTime).getTime() - new Date(startTime).getTime()
@@ -74,12 +111,18 @@ export class PreviewNodeHandler implements NodeHandler {
         };
       }
 
-      // Pass through the media URL
+      console.log(`[PreviewHandler] Preview ${mediaType}:`, mediaUrl);
+
+      // Pass through the media URL with metadata
       const endTime = new Date().toISOString();
       return {
         nodeId: node.id,
         status: 'success',
-        output: mediaUrl,
+        output: {
+          mediaUrl,
+          mediaType,
+          previewUrl: mediaUrl, // For frontend display
+        },
         startTime,
         endTime,
         duration: new Date(endTime).getTime() - new Date(startTime).getTime()

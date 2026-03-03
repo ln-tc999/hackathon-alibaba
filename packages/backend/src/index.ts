@@ -5,6 +5,8 @@ import path from 'path';
 import { ErrorResponse } from '@vlowgen/shared';
 import workflowRouter from './api/workflows';
 import imageHistoryRouter from './api/image-history';
+import schedulerRouter from './api/scheduler';
+import { schedulerService } from './services/scheduler.service';
 
 // Load environment variables from packages/backend/.env
 dotenv.config({ path: path.join(__dirname, '../.env') });
@@ -34,6 +36,7 @@ app.get('/health', (req: Request, res: Response) => {
 // API routes
 app.use('/api/workflows', workflowRouter);
 app.use('/api/image-history', imageHistoryRouter);
+app.use('/api/scheduler', schedulerRouter);
 // OAuth routes are also in the workflow router, mounted at /api
 app.use('/api', workflowRouter);
 
@@ -96,15 +99,21 @@ app.listen(PORT, () => {
   console.log(`Backend server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`Health check: http://localhost:${PORT}/health`);
+  
+  // Auto-start scheduler service
+  console.log('[Scheduler] Auto-starting scheduler service...');
+  schedulerService.start();
 });
 
 // Graceful shutdown
 process.on('SIGINT', () => {
   console.log('Shutting down gracefully...');
+  schedulerService.stop();
   process.exit(0);
 });
 
 process.on('SIGTERM', () => {
   console.log('Shutting down gracefully...');
+  schedulerService.stop();
   process.exit(0);
 });

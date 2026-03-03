@@ -147,18 +147,19 @@
 
 /* Glass card */
 .glass-card {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(30, 58, 138, 0.05) 100%);
-  border: 1px solid rgba(59, 130, 246, 0.15);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(248, 250, 252, 0.6) 100%);
+  border: 1px solid rgba(226, 232, 240, 0.8);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 24px -8px rgba(0, 0, 0, 0.05);
 }
 
 .glass-card:hover {
-  border-color: rgba(59, 130, 246, 0.35);
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(30, 58, 138, 0.08) 100%);
+  border-color: rgba(148, 163, 184, 0.4);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.8) 100%);
   transform: translateY(-4px);
-  box-shadow: 0 20px 60px -15px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 20px 60px -15px rgba(59, 130, 246, 0.15);
 }
 
 /* Feature icon glow */
@@ -239,8 +240,8 @@
 
 /* Navbar blur */
 .nav-blur {
-  background: rgba(2, 8, 23, 0.7);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(59, 130, 246, 0.08);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
 }
