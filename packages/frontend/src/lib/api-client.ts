@@ -13,7 +13,7 @@ import type {
   ServiceCredentials,
 } from '@vlowgen/shared';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:3001';
 
 /**
  * Custom error class for API errors with user-friendly messages
@@ -132,7 +132,7 @@ async function apiRequest<T>(
   const url = `${API_URL}${endpoint}`;
   const method = options.method || 'GET';
   let requestBody: any;
-  
+
   try {
     // Parse request body for logging
     if (options.body && typeof options.body === 'string') {
@@ -157,7 +157,7 @@ async function apiRequest<T>(
       // Handle error response
       const errorData = data as ErrorResponse;
       const userMessage = mapErrorToUserMessage(errorData.error);
-      
+
       const apiError = new ApiError(
         userMessage,
         response.status,
@@ -168,7 +168,7 @@ async function apiRequest<T>(
 
       // Log error with full context
       errorLogger.logApiError(endpoint, method, requestBody, apiError, data);
-      
+
       throw apiError;
     }
 
@@ -178,12 +178,12 @@ async function apiRequest<T>(
     if (error instanceof ApiError) {
       throw error;
     }
-    
+
     // Log network error
     if (error instanceof Error) {
       errorLogger.logNetworkError(endpoint, method, error);
     }
-    
+
     throw new ApiError(
       'Network error: Unable to connect to the server. Please check your connection.',
       0,

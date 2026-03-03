@@ -1,4 +1,3 @@
-'use client';
 
 import { useEffect, useState } from 'react';
 import { Clock, CheckCircle, XCircle, Loader2, ChevronRight, MessageSquare, Trash2 } from 'lucide-react';

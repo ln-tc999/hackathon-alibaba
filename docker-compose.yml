@@ -1,17 +1,25 @@
-version: '3.8'
-
 services:
-  # Frontend service
+  # Frontend service (Astro)
   frontend:
     build:
-      context: ./packages/frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: packages/frontend/Dockerfile
     ports:
-      - "3000:3000"
+      - "4321:4321"
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=http://localhost:3001
-      - NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID=${NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID}
+      - HOST=0.0.0.0
+      - PORT=4321
+      - PUBLIC_API_URL=${PUBLIC_API_URL:-http://backend:3001}
+      - PUBLIC_WAN2_API_KEY=${PUBLIC_WAN2_API_KEY}
+      - PUBLIC_OPENROUTER_API_KEY=${PUBLIC_OPENROUTER_API_KEY}
+      - PUBLIC_COMPOSIO_API_KEY=${PUBLIC_COMPOSIO_API_KEY}
+      - COMPOSIO_API_KEY=${COMPOSIO_API_KEY}
+      - TWITTER_AUTH_CONFIG_ID=${TWITTER_AUTH_CONFIG_ID}
+      - FACEBOOK_AUTH_CONFIG_ID=${FACEBOOK_AUTH_CONFIG_ID}
+      - INSTAGRAM_AUTH_CONFIG_ID=${INSTAGRAM_AUTH_CONFIG_ID}
+      - TIKTOK_AUTH_CONFIG_ID=${TIKTOK_AUTH_CONFIG_ID}
+      - YOUTUBE_AUTH_CONFIG_ID=${YOUTUBE_AUTH_CONFIG_ID}
     depends_on:
       - backend
     restart: unless-stopped
@@ -21,8 +29,8 @@ services:
   # Backend service
   backend:
     build:
-      context: ./packages/backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: packages/backend/Dockerfile
     ports:
       - "3001:3001"
     environment:
@@ -39,7 +47,3 @@ services:
 networks:
   vlowgen-network:
     driver: bridge
-
-volumes:
-  # You can add volumes here if you need persistent storage
-  # vlowgen-data:

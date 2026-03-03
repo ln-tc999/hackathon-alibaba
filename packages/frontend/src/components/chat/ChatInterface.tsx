@@ -1,22 +1,20 @@
-'use client';
-
 import { useState, useRef, useEffect, useMemo, useCallback, memo } from 'react';
-import { 
-  Send, 
-  Sparkles, 
-  Loader2, 
-  Download, 
-  ArrowRight, 
-  Bot, 
-  CheckCircle2, 
-  Zap, 
-  Image as ImageIcon, 
-  Twitter, 
-  Instagram, 
-  FileText, 
-  Wand2, 
-  Video, 
-  Eye, 
+import {
+  Send,
+  Sparkles,
+  Loader2,
+  Download,
+  ArrowRight,
+  Bot,
+  CheckCircle2,
+  Zap,
+  Image as ImageIcon,
+  Twitter,
+  Instagram,
+  FileText,
+  Wand2,
+  Video,
+  Eye,
   Palette,
   MessageSquare
 } from 'lucide-react';
@@ -42,24 +40,22 @@ interface ChatInterfaceProps {
 }
 
 // Memoized Message Component for better performance
-const MessageBubble = memo(({ 
-  message, 
-  isUser 
-}: { 
-  message: Message; 
+const MessageBubble = memo(({
+  message,
+  isUser
+}: {
+  message: Message;
   isUser: boolean;
 }) => (
   <div
-    className={`max-w-[85%] rounded-2xl px-4 py-2.5 shadow-sm ${
-      isUser
+    className={`max-w-[85%] rounded-2xl px-4 py-2.5 shadow-sm ${isUser
         ? 'bg-blue-600 text-white'
         : 'bg-gray-50 text-gray-900 border border-gray-200'
-    }`}
+      }`}
   >
     <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
-    <span className={`text-xs mt-1.5 block ${
-      isUser ? 'text-blue-100' : 'text-gray-500'
-    }`}>
+    <span className={`text-xs mt-1.5 block ${isUser ? 'text-blue-100' : 'text-gray-500'
+      }`}>
       {message.timestamp.toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',
@@ -70,12 +66,12 @@ const MessageBubble = memo(({
 
 MessageBubble.displayName = 'MessageBubble';
 
-export default function ChatInterface({ 
+export default function ChatInterface({
   sessionId,
-  onWorkflowGenerated, 
+  onWorkflowGenerated,
   onContinueToWorkflow,
   workflow,
-  centered = false 
+  centered = false
 }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -108,7 +104,7 @@ export default function ChatInterface({
       // Load existing session
       const { getChatSession } = await import('@/lib/db');
       const session = await getChatSession(sessionId);
-      
+
       if (session && session.messages.length > 0) {
         const loadedMessages: Message[] = session.messages.map((m, idx) => ({
           id: `msg-${idx}`,
@@ -250,11 +246,11 @@ export default function ChatInterface({
       if (sessionId) {
         const userId = getUserId();
         const title = input.slice(0, 50) + (input.length > 50 ? '...' : '');
-        
+
         // Save workflow to IndexedDB
         const { saveWorkflow: saveWorkflowToDb } = await import('@/lib/workflow-api');
         await saveWorkflowToDb(workflow);
-        
+
         // Then save chat session with workflow reference
         await saveChatSession(
           sessionId,
@@ -267,7 +263,7 @@ export default function ChatInterface({
           })),
           workflow.id
         );
-        
+
         // Notify session list to refresh
         sessionEvents.emit();
       }
@@ -293,7 +289,7 @@ export default function ChatInterface({
 
   const handleDownloadWorkflow = useCallback(() => {
     if (!workflow) return;
-    
+
     const dataStr = JSON.stringify(workflow, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
@@ -317,8 +313,8 @@ export default function ChatInterface({
     return iconMap[nodeType] || { icon: <Sparkles className="w-3 h-3" />, label: 'Unknown' };
   }, []);
 
-  const hasGeneratedWorkflow = useMemo(() => 
-    workflow && workflow.nodes.length > 0, 
+  const hasGeneratedWorkflow = useMemo(() =>
+    workflow && workflow.nodes.length > 0,
     [workflow]
   );
 
@@ -348,16 +344,15 @@ export default function ChatInterface({
                     className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
-                      className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-lg ${
-                        message.role === 'user'
+                      className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-lg ${message.role === 'user'
                           ? 'bg-blue-600 text-white'
                           : 'bg-white text-gray-900 border border-gray-200'
-                      }`}
+                        }`}
                     >
                       <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
                     </div>
                   </div>
-                  
+
                   {/* Action buttons below AI message if workflow was generated */}
                   {message.role === 'assistant' && message.workflow && hasGeneratedWorkflow && (
                     <div className="flex justify-start mt-3">
@@ -391,7 +386,7 @@ export default function ChatInterface({
                             <span>{message.workflow!.nodes.length} nodes • {message.workflow!.edges.length} connections</span>
                           </div>
                         </div>
-                        
+
                         {/* Action Buttons */}
                         <div className="flex gap-2">
                           <button

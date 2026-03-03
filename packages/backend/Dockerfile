@@ -1,44 +1,75 @@
 # Backend Dockerfile for VlowGen Platform
 FROM node:18-alpine AS builder
 
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
 # Set working directory
 WORKDIR /app
 
-# Copy package files
+# Copy workspace root files
+COPY pnpm-workspace.yaml ./
 COPY package.json ./
-COPY tsconfig.json ./
+COPY pnpm-lock.yaml ./
+
+# Copy shared package
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/shared/tsconfig.json ./packages/shared/
+COPY packages/shared/src ./packages/shared/src
+
+# Copy backend package
+COPY packages/backend/package.json ./packages/backend/
+COPY packages/backend/tsconfig.json ./packages/backend/
 
 # Install dependencies
-RUN npm install
+RUN pnpm install --frozen-lockfile
 
-# Copy source code
-COPY src ./src
+# Build shared package first
+RUN pnpm --filter @vlowgen/shared build
+
+# Copy backend source code
+COPY packages/backend/src ./packages/backend/src
 
 # Build TypeScript
-RUN npm run build
+RUN pnpm --filter @vlowgen/backend build
 
 # Production stage
 FROM node:18-alpine AS production
 
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
 # Set working directory
 WORKDIR /app
 
-# Copy package files
+# Copy workspace root files
+COPY pnpm-workspace.yaml ./
 COPY package.json ./
+COPY pnpm-lock.yaml ./
+
+# Copy shared package (needed at runtime for workspace dependency)
+COPY packages/shared/package.json ./packages/shared/
+COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
+
+# Copy backend package.json
+COPY packages/backend/package.json ./packages/backend/
 
 # Install production dependencies only
-RUN npm install --production
+RUN pnpm install --frozen-lockfile --prod
 
 # Copy built files from builder stage
-COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/packages/backend/dist ./packages/backend/dist
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nextjs -u 1001
+RUN adduser -S backend -u 1001
 
 # Change ownership
-RUN chown -R nextjs:nodejs /app
-USER nextjs
+RUN chown -R backend:nodejs /app
+USER backend
+
+# Set working directory to backend
+WORKDIR /app/packages/backend
 
 # Expose port
 EXPOSE 3001

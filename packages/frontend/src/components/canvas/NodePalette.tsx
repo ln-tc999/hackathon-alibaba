@@ -1,4 +1,3 @@
-'use client';
 
 import { FileText, Image, Layers, Twitter, Sparkles, Video, Eye, Instagram, Facebook, Music, Youtube } from 'lucide-react';
 import type { NodeType } from '@vlowgen/shared';

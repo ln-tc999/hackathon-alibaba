@@ -1,24 +1,23 @@
-'use client';
-
 import { useCallback, useRef, useMemo, useEffect, useState } from 'react';
 import ReactFlow, {
-  Node,
-  Edge,
-  Connection,
   addEdge,
   useNodesState,
   useEdgesState,
   Controls,
   Background,
   BackgroundVariant,
+  useReactFlow,
+  ReactFlowProvider,
+} from 'reactflow';
+import type {
+  Node,
+  Edge,
+  Connection,
   OnConnect,
   OnNodesChange,
   OnEdgesChange,
-  useReactFlow,
-  ReactFlowProvider,
   NodeTypes,
 } from 'reactflow';
-import 'reactflow/dist/style.css';
 import { toast } from 'sonner';
 import type { Workflow, WorkflowNode, WorkflowEdge, NodeType, NodeData, ExecutionResult } from '@vlowgen/shared';
 import { CONNECTION_RULES } from '@vlowgen/shared';
@@ -110,7 +109,7 @@ function WorkflowCanvasInner({
     const saveTimer = setTimeout(async () => {
       try {
         setIsSaving(true);
-        
+
         const workflowData: Workflow = {
           id: workflowId || '',
           name: workflow?.name || 'Untitled Workflow',
@@ -155,7 +154,7 @@ function WorkflowCanvasInner({
     setNodes((currentNodes) =>
       currentNodes.map((node) => {
         const nodeResult = executionResult.nodeResults[node.id];
-        
+
         if (!nodeResult) return node;
 
         // Add error styling for failed nodes
@@ -377,11 +376,11 @@ function WorkflowCanvasInner({
       if (!isValidConnection(connection)) {
         const sourceNode = nodes.find((n) => n.id === connection.source);
         const targetNode = nodes.find((n) => n.id === connection.target);
-        
+
         toast.error('Invalid Connection', {
           description: `Cannot connect ${sourceNode?.type || 'unknown'} to ${targetNode?.type || 'unknown'}`,
         });
-        
+
         return;
       }
 
@@ -415,7 +414,7 @@ function WorkflowCanvasInner({
     // Load demo workflow into canvas
     setNodes(demoNodes);
     setEdges(demoEdges);
-    
+
     // Notify parent of workflow change
     notifyWorkflowChange(demoNodes, demoEdges);
 
@@ -447,7 +446,7 @@ function WorkflowCanvasInner({
         <Controls />
         <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
       </ReactFlow>
-      
+
       {/* Save indicator */}
       {isSaving && (
         <div className="absolute top-4 left-4 z-10 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-2">
@@ -455,7 +454,7 @@ function WorkflowCanvasInner({
           <span className="text-xs font-medium text-blue-700">Saving...</span>
         </div>
       )}
-      
+
       {/* Toolbar with execute button */}
       <div className="absolute top-4 right-4 z-10 flex gap-2">
         <button
