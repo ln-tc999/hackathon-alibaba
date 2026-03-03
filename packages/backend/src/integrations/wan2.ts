@@ -9,6 +9,7 @@ import axios, { AxiosInstance, AxiosError } from 'axios';
 
 export interface Wan2GenerateParams {
   prompt: string;
+  negativePrompt?: string;
   model: 'wanx-v1' | 'wanx-v2' | 'wan2.1-t2i-turbo' | 'wan2.1-t2i-plus' | 'wan2.6-t2i';
   size: '1024*1024' | '512*512' | '720*1280' | '1280*720';
   style?: string;
@@ -60,6 +61,7 @@ export class Wan2Client {
         model: params.model,
         input: {
           prompt: params.prompt,
+          ...(params.negativePrompt && { negative_prompt: params.negativePrompt }),
         },
         parameters: {
           size: params.size,

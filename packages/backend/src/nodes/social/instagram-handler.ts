@@ -19,9 +19,13 @@ export class InstagramNodeHandler extends BaseSocialMediaHandler {
       throw new Error('Composio client not initialized');
     }
 
+    // Get connected Instagram account ID
+    const connectedAccountId = await this.composioClient.getConnectedAccountId('INSTAGRAM');
+
     const result = await this.composioClient.postToInstagram({
       imageUrl,
       caption: text || 'Posted via VlowGen',
+      connectedAccountId,
     });
 
     return result.postUrl || 'Posted successfully to Instagram';

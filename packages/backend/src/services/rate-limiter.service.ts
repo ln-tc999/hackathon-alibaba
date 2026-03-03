@@ -13,7 +13,7 @@ export class RateLimiterService {
 
   private configs: Record<string, RateLimitConfig> = {
     imageGeneration: {
-      maxRequests: 5,
+      maxRequests: 500, // Increased for testing
       windowMs: 24 * 60 * 60 * 1000, // 24 hours
     },
     videoGeneration: {

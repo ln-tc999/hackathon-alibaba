@@ -26,6 +26,8 @@ export interface ExecutionContext {
   credentials: ServiceCredentials;
   logger?: Logger;
   userId?: string;
+  workflowId?: string;
+  executionId?: string;
 }
 
 export interface ServiceCredentials {

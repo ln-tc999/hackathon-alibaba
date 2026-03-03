@@ -18,7 +18,7 @@ import {
   Palette,
   MessageSquare
 } from 'lucide-react';
-import type { Workflow } from '@vlowgen/shared';
+import type { Workflow, WorkflowNode, WorkflowEdge } from '@vlowgen/shared';
 import { saveChatSession } from '@/lib/db';
 import { getUserId } from '@/lib/user';
 import { sessionEvents } from '@/lib/session-events';
@@ -49,8 +49,8 @@ const MessageBubble = memo(({
 }) => (
   <div
     className={`max-w-[85%] rounded-2xl px-4 py-2.5 shadow-sm ${isUser
-        ? 'bg-blue-600 text-white'
-        : 'bg-gray-50 text-gray-900 border border-gray-200'
+      ? 'bg-blue-600 text-white'
+      : 'bg-gray-50 text-gray-900 border border-gray-200'
       }`}
   >
     <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
@@ -133,79 +133,96 @@ export default function ChatInterface({
 
     // AI intelligently creates workflow based on user intent
     // This demonstrates the "AI shows its work" concept
+    const nodes: WorkflowNode[] = [
+      {
+        id: 'node-1',
+        type: 'prompt-text',
+        position: { x: 100, y: 100 },
+        data: {
+          type: 'prompt-text',
+          promptText: prompt,
+        },
+      },
+      {
+        id: 'node-2',
+        type: 'prompt-enhancer-image',
+        position: { x: 400, y: 100 },
+        data: {
+          type: 'prompt-enhancer-image',
+          userPrompt: prompt,
+        },
+      },
+      {
+        id: 'node-3',
+        type: 'wan2',
+        position: { x: 700, y: 100 },
+        data: {
+          type: 'wan2',
+          model: 'wan2.1-t2i-turbo',
+          size: '1024*1024',
+        },
+      },
+    ];
+
+    const edges: WorkflowEdge[] = [
+      {
+        id: 'edge-1',
+        source: 'node-1',
+        target: 'node-2',
+      },
+      {
+        id: 'edge-2',
+        source: 'node-2',
+        target: 'node-3',
+      },
+    ];
+
+    const isTwitterRequested = prompt.toLowerCase().includes('twitter') || prompt.toLowerCase().includes('x');
+    const isInstagramRequested = prompt.toLowerCase().includes('instagram') || prompt.toLowerCase().includes('ig');
+    let currentY = 50;
+
+    // Add twitter node if mentioned
+    if (isTwitterRequested) {
+      nodes.push({
+        id: 'node-twitter',
+        type: 'twitter',
+        position: { x: 1000, y: currentY },
+        data: {
+          type: 'twitter',
+          authenticated: false,
+        },
+      });
+      edges.push({
+        id: `edge-twitter`,
+        source: 'node-3',
+        target: 'node-twitter',
+      });
+      currentY += 150;
+    }
+
+    // Add instagram node if mentioned
+    if (isInstagramRequested) {
+      nodes.push({
+        id: 'node-instagram',
+        type: 'instagram',
+        position: { x: 1000, y: currentY },
+        data: {
+          type: 'instagram',
+          authenticated: false,
+        },
+      });
+      edges.push({
+        id: `edge-instagram`,
+        source: 'node-3',
+        target: 'node-instagram',
+      });
+    }
+
     const workflow: Workflow = {
       id: `workflow-${Date.now()}`,
       name: 'AI Generated Workflow',
-      nodes: [
-        {
-          id: 'node-1',
-          type: 'prompt-text',
-          position: { x: 100, y: 100 },
-          data: {
-            type: 'prompt-text',
-            promptText: prompt,
-          },
-        },
-        {
-          id: 'node-2',
-          type: 'prompt-enhancer-image',
-          position: { x: 400, y: 100 },
-          data: {
-            type: 'prompt-enhancer-image',
-            userPrompt: prompt,
-          },
-        },
-        {
-          id: 'node-3',
-          type: 'wan2',
-          position: { x: 700, y: 100 },
-          data: {
-            type: 'wan2',
-            model: 'wanx-v1',
-            size: '1024x1024',
-          },
-        },
-        {
-          id: 'node-4',
-          type: 'twitter',
-          position: { x: 1000, y: 50 },
-          data: {
-            type: 'twitter',
-            authenticated: false,
-          },
-        },
-        {
-          id: 'node-5',
-          type: 'instagram',
-          position: { x: 1000, y: 150 },
-          data: {
-            type: 'instagram',
-            authenticated: false,
-          },
-        },
-      ],
-      edges: [
-        {
-          id: 'edge-1',
-          source: 'node-1',
-          target: 'node-2',
-        },
-        {
-          id: 'edge-2',
-          source: 'node-2',
-          target: 'node-3',
-        },
-        {
-          id: 'edge-3',
-          source: 'node-3',
-          target: 'node-4',
-        },
-        {
-          id: 'edge-4',
-          source: 'node-3',
-          target: 'node-5',
-        },
-      ],
+      nodes,
+      edges,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -345,8 +362,8 @@ export default function ChatInterface({
                   >
                     <div
                       className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-lg ${message.role === 'user'
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-white text-gray-900 border border-gray-200'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white text-gray-900 border border-gray-200'
                         }`}
                     >
                       <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>

@@ -41,7 +41,7 @@ export const Wan2VideoNode: React.FC<Wan2VideoNodeProps> = ({ data }) => {
 
   return (
     <div className="bg-white rounded-lg shadow-lg border-2 border-purple-500 p-4 min-w-[280px]">
-      <Handle type="target" position={Position.Left} className="w-3 h-3 bg-purple-500" />
+      <Handle type="target" position={Position.Left} className="w-3 h-3 !bg-purple-500 border-2 border-white" />
       
       <div className="mb-3">
         <div className="flex items-center gap-2 mb-2">
@@ -109,7 +109,7 @@ export const Wan2VideoNode: React.FC<Wan2VideoNodeProps> = ({ data }) => {
         </div>
       </div>
 
-      <Handle type="source" position={Position.Right} className="w-3 h-3 bg-purple-500" />
+      <Handle type="source" position={Position.Right} className="w-3 h-3 !bg-purple-500 border-2 border-white" />
     </div>
   );
 };

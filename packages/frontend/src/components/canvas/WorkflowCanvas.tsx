@@ -8,6 +8,7 @@ import ReactFlow, {
   BackgroundVariant,
   useReactFlow,
   ReactFlowProvider,
+  ConnectionLineType,
 } from 'reactflow';
 import type {
   Node,
@@ -32,7 +33,7 @@ import YouTubeNode from '../nodes/YouTubeNode';
 import PromptEnhancerImageNode from '../nodes/PromptEnhancerImageNode';
 import PromptEnhancerVideoNode from '../nodes/PromptEnhancerVideoNode';
 import VisionAnalyzerNode from '../nodes/VisionAnalyzerNode';
-import { DEMO_WORKFLOW } from '../../lib/demo-workflow';
+import PreviewNode from '../nodes/PreviewNode';
 import { saveWorkflow, updateWorkflow } from '../../lib/workflow-api';
 import { initializeUser } from '../../lib/user';
 
@@ -64,6 +65,7 @@ function WorkflowCanvasInner({
       'prompt-text': PromptTextNode,
       'wan2': Wan2Node,
       'wan2-video': Wan2VideoNode,
+      'preview': PreviewNode,
       'twitter': TwitterNode,
       'instagram': InstagramNode,
       'facebook': FacebookNode,
@@ -90,6 +92,8 @@ function WorkflowCanvasInner({
     target: edge.target,
     sourceHandle: edge.sourceHandle,
     targetHandle: edge.targetHandle,
+    animated: true,
+    style: { stroke: '#3b82f6', strokeWidth: 2 },
   })) || [];
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -241,7 +245,13 @@ function WorkflowCanvasInner({
         return {
           type: 'wan2',
           model: 'wan2.1-t2i-turbo',
-          size: '1024x1024',
+          size: '1024*1024',
+        };
+      case 'preview':
+        return {
+          type: 'preview',
+          mediaType: 'auto',
+          showMetadata: true,
         };
       case 'twitter':
         return {
@@ -393,43 +403,6 @@ function WorkflowCanvasInner({
     [isValidConnection, setEdges, nodes, notifyWorkflowChange]
   );
 
-  // Handle loading demo workflow
-  const handleLoadDemo = useCallback(() => {
-    // Convert demo workflow nodes to React Flow format
-    const demoNodes: Node[] = DEMO_WORKFLOW.nodes.map((node) => ({
-      id: node.id,
-      type: node.type,
-      position: node.position,
-      data: node.data,
-    }));
-
-    const demoEdges: Edge[] = DEMO_WORKFLOW.edges.map((edge) => ({
-      id: edge.id,
-      source: edge.source,
-      target: edge.target,
-      sourceHandle: edge.sourceHandle,
-      targetHandle: edge.targetHandle,
-    }));
-
-    // Load demo workflow into canvas
-    setNodes(demoNodes);
-    setEdges(demoEdges);
-
-    // Notify parent of workflow change
-    notifyWorkflowChange(demoNodes, demoEdges);
-
-    toast.success('Demo Workflow Loaded', {
-      description: 'Click "Execute Workflow" to run the demo',
-    });
-
-    // Automatically trigger execution after a short delay
-    setTimeout(() => {
-      if (onExecute) {
-        onExecute();
-      }
-    }, 500);
-  }, [setNodes, setEdges, notifyWorkflowChange, onExecute]);
-
   return (
     <div ref={reactFlowWrapper} className="w-full h-full relative">
       <ReactFlow
@@ -441,6 +414,13 @@ function WorkflowCanvasInner({
         onDrop={onDrop}
         onDragOver={onDragOver}
         nodeTypes={nodeTypes}
+        defaultEdgeOptions={{
+          animated: true,
+          style: { stroke: '#3b82f6', strokeWidth: 2 },
+          type: 'smoothstep',
+        }}
+        connectionLineStyle={{ stroke: '#3b82f6', strokeWidth: 2 }}
+        connectionLineType={ConnectionLineType.SmoothStep}
         fitView
       >
         <Controls />
@@ -457,13 +437,6 @@ function WorkflowCanvasInner({
 
       {/* Toolbar with execute button */}
       <div className="absolute top-4 right-4 z-10 flex gap-2">
-        <button
-          onClick={handleLoadDemo}
-          disabled={executionStatus === 'running'}
-          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium shadow-lg"
-        >
-          Run Demo
-        </button>
         <button
           onClick={onExecute}
           disabled={executionStatus === 'running' || nodes.length === 0}

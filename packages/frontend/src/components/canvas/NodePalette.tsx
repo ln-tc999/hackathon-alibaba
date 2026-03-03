@@ -47,6 +47,12 @@ const NODE_TYPES: NodeTypeInfo[] = [
     icon: Video,
   },
   {
+    type: 'preview',
+    label: 'Preview Media',
+    description: 'Preview before posting',
+    icon: Eye,
+  },
+  {
     type: 'twitter',
     label: 'Twitter Post',
     description: 'Post content to Twitter',

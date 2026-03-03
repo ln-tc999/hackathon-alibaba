@@ -47,6 +47,13 @@ export class WorkflowExecutionEngine {
     const executionId = randomUUID();
     const startTime = new Date().toISOString();
 
+    // Add executionId and workflowId to context
+    const enrichedContext: ExecutionContext = {
+      ...context,
+      executionId,
+      workflowId: workflow.id,
+    };
+
     // Validate workflow first
     const validationErrors = this.validator.validate(workflow);
     if (validationErrors.length > 0) {
@@ -73,8 +80,8 @@ export class WorkflowExecutionEngine {
         // Gather inputs from predecessor nodes
         const inputs = this.gatherNodeInputs(node.id, workflow.edges, nodeOutputs);
 
-        // Execute the node
-        const result = await this.executeNode(node, inputs, context);
+        // Execute the node with enriched context
+        const result = await this.executeNode(node, inputs, enrichedContext);
         nodeResults[node.id] = result;
 
         // If node failed, stop execution and propagate error

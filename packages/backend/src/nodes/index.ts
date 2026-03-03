@@ -9,6 +9,8 @@ export { PromptEnhancerVideoHandler } from './prompt/enhancer-video-handler';
 export { Wan2NodeHandler } from './ai/wan2-handler';
 export { VisionAnalyzerHandler } from './ai/vision-analyzer-handler';
 
+export { PreviewNodeHandler } from './preview/preview-handler';
+
 export { TwitterNodeHandler } from './social/twitter-handler';
 export { InstagramNodeHandler } from './social/instagram-handler';
 export { FacebookNodeHandler } from './social/facebook-handler';
