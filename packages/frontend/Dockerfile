@@ -11,6 +11,7 @@ WORKDIR /app
 COPY pnpm-workspace.yaml ./
 COPY package.json ./
 COPY pnpm-lock.yaml ./
+COPY tsconfig.json ./
 
 # Copy shared package
 COPY packages/shared/package.json ./packages/shared/
