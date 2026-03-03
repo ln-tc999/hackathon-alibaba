@@ -1,4 +1,3 @@
-'use client';
 
 import { X, CheckCircle, XCircle, Loader2, ExternalLink } from 'lucide-react';
 import type { ExecutionResult, NodeExecutionResult } from '@vlowgen/shared';
