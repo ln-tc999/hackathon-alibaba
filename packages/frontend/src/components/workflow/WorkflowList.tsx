@@ -1,4 +1,3 @@
-'use client';
 
 import { useEffect, useState } from 'react';
 import { loadUserWorkflows, deleteWorkflow } from '@/lib/workflow-api';
