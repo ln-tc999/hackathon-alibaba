@@ -71,6 +71,14 @@ junit.xml
 *.spec.js.snap
 *.test.js.snap
 
+# Test scripts with sensitive data (API keys, credentials, etc.)
+test-*.js
+test-*.ts
+!test-*.test.js
+!test-*.test.ts
+!test-*.spec.js
+!test-*.spec.ts
+
 # ============================================
 # Logs
 # ============================================
