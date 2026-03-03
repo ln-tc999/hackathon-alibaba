@@ -142,8 +142,11 @@ export class WorkflowValidator {
         case 'facebook':
         case 'tiktok':
         case 'youtube':
+
           // Removing strict auth requirement for testing/local development purposes
           /*
+
+
           if (!node.data.authenticated) {
             errors.push({
               type: 'configuration',
@@ -189,6 +192,39 @@ export class WorkflowValidator {
 
         case 'preview':
           // Preview node passes through media - no strict validation needed
+          break;
+
+        case 'wan2-video':
+          if (!node.data.model) {
+            errors.push({
+              type: 'configuration',
+              nodeId: node.id,
+              message: 'Wan2 Video node must specify a model'
+            });
+          }
+          if (!node.data.size) {
+            errors.push({
+              type: 'configuration',
+              nodeId: node.id,
+              message: 'Wan2 Video node must specify a video size'
+            });
+          }
+          break;
+
+        case 'prompt-enhancer-image':
+        case 'prompt-enhancer-video':
+          if (!node.data.userPrompt || node.data.userPrompt.trim() === '') {
+            errors.push({
+              type: 'configuration',
+              nodeId: node.id,
+              message: 'Prompt enhancer node must have non-empty user prompt'
+            });
+          }
+          break;
+
+        case 'vision-analyzer':
+          // Vision analyzer can have imageUrl, videoUrl, or uploadedFile
+          // No strict validation needed as it can be configured during execution
           break;
 
         default:

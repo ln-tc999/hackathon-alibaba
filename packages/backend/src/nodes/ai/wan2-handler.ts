@@ -193,8 +193,12 @@ export class Wan2NodeHandler implements NodeHandler {
       // Get DashScope API key from environment (same key used for Qwen and Wan2)
       const dashscopeApiKey = process.env.DASHSCOPE_API_KEY || context.credentials.wan2ApiKey;
 
+
       console.log('[Wan2Handler] Using API key:', dashscopeApiKey ? dashscopeApiKey.substring(0, 10) + '...' : 'NOT FOUND');
 
+      
+      console.log('[Wan2Handler] Using API key:', dashscopeApiKey ? dashscopeApiKey.substring(0, 10) + '...' : 'NOT FOUND');
+      
       if (!dashscopeApiKey) {
         const endTime = new Date().toISOString();
         return {
