@@ -10,7 +10,7 @@ import axios, { AxiosInstance, AxiosError } from 'axios';
 export interface Wan2GenerateParams {
   prompt: string;
   model: 'wanx-v1' | 'wanx-v2' | 'wan2.1-t2i-turbo' | 'wan2.1-t2i-plus' | 'wan2.6-t2i';
-  size: '1024x1024' | '512x512';
+  size: '1024*1024' | '512*512' | '720*1280' | '1280*720';
   style?: string;
 }
 
@@ -34,7 +34,7 @@ export class Wan2Client {
   private client: AxiosInstance;
   private apiKey: string;
 
-  constructor(apiKey: string, apiUrl: string = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text2image/image-synthesis') {
+  constructor(apiKey: string, apiUrl: string = 'https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/text2image/image-synthesis') {
     this.apiKey = apiKey;
     this.client = axios.create({
       baseURL: apiUrl,
@@ -47,7 +47,7 @@ export class Wan2Client {
   }
 
   /**
-   * Generate an image from a text prompt using Wan2.1 API
+   * Generate an image from a text prompt using Wan2.1 API (async with polling)
    * 
    * @param params - Generation parameters including prompt, model, size, and optional style
    * @returns Promise resolving to image URL and task ID
@@ -55,6 +55,7 @@ export class Wan2Client {
    */
   async generateImage(params: Wan2GenerateParams): Promise<Wan2GenerateResponse> {
     try {
+      // Step 1: Create async task
       const requestBody = {
         model: params.model,
         input: {
@@ -67,24 +68,58 @@ export class Wan2Client {
         },
       };
 
-      const response = await this.client.post<Wan2ApiResponse>('', requestBody);
+      const createResponse = await this.client.post<Wan2ApiResponse>('', requestBody, {
+        headers: {
+          'X-DashScope-Async': 'enable',
+        },
+      });
 
-      // Extract image URL from response
-      if (!response.data.output?.results?.[0]?.url) {
-        throw new Error('Invalid API response: missing image URL');
+      const taskId = createResponse.data.output.task_id;
+
+      // Step 2: Poll for result (max 2 minutes for image)
+      const maxAttempts = 40; // 40 attempts × 3 seconds = 2 minutes
+      const pollInterval = 3000; // 3 seconds
+
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        await this.sleep(pollInterval);
+
+        const statusResponse = await axios.get<Wan2ApiResponse>(
+          `https://dashscope-intl.aliyuncs.com/api/v1/tasks/${taskId}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${this.apiKey}`,
+            },
+          }
+        );
+
+        const status = statusResponse.data.output.task_status;
+
+        if (status === 'SUCCEEDED') {
+          if (!statusResponse.data.output.results?.[0]?.url) {
+            throw new Error('Image generation succeeded but no image URL returned');
+          }
+
+          return {
+            imageUrl: statusResponse.data.output.results[0].url,
+            taskId,
+          };
+        } else if (status === 'FAILED') {
+          throw new Error('Image generation failed');
+        } else if (status === 'UNKNOWN') {
+          throw new Error('Task expired or not found');
+        }
+
+        // Continue polling if PENDING or RUNNING
       }
 
-      return {
-        imageUrl: response.data.output.results[0].url,
-        taskId: response.data.output.task_id,
-      };
+      throw new Error('Image generation timeout after 2 minutes');
     } catch (error) {
       // Map API errors to standard error format
       if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError;
         
         if (axiosError.code === 'ECONNABORTED') {
-          throw new Error('Wan2.1 API request timeout after 60 seconds');
+          throw new Error('Wan2.1 API request timeout');
         }
         
         if (axiosError.response) {
@@ -102,5 +137,9 @@ export class Wan2Client {
       // Re-throw non-Axios errors
       throw error;
     }
+  }
+
+  private sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }
