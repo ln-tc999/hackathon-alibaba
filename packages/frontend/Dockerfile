@@ -1,56 +1,85 @@
-# Frontend Dockerfile for VlowGen Platform
+# Frontend Dockerfile for VlowGen Platform (Astro)
 FROM node:18-alpine AS builder
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Set working directory
 WORKDIR /app
 
-# Copy package files
+# Copy workspace root files
+COPY pnpm-workspace.yaml ./
 COPY package.json ./
-COPY next.config.js ./
-COPY tsconfig.json ./
-COPY tailwind.config.ts ./
-COPY postcss.config.js ./
+COPY pnpm-lock.yaml ./
+
+# Copy shared package
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/shared/tsconfig.json ./packages/shared/
+COPY packages/shared/src ./packages/shared/src
+
+# Copy frontend package
+COPY packages/frontend/package.json ./packages/frontend/
+COPY packages/frontend/astro.config.mjs ./packages/frontend/
+COPY packages/frontend/tsconfig.json ./packages/frontend/
+COPY packages/frontend/tailwind.config.mjs ./packages/frontend/
 
 # Install dependencies
-RUN npm install
+RUN pnpm install --frozen-lockfile
 
-# Copy source code
-COPY src ./src
-COPY public ./public
+# Build shared package first
+RUN pnpm --filter @vlowgen/shared build
 
-# Build the Next.js application
-RUN npm run build
+# Copy frontend source code
+COPY packages/frontend/src ./packages/frontend/src
+COPY packages/frontend/public ./packages/frontend/public
+
+# Build the Astro application
+RUN pnpm --filter @vlowgen/frontend build
 
 # Production stage
 FROM node:18-alpine AS production
 
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
 # Set working directory
 WORKDIR /app
 
-# Copy package files
+# Copy workspace root files
+COPY pnpm-workspace.yaml ./
 COPY package.json ./
+COPY pnpm-lock.yaml ./
+
+# Copy shared package (needed at runtime for workspace dependency)
+COPY packages/shared/package.json ./packages/shared/
+COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
+
+# Copy frontend package.json
+COPY packages/frontend/package.json ./packages/frontend/
 
 # Install production dependencies only
-RUN npm install --production
+RUN pnpm install --frozen-lockfile --prod
 
 # Copy built files from builder stage
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
+COPY --from=builder /app/packages/frontend/dist ./packages/frontend/dist
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nextjs -u 1001
+RUN adduser -S astro -u 1001
 
 # Change ownership
-RUN chown -R nextjs:nodejs /app
-USER nextjs
+RUN chown -R astro:nodejs /app
+USER astro
+
+# Set working directory to frontend
+WORKDIR /app/packages/frontend
 
 # Expose port
-EXPOSE 3000
+EXPOSE 4321
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:4321/api/health || exit 1
 
-# Start the application
-CMD ["npm", "start"]
+# Start the Astro server
+CMD ["node", "./dist/server/entry.mjs"]
