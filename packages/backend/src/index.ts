@@ -1,11 +1,12 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
 import { ErrorResponse } from '@vlowgen/shared';
 import workflowRouter from './api/workflows';
 
-// Load environment variables
-dotenv.config();
+// Load environment variables from packages/backend/.env
+dotenv.config({ path: path.join(__dirname, '../.env') });
 
 const app = express();
 const PORT = process.env.PORT || 3001;

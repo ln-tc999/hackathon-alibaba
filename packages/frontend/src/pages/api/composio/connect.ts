@@ -15,7 +15,7 @@ export const POST: APIRoute = async ({ request }) => {
             );
         }
 
-        const composioApiKey = import.meta.env.COMPOSIO_API_KEY;
+        const composioApiKey = process.env.COMPOSIO_API_KEY || import.meta.env.COMPOSIO_API_KEY;
 
         if (!composioApiKey) {
             return new Response(
@@ -26,11 +26,11 @@ export const POST: APIRoute = async ({ request }) => {
 
         // Get auth config ID based on platform
         const authConfigMap: Record<string, string | undefined> = {
-            twitter: import.meta.env.TWITTER_AUTH_CONFIG_ID,
-            facebook: import.meta.env.FACEBOOK_AUTH_CONFIG_ID,
-            instagram: import.meta.env.INSTAGRAM_AUTH_CONFIG_ID,
-            tiktok: import.meta.env.TIKTOK_AUTH_CONFIG_ID,
-            youtube: import.meta.env.YOUTUBE_AUTH_CONFIG_ID,
+            twitter: process.env.TWITTER_AUTH_CONFIG_ID || import.meta.env.TWITTER_AUTH_CONFIG_ID,
+            facebook: process.env.FACEBOOK_AUTH_CONFIG_ID || import.meta.env.FACEBOOK_AUTH_CONFIG_ID,
+            instagram: process.env.INSTAGRAM_AUTH_CONFIG_ID || import.meta.env.INSTAGRAM_AUTH_CONFIG_ID,
+            tiktok: process.env.TIKTOK_AUTH_CONFIG_ID || import.meta.env.TIKTOK_AUTH_CONFIG_ID,
+            youtube: process.env.YOUTUBE_AUTH_CONFIG_ID || import.meta.env.YOUTUBE_AUTH_CONFIG_ID,
         };
 
         const authConfigId = authConfigMap[platform.toLowerCase()];
@@ -45,7 +45,7 @@ export const POST: APIRoute = async ({ request }) => {
         }
 
         // Initiate connection with Composio using v3 API
-        const callbackUrl = `${import.meta.env.PUBLIC_API_URL || 'http://localhost:4321'}/api/composio/callback`;
+        const callbackUrl = `${process.env.PUBLIC_API_URL || import.meta.env.PUBLIC_API_URL || 'http://localhost:4321'}/api/composio/callback`;
 
         const requestBody = {
             auth_config: {

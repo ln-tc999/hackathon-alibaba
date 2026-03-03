@@ -44,4 +44,17 @@ export const CONNECTION_RULES: ConnectionRule[] = [
   { sourceType: 'twitter', targetType: 'prompt-text', allowed: false },
   { sourceType: 'twitter', targetType: 'wan2', allowed: false },
   { sourceType: 'twitter', targetType: 'twitter', allowed: false },
+
+  // New Allowed Connections
+  { sourceType: 'prompt-text', targetType: 'prompt-enhancer-image', allowed: true },
+  { sourceType: 'prompt-text', targetType: 'prompt-enhancer-video', allowed: true },
+
+  { sourceType: 'prompt-enhancer-image', targetType: 'wan2', allowed: true },
+  { sourceType: 'prompt-enhancer-video', targetType: 'wan2-video', allowed: true },
+
+  { sourceType: 'vision-analyzer', targetType: 'prompt-text', allowed: true },
+  { sourceType: 'vision-analyzer', targetType: 'prompt-enhancer-image', allowed: true },
+  { sourceType: 'vision-analyzer', targetType: 'prompt-enhancer-video', allowed: true },
+  { sourceType: 'vision-analyzer', targetType: 'wan2', allowed: true },
+  { sourceType: 'vision-analyzer', targetType: 'wan2-video', allowed: true },
 ];
