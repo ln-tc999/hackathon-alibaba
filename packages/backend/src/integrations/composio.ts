@@ -1,6 +1,6 @@
 /**
  * Composio Service Client for Social Media integrations
- * 
+ *
  * This client handles social media posting through the Composio integration platform
  * using API v2 with proper action names.
  */
@@ -106,14 +106,14 @@ export class ComposioClient {
   async getConnectedAccountId(appName: string): Promise<string> {
     try {
       const response = await this.client.get('/v1/connectedAccounts', {
-        params: { appNames: appName }
+        params: { appNames: appName },
       });
-      
+
       const accounts = response.data.items || [];
       if (accounts.length === 0) {
         throw new Error(`No connected ${appName} account found. Please complete OAuth first.`);
       }
-      
+
       return accounts[0].id;
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -131,8 +131,62 @@ export class ComposioClient {
   }
 
   /**
+   * Upload media to Twitter and get media ID
+   *
+   * @param imageUrl - URL of the image to upload
+   * @returns Promise resolving to media ID
+   * @throws Error if upload fails
+   */
+  async uploadMediaToTwitter(imageUrl: string): Promise<string> {
+    try {
+      const response = await this.client.post<ComposioApiResponse>(
+        '/v2/actions/TWITTER_MEDIA_UPLOAD_MEDIA/execute',
+        {
+          connectedAccountId: this.defaultConnectedAccountId,
+          input: {
+            media_url: imageUrl,
+          },
+        }
+      );
+
+      if (!response.data.successful && !response.data.successfull) {
+        throw new Error(response.data.error || 'Failed to upload media to Twitter');
+      }
+
+      const mediaId = response.data.data?.media_id_string || response.data.data?.media_id;
+      if (!mediaId) {
+        throw new Error('Failed to get media ID from Twitter upload response');
+      }
+
+      console.log('[Composio] Media uploaded successfully, media ID:', mediaId);
+      return mediaId;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError;
+
+        if (axiosError.code === 'ECONNABORTED') {
+          throw new Error('Composio API request timeout after 60 seconds');
+        }
+
+        if (axiosError.response) {
+          const status = axiosError.response.status;
+          const data = axiosError.response.data as any;
+
+          throw new Error(
+            `Composio API error (${status}): ${data?.error || data?.message || axiosError.message}`
+          );
+        }
+
+        throw new Error(`Composio API network error: ${axiosError.message}`);
+      }
+
+      throw error;
+    }
+  }
+
+  /**
    * Post content to Twitter via Composio API v2
-   * 
+   *
    * @param params - Post parameters including text, image URL, and user token
    * @returns Promise resolving to tweet URL and ID
    * @throws Error if API request fails or returns an error
@@ -140,15 +194,27 @@ export class ComposioClient {
   async postToTwitter(params: PostToTwitterParams): Promise<PostToTwitterResponse> {
     try {
       const connectedAccountId = params.connectedAccountId || this.defaultConnectedAccountId;
-      
+
       const input: any = {};
 
       if (params.text) {
         input.text = params.text;
       }
 
-      // For Twitter, we'll post text only for now
-      // Media upload requires a different flow with Twitter API v2
+      // If image URL is provided, upload it first and get media ID
+      if (params.imageUrl) {
+        console.log('[Composio] Uploading image to Twitter:', params.imageUrl);
+        const mediaId = await this.uploadMediaToTwitter(params.imageUrl);
+
+        // Add media ID to attachments
+        input.attachments = [
+          {
+            media_id: mediaId,
+          },
+        ];
+        console.log('[Composio] Image uploaded, media ID:', mediaId);
+      }
+
       const response = await this.client.post<ComposioApiResponse>(
         '/v2/actions/TWITTER_CREATION_OF_A_POST/execute',
         {
@@ -171,30 +237,30 @@ export class ComposioClient {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError;
-        
+
         if (axiosError.code === 'ECONNABORTED') {
           throw new Error('Composio API request timeout after 60 seconds');
         }
-        
+
         if (axiosError.response) {
           const status = axiosError.response.status;
           const data = axiosError.response.data as any;
-          
+
           throw new Error(
             `Composio API error (${status}): ${data?.error || data?.message || axiosError.message}`
           );
         }
-        
+
         throw new Error(`Composio API network error: ${axiosError.message}`);
       }
-      
+
       throw error;
     }
   }
 
   /**
    * Get Twitter OAuth authorization URL
-   * 
+   *
    * @returns Promise resolving to OAuth URL and state parameter
    * @throws Error if API request fails
    */
@@ -215,30 +281,28 @@ export class ComposioClient {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError;
-        
+
         if (axiosError.code === 'ECONNABORTED') {
           throw new Error('Composio API request timeout after 30 seconds');
         }
-        
+
         if (axiosError.response) {
           const status = axiosError.response.status;
           const data = axiosError.response.data as any;
-          
-          throw new Error(
-            `Composio API error (${status}): ${data?.message || axiosError.message}`
-          );
+
+          throw new Error(`Composio API error (${status}): ${data?.message || axiosError.message}`);
         }
-        
+
         throw new Error(`Composio API network error: ${axiosError.message}`);
       }
-      
+
       throw error;
     }
   }
 
   /**
    * Handle Twitter OAuth callback and exchange code for token
-   * 
+   *
    * @param code - OAuth authorization code from callback
    * @param state - State parameter for CSRF protection
    * @returns Promise resolving to access token and account handle
@@ -262,23 +326,21 @@ export class ComposioClient {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError;
-        
+
         if (axiosError.code === 'ECONNABORTED') {
           throw new Error('Composio API request timeout after 30 seconds');
         }
-        
+
         if (axiosError.response) {
           const status = axiosError.response.status;
           const data = axiosError.response.data as any;
-          
-          throw new Error(
-            `Composio API error (${status}): ${data?.message || axiosError.message}`
-          );
+
+          throw new Error(`Composio API error (${status}): ${data?.message || axiosError.message}`);
         }
-        
+
         throw new Error(`Composio API network error: ${axiosError.message}`);
       }
-      
+
       throw error;
     }
   }
@@ -286,7 +348,7 @@ export class ComposioClient {
   /**
    * Post content to Instagram via Composio API v2
    * Uses 2-step process: create media container, then publish
-   * 
+   *
    * @param params - Post parameters including image URL and caption
    * @returns Promise resolving to post URL and ID
    * @throws Error if API request fails or returns an error
@@ -294,7 +356,7 @@ export class ComposioClient {
   async postToInstagram(params: PostToInstagramParams): Promise<PostToInstagramResponse> {
     try {
       const connectedAccountId = params.connectedAccountId || this.defaultConnectedAccountId;
-      
+
       // Get Instagram User ID if not provided
       let igUserId = params.igUserId;
       if (!igUserId) {
@@ -366,23 +428,23 @@ export class ComposioClient {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError;
-        
+
         if (axiosError.code === 'ECONNABORTED') {
           throw new Error('Composio API request timeout after 60 seconds');
         }
-        
+
         if (axiosError.response) {
           const status = axiosError.response.status;
           const data = axiosError.response.data as any;
-          
+
           throw new Error(
             `Composio API error (${status}): ${data?.error || data?.message || axiosError.message}`
           );
         }
-        
+
         throw new Error(`Composio API network error: ${axiosError.message}`);
       }
-      
+
       throw error;
     }
   }
@@ -390,7 +452,7 @@ export class ComposioClient {
   /**
    * Wait for Instagram media container to be ready for publishing
    * Polls the container status until it's ready or timeout
-   * 
+   *
    * @param connectedAccountId - Connected account ID
    * @param igUserId - Instagram user ID
    * @param containerId - Media container ID
@@ -406,7 +468,7 @@ export class ComposioClient {
   ): Promise<void> {
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       console.log(`[Composio] Checking media status (attempt ${attempt}/${maxAttempts})...`);
-      
+
       try {
         // Check container status
         const statusResponse = await this.client.post<ComposioApiResponse>(
@@ -441,13 +503,13 @@ export class ComposioClient {
         if (attempt < maxAttempts) {
           const waitTime = attempt <= 3 ? delayMs : delayMs * 1.5;
           console.log(`[Composio] Media not ready yet, waiting ${waitTime}ms...`);
-          await new Promise(resolve => setTimeout(resolve, waitTime));
+          await new Promise((resolve) => setTimeout(resolve, waitTime));
         }
       } catch (error) {
         // If status check fails, wait and retry
         console.warn(`[Composio] Status check failed (attempt ${attempt}):`, error);
         if (attempt < maxAttempts) {
-          await new Promise(resolve => setTimeout(resolve, delayMs));
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
         } else {
           // Last attempt failed, try to publish anyway
           console.warn('[Composio] Status check failed, attempting to publish anyway...');
@@ -462,7 +524,7 @@ export class ComposioClient {
 
   /**
    * Post content to Facebook via Composio API v2
-   * 
+   *
    * @param params - Post parameters including text and optional media URL
    * @returns Promise resolving to post URL and ID
    * @throws Error if API request fails or returns an error
@@ -470,10 +532,10 @@ export class ComposioClient {
   async postToFacebook(params: PostToFacebookParams): Promise<PostToFacebookResponse> {
     try {
       const connectedAccountId = params.connectedAccountId || this.defaultConnectedAccountId;
-      
+
       // Use FACEBOOK_CREATE_PHOTO_POST if media is provided, otherwise FACEBOOK_CREATE_POST
       const action = params.mediaUrl ? 'FACEBOOK_CREATE_PHOTO_POST' : 'FACEBOOK_CREATE_POST';
-      
+
       const input: any = {
         message: params.text,
       };
@@ -501,30 +563,30 @@ export class ComposioClient {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError;
-        
+
         if (axiosError.code === 'ECONNABORTED') {
           throw new Error('Composio API request timeout after 60 seconds');
         }
-        
+
         if (axiosError.response) {
           const status = axiosError.response.status;
           const data = axiosError.response.data as any;
-          
+
           throw new Error(
             `Composio API error (${status}): ${data?.error || data?.message || axiosError.message}`
           );
         }
-        
+
         throw new Error(`Composio API network error: ${axiosError.message}`);
       }
-      
+
       throw error;
     }
   }
 
   /**
    * Post video to TikTok via Composio API v2
-   * 
+   *
    * @param params - Post parameters including video URL and caption
    * @returns Promise resolving to post URL and ID
    * @throws Error if API request fails or returns an error
@@ -532,7 +594,7 @@ export class ComposioClient {
   async postToTikTok(params: PostToTikTokParams): Promise<PostToTikTokResponse> {
     try {
       const connectedAccountId = params.connectedAccountId || this.defaultConnectedAccountId;
-      
+
       // Step 1: Upload video
       const uploadResponse = await this.client.post<ComposioApiResponse>(
         '/v2/actions/TIKTOK_UPLOAD_VIDEO/execute',
@@ -577,30 +639,30 @@ export class ComposioClient {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError;
-        
+
         if (axiosError.code === 'ECONNABORTED') {
           throw new Error('Composio API request timeout after 60 seconds');
         }
-        
+
         if (axiosError.response) {
           const status = axiosError.response.status;
           const data = axiosError.response.data as any;
-          
+
           throw new Error(
             `Composio API error (${status}): ${data?.error || data?.message || axiosError.message}`
           );
         }
-        
+
         throw new Error(`Composio API network error: ${axiosError.message}`);
       }
-      
+
       throw error;
     }
   }
 
   /**
    * Upload video to YouTube via Composio API v2
-   * 
+   *
    * @param params - Upload parameters including video URL, title, and description
    * @returns Promise resolving to video URL and ID
    * @throws Error if API request fails or returns an error
@@ -608,7 +670,7 @@ export class ComposioClient {
   async uploadToYouTube(params: UploadToYouTubeParams): Promise<UploadToYouTubeResponse> {
     try {
       const connectedAccountId = params.connectedAccountId || this.defaultConnectedAccountId;
-      
+
       const response = await this.client.post<ComposioApiResponse>(
         '/v2/actions/YOUTUBE_UPLOAD_VIDEO/execute',
         {
@@ -637,23 +699,23 @@ export class ComposioClient {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError;
-        
+
         if (axiosError.code === 'ECONNABORTED') {
           throw new Error('Composio API request timeout after 60 seconds');
         }
-        
+
         if (axiosError.response) {
           const status = axiosError.response.status;
           const data = axiosError.response.data as any;
-          
+
           throw new Error(
             `Composio API error (${status}): ${data?.error || data?.message || axiosError.message}`
           );
         }
-        
+
         throw new Error(`Composio API network error: ${axiosError.message}`);
       }
-      
+
       throw error;
     }
   }

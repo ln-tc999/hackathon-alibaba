@@ -36,7 +36,7 @@ services:
         - PUBLIC_FINGERPRINT_API_KEY=${PUBLIC_FINGERPRINT_API_KEY}
     container_name: vlowgen-frontend
     ports:
-      - "413:4321"
+      - "80:4321"
     environment:
       - NODE_ENV=${NODE_ENV:-production}
       - HOST=0.0.0.0
@@ -63,10 +63,11 @@ services:
     security_opt:
       - no-new-privileges:true
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:4321/health || exit 1"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:4321/api/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 15s
 
   # Backend service with SSL support
   backend:
@@ -105,15 +106,6 @@ services:
       - vlowgen-network
     security_opt:
       - no-new-privileges:true
-    healthcheck:
-      test: ["CMD-SHELL", "wget --no-check-certificate --no-verbose --tries=1 --spider http://localhost:3001/health || wget --no-check-certificate --no-verbose --tries=1 --spider https://localhost:3001/health || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    volumes:
-      # Mount SSL certificates if using HTTPS
-      - ${SSL_CERT_PATH:-/dev/null}:${SSL_CERT_PATH:-/etc/ssl/certs/dummy.pem}:ro
-      - ${SSL_KEY_PATH:-/dev/null}:${SSL_KEY_PATH:-/etc/ssl/certs/dummy.key}:ro
     deploy:
       resources:
         limits:

@@ -8,6 +8,7 @@ import { ErrorResponse } from '@vlowgen/shared';
 import workflowRouter from './api/workflows';
 import imageHistoryRouter from './api/image-history';
 import schedulerRouter from './api/scheduler';
+import uploadRouter from './api/upload';
 import { schedulerService } from './services/scheduler.service';
 import { logger } from './utils/logger';
 import {
@@ -57,6 +58,7 @@ app.get('/health', (req: Request, res: Response) => {
 app.use('/api/workflows', workflowRouter);
 app.use('/api/image-history', imageHistoryRouter);
 app.use('/api/scheduler', schedulerRouter);
+app.use('/api/upload', uploadRouter);
 // OAuth routes are also in the workflow router, mounted at /api
 app.use('/api', workflowRouter);
 
@@ -67,8 +69,8 @@ app.use((req: Request, res: Response) => {
     error: {
       type: 'user',
       message: `Route ${req.method} ${req.path} not found`,
-      retryable: false
-    }
+      retryable: false,
+    },
   } as ErrorResponse);
 });
 
@@ -114,28 +116,14 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
       type: errorType,
       message: err.message || 'An unexpected error occurred',
       details: process.env.NODE_ENV === 'development' ? err.stack : undefined,
-      retryable
-    }
+      retryable,
+    },
   } as ErrorResponse);
 });
 
 // Start server with optional SSL
 function startServer(): https.Server | ReturnType<typeof app.listen> {
   let server: https.Server | ReturnType<typeof app.listen>;
-  let isHttps = false;
-
-  const onListen = () => {
-    logger.info(`Backend server started`, {
-      protocol: isHttps ? 'HTTPS' : 'HTTP',
-      port: PORT,
-      environment: process.env.NODE_ENV || 'development',
-      ssl: isHttps,
-    });
-
-    // Auto-start scheduler service
-    logger.info('Starting scheduler service...');
-    schedulerService.start();
-  };
 
   if (USE_SSL && SSL_CERT_PATH && SSL_KEY_PATH) {
     try {
@@ -143,19 +131,33 @@ function startServer(): https.Server | ReturnType<typeof app.listen> {
       const key = fs.readFileSync(SSL_KEY_PATH, 'utf8');
 
       server = https.createServer({ cert, key }, app);
-      isHttps = true;
       logger.info('HTTPS server created with SSL certificates');
     } catch (error) {
       logger.error('Failed to load SSL certificates', { error: (error as Error).message });
       logger.info('Falling back to HTTP');
-      server = app.listen(PORT, onListen);
+      server = app.listen(PORT);
     }
   } else {
-    server = app.listen(PORT, onListen);
+    server = app.listen(PORT);
   }
 
-  if (isHttps && server instanceof https.Server) {
-    server.listen(PORT, onListen);
+  if (server instanceof https.Server || 'listen' in server) {
+    const protocol = USE_SSL && SSL_CERT_PATH && SSL_KEY_PATH ? 'HTTPS' : 'HTTP';
+
+    if (server instanceof https.Server) {
+      server.listen(PORT, () => {
+        logger.info(`Backend server started`, {
+          protocol,
+          port: PORT,
+          environment: process.env.NODE_ENV || 'development',
+          ssl: USE_SSL,
+        });
+
+        // Auto-start scheduler service
+        logger.info('Starting scheduler service...');
+        schedulerService.start();
+      });
+    }
   }
 
   return server;

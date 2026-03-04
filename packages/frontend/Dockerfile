@@ -24,6 +24,9 @@ COPY packages/frontend/astro.config.mjs ./packages/frontend/
 COPY packages/frontend/tsconfig.json ./packages/frontend/
 COPY packages/frontend/tailwind.config.mjs ./packages/frontend/
 
+# Copy environment file
+COPY .env ./packages/frontend/.env.production
+
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
