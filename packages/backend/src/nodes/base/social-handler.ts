@@ -1,10 +1,7 @@
-import {
-  WorkflowNode,
-  NodeExecutionResult,
-  ExecutionContext,
-} from '@vlowgen/shared';
+import { WorkflowNode, NodeExecutionResult, ExecutionContext } from '@vlowgen/shared';
 import { NodeHandler } from './handler';
 import { ComposioClient } from '../../integrations/composio';
+import { logger } from '../../utils/logger';
 
 export abstract class BaseSocialMediaHandler implements NodeHandler {
   protected composioClient: ComposioClient | null = null;
@@ -33,7 +30,7 @@ export abstract class BaseSocialMediaHandler implements NodeHandler {
       error,
       startTime,
       endTime,
-      duration: new Date(endTime).getTime() - new Date(startTime).getTime()
+      duration: new Date(endTime).getTime() - new Date(startTime).getTime(),
     };
   }
 
@@ -49,7 +46,7 @@ export abstract class BaseSocialMediaHandler implements NodeHandler {
       output,
       startTime,
       endTime,
-      duration: new Date(endTime).getTime() - new Date(startTime).getTime()
+      duration: new Date(endTime).getTime() - new Date(startTime).getTime(),
     };
   }
 
@@ -93,7 +90,7 @@ export abstract class BaseSocialMediaHandler implements NodeHandler {
           text = input;
           console.log('[SocialHandler] Found text:', text);
         }
-      } 
+      }
       // Handle object inputs (from nodes like Wan2, Preview, etc.)
       else if (input && typeof input === 'object') {
         // Priority 1: Check for imageUrl property (from Wan2 output)
@@ -101,13 +98,13 @@ export abstract class BaseSocialMediaHandler implements NodeHandler {
           imageUrl = input.imageUrl;
           console.log('[SocialHandler] Found imageUrl property:', imageUrl);
         }
-        
+
         // Priority 2: Check for videoUrl property
         if (typeof input.videoUrl === 'string' && input.videoUrl) {
           videoUrl = input.videoUrl;
           console.log('[SocialHandler] Found videoUrl property:', videoUrl);
         }
-        
+
         // Priority 3: Check for text/caption/prompt
         if (typeof input.text === 'string' && input.text) {
           text = input.text;
@@ -119,7 +116,7 @@ export abstract class BaseSocialMediaHandler implements NodeHandler {
           text = input.prompt;
           console.log('[SocialHandler] Found prompt property:', text);
         }
-        
+
         // Priority 4: Check for generic output property (legacy support)
         if (typeof input.output === 'string' && input.output) {
           if (input.output.startsWith('http://') || input.output.startsWith('https://')) {
@@ -138,7 +135,14 @@ export abstract class BaseSocialMediaHandler implements NodeHandler {
       }
     }
 
-    console.log('[SocialHandler] Extracted media - text:', text, 'imageUrl:', imageUrl, 'videoUrl:', videoUrl);
+    console.log(
+      '[SocialHandler] Extracted media - text:',
+      text,
+      'imageUrl:',
+      imageUrl,
+      'videoUrl:',
+      videoUrl
+    );
 
     return { text, imageUrl, videoUrl };
   }
@@ -152,7 +156,11 @@ export abstract class BaseSocialMediaHandler implements NodeHandler {
 
     try {
       console.log(`[${this.platformName}Handler] Starting execution for node ${node.id}`);
-      console.log(`[${this.platformName}Handler] Received inputs:`, JSON.stringify(inputs, null, 2));
+      console.log(
+        `[${this.platformName}Handler] Received inputs:`,
+        JSON.stringify(inputs, null, 2)
+      );
+      console.log(`[${this.platformName}Handler] Node data:`, JSON.stringify(node.data, null, 2));
 
       if (!this.validateInputs(inputs)) {
         return this.createErrorResult(
@@ -180,9 +188,22 @@ export abstract class BaseSocialMediaHandler implements NodeHandler {
         );
       }
 
-      const { text, imageUrl, videoUrl } = this.extractMediaFromInputs(inputs);
+      let { text, imageUrl, videoUrl } = this.extractMediaFromInputs(inputs);
 
-      console.log(`[${this.platformName}Handler] Extracted - text: "${text}", imageUrl: "${imageUrl}", videoUrl: "${videoUrl}"`);
+      // Check if media URL is provided in node data (e.g., from scheduler)
+      const nodeData = node.data as any;
+      if (!imageUrl && nodeData.mediaUrl) {
+        imageUrl = nodeData.mediaUrl;
+        console.log(`[${this.platformName}Handler] Using mediaUrl from node data:`, imageUrl);
+      }
+      if (!videoUrl && nodeData.mediaType === 'video' && nodeData.mediaUrl) {
+        videoUrl = nodeData.mediaUrl;
+        console.log(`[${this.platformName}Handler] Using videoUrl from node data:`, videoUrl);
+      }
+
+      console.log(
+        `[${this.platformName}Handler] Extracted - text: "${text}", imageUrl: "${imageUrl}", videoUrl: "${videoUrl}"`
+      );
 
       const validationError = this.validateMedia(text, imageUrl, videoUrl);
       if (validationError) {
@@ -193,9 +214,9 @@ export abstract class BaseSocialMediaHandler implements NodeHandler {
       console.log(`[${this.platformName}Handler] Validation passed, posting to social media...`);
 
       const result = await this.postToSocialMedia(text, imageUrl, videoUrl);
-      
+
       console.log(`[${this.platformName}Handler] Post successful:`, result);
-      
+
       return this.createSuccessResult(node.id, result, startTime);
     } catch (error) {
       console.error(`[${this.platformName}Handler] Execution failed:`, error);

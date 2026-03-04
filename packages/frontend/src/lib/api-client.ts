@@ -125,10 +125,7 @@ function mapErrorToUserMessage(error: ErrorResponse['error']): string {
  * Makes an HTTP request to the backend API
  * Logs all errors with request/response details for debugging
  */
-async function apiRequest<T>(
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<T> {
+async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_URL}${endpoint}`;
   const method = options.method || 'GET';
   let requestBody: any;
@@ -150,6 +147,8 @@ async function apiRequest<T>(
         ...options.headers,
       },
     });
+
+    console.log('[API Client] Response status:', response.status);
 
     const data = await response.json();
 
@@ -176,11 +175,13 @@ async function apiRequest<T>(
   } catch (error) {
     // Handle network errors or JSON parsing errors
     if (error instanceof ApiError) {
+      console.error('[API Client] ApiError:', error.message, error.statusCode);
       throw error;
     }
 
     // Log network error
     if (error instanceof Error) {
+      console.error('[API Client] Network error:', error.message, error.stack);
       errorLogger.logNetworkError(endpoint, method, error);
     }
 
@@ -205,6 +206,10 @@ export async function executeWorkflow(
     credentials,
   };
 
+  console.log('[API Client] executeWorkflow called');
+  console.log('[API Client] API URL:', API_URL);
+  console.log('[API Client] Workflow:', JSON.stringify(workflow, null, 2));
+
   return apiRequest<ExecuteWorkflowResponse>('/api/workflows/execute', {
     method: 'POST',
     body: JSON.stringify(request),
@@ -214,9 +219,7 @@ export async function executeWorkflow(
 /**
  * Validates a workflow structure without executing it
  */
-export async function validateWorkflow(
-  workflow: Workflow
-): Promise<ValidateWorkflowResponse> {
+export async function validateWorkflow(workflow: Workflow): Promise<ValidateWorkflowResponse> {
   const request: ValidateWorkflowRequest = {
     workflow,
   };
@@ -242,11 +245,8 @@ export async function getTwitterAuthUrl(): Promise<{ authUrl: string }> {
 export async function handleTwitterCallback(
   code: string
 ): Promise<{ token: string; accountHandle: string }> {
-  return apiRequest<{ token: string; accountHandle: string }>(
-    '/api/auth/twitter/callback',
-    {
-      method: 'POST',
-      body: JSON.stringify({ code }),
-    }
-  );
+  return apiRequest<{ token: string; accountHandle: string }>('/api/auth/twitter/callback', {
+    method: 'POST',
+    body: JSON.stringify({ code }),
+  });
 }

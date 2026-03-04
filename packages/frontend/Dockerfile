@@ -24,6 +24,9 @@ COPY packages/frontend/astro.config.mjs ./packages/frontend/
 COPY packages/frontend/tsconfig.json ./packages/frontend/
 COPY packages/frontend/tailwind.config.mjs ./packages/frontend/
 
+# Copy environment file
+COPY .env ./packages/frontend/.env.production
+
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
@@ -33,6 +36,18 @@ RUN pnpm --filter @vlowgen/shared build
 # Copy frontend source code
 COPY packages/frontend/src ./packages/frontend/src
 COPY packages/frontend/public ./packages/frontend/public
+
+# Inject client-side environment variables at build time
+ARG PUBLIC_API_URL
+ENV PUBLIC_API_URL=$PUBLIC_API_URL
+ARG PUBLIC_WAN2_API_KEY
+ENV PUBLIC_WAN2_API_KEY=$PUBLIC_WAN2_API_KEY
+ARG PUBLIC_OPENROUTER_API_KEY
+ENV PUBLIC_OPENROUTER_API_KEY=$PUBLIC_OPENROUTER_API_KEY
+ARG PUBLIC_COMPOSIO_API_KEY
+ENV PUBLIC_COMPOSIO_API_KEY=$PUBLIC_COMPOSIO_API_KEY
+ARG PUBLIC_FINGERPRINT_API_KEY
+ENV PUBLIC_FINGERPRINT_API_KEY=$PUBLIC_FINGERPRINT_API_KEY
 
 # Build the Astro application
 RUN pnpm --filter @vlowgen/frontend build
