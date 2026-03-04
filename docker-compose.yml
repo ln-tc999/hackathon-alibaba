@@ -106,8 +106,8 @@ services:
       retries: 3
     volumes:
       # Mount SSL certificates if using HTTPS
-      - ${SSL_CERT_PATH}:${SSL_CERT_PATH}:ro
-      - ${SSL_KEY_PATH}:${SSL_KEY_PATH}:ro
+      - ${SSL_CERT_PATH:-/dev/null}:${SSL_CERT_PATH:-/etc/ssl/certs/dummy.pem}:ro
+      - ${SSL_KEY_PATH:-/dev/null}:${SSL_KEY_PATH:-/etc/ssl/certs/dummy.key}:ro
     deploy:
       resources:
         limits:
