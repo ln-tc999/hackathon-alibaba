@@ -1,8 +1,8 @@
 /**
  * Workflow API Router
- * 
+ *
  * Provides REST API endpoints for workflow execution and validation.
- * 
+ *
  * Requirements: 13.2, 13.3, 13.4
  */
 
@@ -13,7 +13,7 @@ import {
   ExecuteWorkflowResponse,
   ValidateWorkflowRequest,
   ValidateWorkflowResponse,
-  ErrorResponse
+  ErrorResponse,
 } from '@vlowgen/shared';
 import { WorkflowExecutionEngine } from '../engine/execution-engine';
 import { WorkflowValidator } from '../engine/validator';
@@ -38,38 +38,45 @@ const tokenStorage = new Map<string, { token: string; accountHandle: string }>()
 
 /**
  * POST /api/workflows/execute
- * 
+ *
  * Execute a workflow with provided credentials
  * Requirements: 13.2, 13.3, 13.4
  */
 router.post('/execute', async (req: Request, res: Response) => {
+  console.log('[Workflows API] POST /execute called');
+  console.log('[Workflows API] Request body keys:', Object.keys(req.body));
+
   try {
     // Validate request body
     const requestBody = req.body as ExecuteWorkflowRequest;
 
     if (!requestBody.workflow) {
+      console.log('[Workflows API] Missing workflow in request body');
       return res.status(400).json({
         error: {
           type: 'user',
           message: 'Missing workflow in request body',
-          retryable: false
-        }
+          retryable: false,
+        },
       } as ErrorResponse);
     }
+
+    console.log('[Workflows API] Workflow nodes:', requestBody.workflow.nodes?.length);
+    console.log('[Workflows API] Workflow edges:', requestBody.workflow.edges?.length);
 
     if (!requestBody.credentials) {
       return res.status(400).json({
         error: {
           type: 'user',
           message: 'Missing credentials in request body',
-          retryable: false
-        }
+          retryable: false,
+        },
       } as ErrorResponse);
     }
 
     // Create execution engine with node handlers
     const engine = new WorkflowExecutionEngine();
-    
+
     // Register node handlers
     engine.registerNodeHandler('prompt-text', new PromptTextNodeHandler());
     engine.registerNodeHandler('wan2', new Wan2NodeHandler());
@@ -95,26 +102,26 @@ router.post('/execute', async (req: Request, res: Response) => {
       executionId: executionResult.executionId,
       status: executionResult.status === 'success' ? 'success' : 'error',
       results: executionResult,
-      error: executionResult.error
+      error: executionResult.error,
     };
 
     res.json(response);
   } catch (error) {
     console.error('Workflow execution error:', error);
-    
+
     res.status(500).json({
       error: {
         type: 'system',
         message: error instanceof Error ? error.message : 'Unknown execution error',
-        retryable: true
-      }
+        retryable: true,
+      },
     } as ErrorResponse);
   }
 });
 
 /**
  * POST /api/workflows/validate
- * 
+ *
  * Validate a workflow structure without executing it
  * Requirements: 13.3
  */
@@ -128,8 +135,8 @@ router.post('/validate', async (req: Request, res: Response) => {
         error: {
           type: 'user',
           message: 'Missing workflow in request body',
-          retryable: false
-        }
+          retryable: false,
+        },
       } as ErrorResponse);
     }
 
@@ -140,26 +147,26 @@ router.post('/validate', async (req: Request, res: Response) => {
     // Return validation results
     const response: ValidateWorkflowResponse = {
       valid: errors.length === 0,
-      errors
+      errors,
     };
 
     res.json(response);
   } catch (error) {
     console.error('Workflow validation error:', error);
-    
+
     res.status(500).json({
       error: {
         type: 'system',
         message: error instanceof Error ? error.message : 'Unknown validation error',
-        retryable: true
-      }
+        retryable: true,
+      },
     } as ErrorResponse);
   }
 });
 
 /**
  * GET /api/auth/twitter/url
- * 
+ *
  * Get Twitter OAuth authorization URL
  * Requirements: 11.2
  */
@@ -167,14 +174,14 @@ router.get('/auth/twitter/url', async (req: Request, res: Response) => {
   try {
     // Get Composio API key from environment
     const composioApiKey = process.env.COMPOSIO_API_KEY;
-    
+
     if (!composioApiKey) {
       return res.status(500).json({
         error: {
           type: 'system',
           message: 'Composio API key not configured',
-          retryable: false
-        }
+          retryable: false,
+        },
       } as ErrorResponse);
     }
 
@@ -184,24 +191,24 @@ router.get('/auth/twitter/url', async (req: Request, res: Response) => {
 
     res.json({
       authUrl: authResponse.authUrl,
-      state: authResponse.state
+      state: authResponse.state,
     });
   } catch (error) {
     console.error('Twitter OAuth URL error:', error);
-    
+
     res.status(500).json({
       error: {
         type: 'service',
         message: error instanceof Error ? error.message : 'Failed to get Twitter auth URL',
-        retryable: true
-      }
+        retryable: true,
+      },
     } as ErrorResponse);
   }
 });
 
 /**
  * GET /api/auth/twitter/callback
- * 
+ *
  * Handle Twitter OAuth callback and store token
  * Requirements: 11.3
  */
@@ -214,8 +221,8 @@ router.get('/auth/twitter/callback', async (req: Request, res: Response) => {
         error: {
           type: 'user',
           message: 'Missing or invalid authorization code',
-          retryable: false
-        }
+          retryable: false,
+        },
       } as ErrorResponse);
     }
 
@@ -224,21 +231,21 @@ router.get('/auth/twitter/callback', async (req: Request, res: Response) => {
         error: {
           type: 'user',
           message: 'Missing or invalid state parameter',
-          retryable: false
-        }
+          retryable: false,
+        },
       } as ErrorResponse);
     }
 
     // Get Composio API key from environment
     const composioApiKey = process.env.COMPOSIO_API_KEY;
-    
+
     if (!composioApiKey) {
       return res.status(500).json({
         error: {
           type: 'system',
           message: 'Composio API key not configured',
-          retryable: false
-        }
+          retryable: false,
+        },
       } as ErrorResponse);
     }
 
@@ -250,30 +257,31 @@ router.get('/auth/twitter/callback', async (req: Request, res: Response) => {
     // Using state as the key for simplicity
     tokenStorage.set(state, {
       token: callbackResponse.token,
-      accountHandle: callbackResponse.accountHandle
+      accountHandle: callbackResponse.accountHandle,
     });
 
     res.json({
       success: true,
       accountHandle: callbackResponse.accountHandle,
-      tokenKey: state // Return state as token key for frontend to use
+      tokenKey: state, // Return state as token key for frontend to use
     });
   } catch (error) {
     console.error('Twitter OAuth callback error:', error);
-    
+
     res.status(500).json({
       error: {
         type: 'service',
-        message: error instanceof Error ? error.message : 'Failed to complete Twitter authentication',
-        retryable: true
-      }
+        message:
+          error instanceof Error ? error.message : 'Failed to complete Twitter authentication',
+        retryable: true,
+      },
     } as ErrorResponse);
   }
 });
 
 /**
  * GET /api/auth/twitter/token/:tokenKey
- * 
+ *
  * Retrieve stored Twitter token by key
  * Helper endpoint for frontend to get token for workflow execution
  */
@@ -288,24 +296,24 @@ router.get('/auth/twitter/token/:tokenKey', (req: Request, res: Response) => {
         error: {
           type: 'user',
           message: 'Token not found. Please authenticate again.',
-          retryable: false
-        }
+          retryable: false,
+        },
       } as ErrorResponse);
     }
 
     res.json({
       token: tokenData.token,
-      accountHandle: tokenData.accountHandle
+      accountHandle: tokenData.accountHandle,
     });
   } catch (error) {
     console.error('Token retrieval error:', error);
-    
+
     res.status(500).json({
       error: {
         type: 'system',
         message: error instanceof Error ? error.message : 'Failed to retrieve token',
-        retryable: false
-      }
+        retryable: false,
+      },
     } as ErrorResponse);
   }
 });
