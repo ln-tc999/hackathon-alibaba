@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: packages/frontend/Dockerfile
     ports:
-      - "4321:4321"
+      - "80:4321"
     environment:
       - NODE_ENV=production
       - HOST=0.0.0.0
