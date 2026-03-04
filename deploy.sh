@@ -1,15 +1,14 @@
 #!/bin/bash
 
-# VlowGen Platform Deployment Script for Alibaba Cloud VPS
+# VlowGen Production Deployment Script
 # Usage: ./deploy.sh [production|staging]
 
-set -e  # Exit on any error
+set -e
 
-# Configuration
 ENVIRONMENT=${1:-production}
-PROJECT_NAME="vlowgen"
-COMPOSE_FILE="docker-compose.yml"
-ENV_FILE=".env.${ENVIRONMENT}"
+DOMAIN=${DOMAIN:-yourdomain.com}
+BACKUP_DIR="./backups"
+LOG_FILE="./deploy-$(date +%Y%m%d_%H%M%S).log"
 
 # Colors for output
 RED='\033[0;31m'
@@ -19,86 +18,251 @@ NC='\033[0m' # No Color
 
 # Logging functions
 log() {
-    echo -e "${GREEN}[$(date +'%Y-%m-%d %H:%M:%S')] $1${NC}"
-}
-
-warn() {
-    echo -e "${YELLOW}[$(date +'%Y-%m-%d %H:%M:%S')] WARNING: $1${NC}"
+    echo -e "${GREEN}[$(date +'%Y-%m-%d %H:%M:%S')]${NC} $1" | tee -a "$LOG_FILE"
 }
 
 error() {
-    echo -e "${RED}[$(date +'%Y-%m-%d %H:%M:%S')] ERROR: $1${NC}"
+    echo -e "${RED}[ERROR]${NC} $1" | tee -a "$LOG_FILE"
     exit 1
 }
 
-# Check if running as root
-if [[ $EUID -eq 0 ]]; then
-   error "This script should not be run as root"
-fi
+warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1" | tee -a "$LOG_FILE"
+}
 
-# Check if docker and docker-compose are installed
-if ! command -v docker &> /dev/null; then
-    error "Docker is not installed. Please install Docker first."
-fi
+# Pre-deployment checks
+pre_deployment_checks() {
+    log "Running pre-deployment checks..."
 
-if ! command -v docker-compose &> /dev/null; then
-    error "Docker Compose is not installed. Please install Docker Compose first."
-fi
+    # Check if Docker is installed
+    if ! command -v docker &> /dev/null; then
+        error "Docker is not installed"
+    fi
+    log "✓ Docker is installed"
 
-# Check if environment file exists
-if [[ ! -f "$ENV_FILE" ]]; then
-    error "Environment file $ENV_FILE not found. Please create it from the template."
-fi
+    # Check if Docker Compose is installed
+    if ! command -v docker-compose &> /dev/null; then
+        error "Docker Compose is not installed"
+    fi
+    log "✓ Docker Compose is installed"
 
-log "Starting $ENVIRONMENT deployment of $PROJECT_NAME"
+    # Check if .env.production exists
+    if [ ! -f ".env.production" ]; then
+        error ".env.production file not found. Copy from .env.production.template"
+    fi
+    log "✓ .env.production exists"
 
-# Stop existing containers
-log "Stopping existing containers..."
-docker-compose -f $COMPOSE_FILE down --remove-orphans || warn "No existing containers to stop"
+    # Check if nginx.conf exists
+    if [ ! -f "nginx.conf" ]; then
+        error "nginx.conf not found"
+    fi
+    log "✓ nginx.conf exists"
 
-# Pull latest images (if using remote registry)
-# log "Pulling latest images..."
-# docker-compose -f $COMPOSE_FILE pull
+    # Check if SSL certificates exist
+    if [ "$ENVIRONMENT" = "production" ]; then
+        if [ ! -f "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" ]; then
+            warning "SSL certificate not found at /etc/letsencrypt/live/$DOMAIN/fullchain.pem"
+            warning "Please run: sudo certbot certonly --standalone -d $DOMAIN"
+        else
+            log "✓ SSL certificate found"
+        fi
+    fi
+}
 
-# Build and start containers
-log "Building and starting containers..."
-docker-compose -f $COMPOSE_FILE --env-file $ENV_FILE up -d --build
+# Backup current deployment
+backup_deployment() {
+    log "Creating backup..."
+
+    mkdir -p "$BACKUP_DIR"
+    BACKUP_NAME="backup-$(date +%Y%m%d_%H%M%S)"
+    BACKUP_PATH="$BACKUP_DIR/$BACKUP_NAME"
+
+    mkdir -p "$BACKUP_PATH"
+
+    # Backup docker-compose files
+    cp docker-compose.yml "$BACKUP_PATH/" 2>/dev/null || true
+    cp docker-compose.prod.yml "$BACKUP_PATH/" 2>/dev/null || true
+
+    # Backup environment files
+    cp .env.production "$BACKUP_PATH/" 2>/dev/null || true
+
+    # Backup nginx config
+    cp nginx.conf "$BACKUP_PATH/" 2>/dev/null || true
+
+    # Backup MinIO data
+    if docker-compose ps minio &> /dev/null; then
+        log "Backing up MinIO data..."
+        docker-compose exec -T minio mc mirror /data "$BACKUP_PATH/minio-data" || true
+    fi
+
+    log "✓ Backup created at $BACKUP_PATH"
+    echo "$BACKUP_PATH" > "$BACKUP_DIR/latest-backup"
+}
+
+# Build Docker images
+build_images() {
+    log "Building Docker images..."
+
+    if [ "$ENVIRONMENT" = "production" ]; then
+        docker-compose -f docker-compose.prod.yml build --no-cache
+    else
+        docker-compose build --no-cache
+    fi
+
+    log "✓ Docker images built successfully"
+}
+
+# Stop current services
+stop_services() {
+    log "Stopping current services..."
+
+    if [ "$ENVIRONMENT" = "production" ]; then
+        docker-compose -f docker-compose.prod.yml down || true
+    else
+        docker-compose down || true
+    fi
+
+    log "✓ Services stopped"
+}
+
+# Start services
+start_services() {
+    log "Starting services..."
+
+    if [ "$ENVIRONMENT" = "production" ]; then
+        docker-compose -f docker-compose.prod.yml up -d
+    else
+        docker-compose up -d
+    fi
+
+    log "✓ Services started"
+}
 
 # Wait for services to be healthy
-log "Waiting for services to become healthy..."
-sleep 10
+wait_for_services() {
+    log "Waiting for services to be healthy..."
 
-# Check service status
-log "Checking service status..."
-docker-compose -f $COMPOSE_FILE ps
+    local max_attempts=30
+    local attempt=0
 
-# Check health endpoints
-log "Checking health endpoints..."
-sleep 5
+    while [ $attempt -lt $max_attempts ]; do
+        if docker-compose ps | grep -q "healthy"; then
+            log "✓ Services are healthy"
+            return 0
+        fi
 
-if curl -f http://localhost:3000 > /dev/null 2>&1; then
-    log "Frontend is accessible"
-else
-    warn "Frontend may not be ready yet"
-fi
+        attempt=$((attempt + 1))
+        echo -n "."
+        sleep 2
+    done
 
-if curl -f http://localhost:3001/health > /dev/null 2>&1; then
-    log "Backend is healthy"
-else
-    warn "Backend may not be ready yet"
-fi
+    error "Services failed to become healthy"
+}
 
-# Show logs
-log "Showing recent logs..."
-docker-compose -f $COMPOSE_FILE logs --tail=20
+# Run health checks
+health_checks() {
+    log "Running health checks..."
 
-log "Deployment completed successfully!"
-log "Frontend: http://localhost:3000"
-log "Backend API: http://localhost:3001"
-log "Backend Health: http://localhost:3001/health"
+    # Check backend
+    if curl -sf http://localhost:3001/health > /dev/null; then
+        log "✓ Backend is healthy"
+    else
+        error "Backend health check failed"
+    fi
 
-# Cleanup old images
-log "Cleaning up old Docker images..."
-docker image prune -f
+    # Check frontend
+    if curl -sf http://localhost:4321 > /dev/null; then
+        log "✓ Frontend is healthy"
+    else
+        error "Frontend health check failed"
+    fi
 
-log "Deployment finished!"
+    # Check MinIO
+    if docker-compose exec -T minio mc admin info minio > /dev/null 2>&1; then
+        log "✓ MinIO is healthy"
+    else
+        error "MinIO health check failed"
+    fi
+}
+
+# Verify SSL certificate
+verify_ssl() {
+    if [ "$ENVIRONMENT" = "production" ]; then
+        log "Verifying SSL certificate..."
+
+        CERT_PATH="/etc/letsencrypt/live/$DOMAIN/fullchain.pem"
+        if [ -f "$CERT_PATH" ]; then
+            EXPIRY=$(openssl x509 -in "$CERT_PATH" -noout -dates | grep notAfter | cut -d= -f2)
+            log "✓ SSL certificate valid until: $EXPIRY"
+        fi
+    fi
+}
+
+# Cleanup old backups
+cleanup_backups() {
+    log "Cleaning up old backups..."
+
+    find "$BACKUP_DIR" -type d -mtime +7 -exec rm -rf {} \; 2>/dev/null || true
+
+    log "✓ Old backups cleaned up"
+}
+
+# Rollback to previous deployment
+rollback() {
+    log "Rolling back to previous deployment..."
+
+    LATEST_BACKUP=$(cat "$BACKUP_DIR/latest-backup" 2>/dev/null)
+
+    if [ -z "$LATEST_BACKUP" ]; then
+        error "No backup found for rollback"
+    fi
+
+    log "Restoring from $LATEST_BACKUP..."
+
+    # Stop current services
+    docker-compose down || true
+
+    # Restore files
+    cp "$LATEST_BACKUP/docker-compose.yml" . 2>/dev/null || true
+    cp "$LATEST_BACKUP/.env.production" . 2>/dev/null || true
+    cp "$LATEST_BACKUP/nginx.conf" . 2>/dev/null || true
+
+    # Restart services
+    docker-compose up -d
+
+    log "✓ Rollback completed"
+}
+
+# Main deployment flow
+main() {
+    log "Starting deployment for $ENVIRONMENT environment..."
+    log "Domain: $DOMAIN"
+    log "Log file: $LOG_FILE"
+
+    pre_deployment_checks
+    backup_deployment
+    build_images
+    stop_services
+    start_services
+    wait_for_services
+    health_checks
+    verify_ssl
+    cleanup_backups
+
+    log "✓ Deployment completed successfully!"
+    log "Services are running:"
+    docker-compose ps
+}
+
+# Handle errors
+trap 'error "Deployment failed. Check $LOG_FILE for details"' ERR
+
+# Parse arguments
+case "${1:-}" in
+    rollback)
+        rollback
+        ;;
+    *)
+        main
+        ;;
+esac
