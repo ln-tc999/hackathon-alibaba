@@ -1,5 +1,5 @@
 
-import { X, CheckCircle, XCircle, Loader2, ExternalLink } from 'lucide-react';
+import { X, CheckCircle, XCircle, Loader2, ExternalLink, Download, Image as ImageIcon, Video } from 'lucide-react';
 import type { ExecutionResult, NodeExecutionResult } from '@vlowgen/shared';
 
 interface ExecutionPanelProps {
@@ -9,7 +9,7 @@ interface ExecutionPanelProps {
 
 /**
  * ExecutionPanel displays workflow execution progress and results
- * Shows current executing node, final results, and Twitter URL
+ * Shows current executing node, final results, media previews, and social media URLs
  * Validates: Requirements 7.3, 10.3, 12.4
  */
 export default function ExecutionPanel({ execution, onClose }: ExecutionPanelProps) {
@@ -22,10 +22,35 @@ export default function ExecutionPanel({ execution, onClose }: ExecutionPanelPro
     (result) => result.status === 'success' && !result.endTime
   );
 
-  // Get Twitter URL from Twitter node result
+  // Get social media URLs from results
   const twitterUrl = Object.values(nodeResults).find(
     (result) => result.nodeId.includes('twitter') && result.output?.tweetUrl
   )?.output?.tweetUrl;
+
+  const instagramUrl = Object.values(nodeResults).find(
+    (result) => result.nodeId.includes('instagram') && result.output?.postUrl
+  )?.output?.postUrl;
+
+  // Get media preview from Wan2 or Preview node
+  const mediaResult = Object.values(nodeResults).find(
+    (result) => (result.nodeId.includes('wan2') || result.nodeId.includes('preview')) && 
+                result.status === 'success' && 
+                result.output
+  );
+
+  let previewUrl: string | null = null;
+  let mediaType: 'image' | 'video' = 'image';
+
+  if (mediaResult?.output) {
+    const output = mediaResult.output;
+    if (typeof output === 'string') {
+      previewUrl = output;
+    } else if (typeof output === 'object') {
+      // Handle different output formats
+      previewUrl = output.previewUrl || output.mediaUrl || output.imageUrl || output.videoUrl || null;
+      mediaType = output.mediaType || (output.videoUrl ? 'video' : 'image');
+    }
+  }
 
   // Calculate execution progress
   const totalNodes = Object.keys(nodeResults).length;
@@ -35,9 +60,9 @@ export default function ExecutionPanel({ execution, onClose }: ExecutionPanelPro
   const progressPercentage = totalNodes > 0 ? (completedNodes / totalNodes) * 100 : 0;
 
   return (
-    <div className="fixed bottom-4 right-4 w-96 bg-white rounded-lg shadow-2xl border border-gray-200 z-50">
+    <div className="fixed bottom-4 right-4 w-[480px] bg-white rounded-xl shadow-2xl border border-gray-200 z-50 max-h-[80vh] flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center gap-2">
           {status === 'running' && (
             <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
@@ -64,7 +89,7 @@ export default function ExecutionPanel({ execution, onClose }: ExecutionPanelPro
       </div>
 
       {/* Content */}
-      <div className="p-4 max-h-96 overflow-y-auto">
+      <div className="p-4 overflow-y-auto flex-1">
         {/* Progress bar */}
         {status === 'running' && (
           <div className="mb-4">
@@ -101,6 +126,57 @@ export default function ExecutionPanel({ execution, onClose }: ExecutionPanelPro
           </div>
         )}
 
+        {/* Media Preview */}
+        {previewUrl && (
+          <div className="mb-4 p-3 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-200">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                {mediaType === 'video' ? (
+                  <Video className="w-4 h-4 text-purple-600" />
+                ) : (
+                  <ImageIcon className="w-4 h-4 text-purple-600" />
+                )}
+                <span className="text-sm font-semibold text-purple-900">
+                  Generated {mediaType === 'video' ? 'Video' : 'Image'}
+                </span>
+              </div>
+              <a
+                href={previewUrl}
+                download
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-purple-50 border border-purple-200 rounded-lg transition-colors text-xs font-medium text-purple-700"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Download</span>
+              </a>
+            </div>
+            
+            {mediaType === 'video' ? (
+              <video
+                src={previewUrl}
+                controls
+                className="w-full rounded-lg border border-purple-200 shadow-sm"
+                style={{ maxHeight: '300px' }}
+              />
+            ) : (
+              <img
+                src={previewUrl}
+                alt="Generated content"
+                className="w-full rounded-lg border border-purple-200 shadow-sm"
+                onError={(e) => {
+                  console.error('Failed to load image:', previewUrl);
+                  e.currentTarget.style.display = 'none';
+                  const errorDiv = document.createElement('div');
+                  errorDiv.className = 'p-4 bg-red-50 rounded-lg border border-red-200 text-sm text-red-700';
+                  errorDiv.textContent = 'Failed to load image preview';
+                  e.currentTarget.parentElement?.appendChild(errorDiv);
+                }}
+              />
+            )}
+          </div>
+        )}
+
         {/* Node results */}
         <div className="space-y-2">
           <h4 className="text-sm font-medium text-gray-700 mb-2">Node Results</h4>
@@ -109,21 +185,42 @@ export default function ExecutionPanel({ execution, onClose }: ExecutionPanelPro
           ))}
         </div>
 
-        {/* Twitter URL (final result) */}
-        {status === 'success' && twitterUrl && (
-          <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
-            <p className="text-sm font-medium text-green-900 mb-2">
-              Posted to Twitter
-            </p>
-            <a
-              href={twitterUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 transition-colors"
-            >
-              <span>View Tweet</span>
-              <ExternalLink className="w-4 h-4" />
-            </a>
+        {/* Social Media URLs */}
+        {status === 'success' && (twitterUrl || instagramUrl) && (
+          <div className="mt-4 space-y-2">
+            {twitterUrl && (
+              <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="text-sm font-medium text-blue-900 mb-2">
+                  Posted to Twitter
+                </p>
+                <a
+                  href={twitterUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 transition-colors"
+                >
+                  <span>View Tweet</span>
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+              </div>
+            )}
+            
+            {instagramUrl && (
+              <div className="p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
+                <p className="text-sm font-medium text-purple-900 mb-2">
+                  Posted to Instagram
+                </p>
+                <a
+                  href={instagramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-sm text-purple-600 hover:text-purple-800 transition-colors"
+                >
+                  <span>View Post</span>
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -260,13 +260,20 @@ export class Wan2NodeHandler implements NodeHandler {
 
       console.log('[Wan2Handler] Image saved to history:', imageId);
 
-      // Return MinIO URL in output (Requirement 9.2)
+      // IMPORTANT: Use Dashscope URL for social media posting (publicly accessible)
+      // MinIO URL is for internal storage only (localhost not accessible from Instagram API)
+      const publicImageUrl = result.imageUrl; // Use Dashscope URL which is publicly accessible
+
+      console.log('[Wan2Handler] Using public URL for output:', publicImageUrl);
+
+      // Return public Dashscope URL in output (Requirement 9.2)
       const endTime = new Date().toISOString();
       return {
         nodeId: node.id,
         status: 'success',
         output: {
-          imageUrl: minioUrl,
+          imageUrl: publicImageUrl, // Use public Dashscope URL
+          minioUrl, // Keep MinIO URL for reference
           imageId,
           prompt,
           model: nodeData.model || 'wan2.1-t2i-turbo',

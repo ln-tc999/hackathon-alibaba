@@ -24,6 +24,10 @@ bun.lockb
 .env.production.local
 .env*.local
 *.env
+.env.example
+# IMPORTANT: .env.production.template is tracked, but .env.production is not
+!.env.production.template
+.env.production
 
 # ============================================
 # Build Outputs
@@ -185,6 +189,28 @@ temp/
 *.pfx
 secrets/
 .secrets/
+certs/
+ssl/
+.ssl/
+
+# ============================================
+# Deployment & Backups
+# ============================================
+backups/
+backup-*.sql
+backup-*.tar.gz
+*.backup
+deploy-*.log
+.deploy/
+
+# ============================================
+# Docker
+# ============================================
+.dockerignore
+docker-compose.override.yml
+.docker/
+docker-volumes/
+nginx-cache/
 
 # ============================================
 # Documentation & Reports

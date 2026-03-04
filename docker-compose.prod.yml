@@ -1,27 +1,57 @@
+# Production Docker Compose Configuration with Nginx and SSL
+
+version: '3.8'
+
 services:
+  # Nginx Reverse Proxy with SSL
+  nginx:
+    image: nginx:alpine
+    container_name: vlowgen-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ./nginx-cache:/var/cache/nginx
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - vlowgen-network
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   # MinIO Object Storage
   minio:
     image: minio/minio:latest
     container_name: vlowgen-minio
-    ports:
-      - "9000:9000"
-      - "9001:9001"
+    restart: unless-stopped
     environment:
       - MINIO_ROOT_USER=${MINIO_ACCESS_KEY:-minioadmin}
       - MINIO_ROOT_PASSWORD=${MINIO_SECRET_KEY:-minioadmin}
     command: server /data --console-address ":9001"
     volumes:
       - minio-data:/data
-    restart: unless-stopped
     networks:
       - vlowgen-network
+    security_opt:
+      - no-new-privileges:true
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 30s
       timeout: 20s
       retries: 3
-    security_opt:
-      - no-new-privileges:true
+    # Only expose console internally
+    expose:
+      - "9000"
+      - "9001"
 
   # Frontend service (Astro)
   frontend:
@@ -29,13 +59,12 @@ services:
       context: .
       dockerfile: packages/frontend/Dockerfile
     container_name: vlowgen-frontend
-    ports:
-      - "4321:4321"
+    restart: unless-stopped
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
+      - NODE_ENV=production
       - HOST=0.0.0.0
       - PORT=4321
-      - PUBLIC_API_URL=${PUBLIC_API_URL:-http://localhost:3001}
+      - PUBLIC_API_URL=https://${DOMAIN:-yourdomain.com}/api
       - PUBLIC_WAN2_API_KEY=${PUBLIC_WAN2_API_KEY}
       - PUBLIC_OPENROUTER_API_KEY=${PUBLIC_OPENROUTER_API_KEY}
       - PUBLIC_COMPOSIO_API_KEY=${PUBLIC_COMPOSIO_API_KEY}
@@ -51,33 +80,39 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
-    restart: unless-stopped
     networks:
       - vlowgen-network
     security_opt:
       - no-new-privileges:true
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4321/health"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:4321"]
       interval: 30s
       timeout: 10s
       retries: 3
+    # Only expose internally
+    expose:
+      - "4321"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
 
-  # Backend service with SSL support
+  # Backend service
   backend:
     build:
       context: .
       dockerfile: packages/backend/Dockerfile
     container_name: vlowgen-backend
-    ports:
-      - "3001:3001"
-      - "3443:3443"  # HTTPS port (optional)
+    restart: unless-stopped
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
+      - NODE_ENV=production
       - PORT=3001
       - LOG_LEVEL=${LOG_LEVEL:-info}
-      - USE_SSL=${USE_SSL:-false}
-      - SSL_CERT_PATH=${SSL_CERT_PATH}
-      - SSL_KEY_PATH=${SSL_KEY_PATH}
+      - USE_SSL=false  # SSL handled by nginx
       - DASHSCOPE_API_KEY=${DASHSCOPE_API_KEY}
       - WAN2_API_URL=${WAN2_API_URL}
       - COMPOSIO_API_KEY=${COMPOSIO_API_KEY}
@@ -88,26 +123,24 @@ services:
       - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
       - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
       - MINIO_BUCKET_NAME=vlowgen-images
-      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:4321}
+      - ALLOWED_ORIGINS=https://${DOMAIN:-yourdomain.com}
       - REQUIRE_API_KEY=${REQUIRE_API_KEY:-false}
       - API_KEY=${API_KEY}
     depends_on:
       minio:
         condition: service_healthy
-    restart: unless-stopped
     networks:
       - vlowgen-network
     security_opt:
       - no-new-privileges:true
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-    volumes:
-      # Mount SSL certificates if using HTTPS
-      - ${SSL_CERT_PATH}:${SSL_CERT_PATH}:ro
-      - ${SSL_KEY_PATH}:${SSL_KEY_PATH}:ro
+    # Only expose internally
+    expose:
+      - "3001"
     deploy:
       resources:
         limits:

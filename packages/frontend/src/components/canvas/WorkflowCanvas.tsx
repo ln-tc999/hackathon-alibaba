@@ -9,7 +9,9 @@ import ReactFlow, {
   useReactFlow,
   ReactFlowProvider,
   ConnectionLineType,
+  MiniMap,
 } from 'reactflow';
+import 'reactflow/dist/style.css';
 import type {
   Node,
   Edge,
@@ -100,6 +102,39 @@ function WorkflowCanvasInner({
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [workflowId, setWorkflowId] = useState<string | null>(workflow?.id || null);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Update nodes and edges when workflow prop changes
+  useEffect(() => {
+    if (!workflow) return;
+
+    const newNodes: Node[] = workflow.nodes.map((node) => ({
+      id: node.id,
+      type: node.type,
+      position: node.position,
+      data: node.data,
+    }));
+
+    const newEdges: Edge[] = workflow.edges.map((edge) => ({
+      id: edge.id,
+      source: edge.source,
+      target: edge.target,
+      sourceHandle: edge.sourceHandle,
+      targetHandle: edge.targetHandle,
+      animated: true,
+      style: { stroke: '#3b82f6', strokeWidth: 2 },
+    }));
+
+    // Only update if there are actual changes
+    if (newNodes.length > 0 || newEdges.length > 0) {
+      console.log('[WorkflowCanvas] Updating nodes and edges from workflow prop:', {
+        nodes: newNodes.length,
+        edges: newEdges.length,
+      });
+      setNodes(newNodes);
+      setEdges(newEdges);
+      setWorkflowId(workflow.id);
+    }
+  }, [workflow, setNodes, setEdges]);
 
   // Initialize user on mount
   useEffect(() => {
@@ -223,7 +258,10 @@ function WorkflowCanvasInner({
         updatedAt: new Date().toISOString(),
       };
 
-      onWorkflowChange(updatedWorkflow);
+      // Use setTimeout to avoid setState during render
+      setTimeout(() => {
+        onWorkflowChange(updatedWorkflow);
+      }, 0);
     },
     [workflow, onWorkflowChange]
   );
@@ -404,7 +442,7 @@ function WorkflowCanvasInner({
   );
 
   return (
-    <div ref={reactFlowWrapper} className="w-full h-full relative">
+    <div ref={reactFlowWrapper} className="w-full h-full relative bg-gray-50 rounded-xl overflow-hidden">
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -422,21 +460,66 @@ function WorkflowCanvasInner({
         connectionLineStyle={{ stroke: '#3b82f6', strokeWidth: 2 }}
         connectionLineType={ConnectionLineType.SmoothStep}
         fitView
+        fitViewOptions={{
+          padding: 0.2,
+          includeHiddenNodes: false,
+        }}
+        minZoom={0.1}
+        maxZoom={4}
+        defaultViewport={{ x: 0, y: 0, zoom: 1 }}
+        attributionPosition="bottom-left"
+        proOptions={{ hideAttribution: true }}
+        panOnScroll
+        panOnDrag
+        zoomOnScroll
+        zoomOnPinch
+        zoomOnDoubleClick
+        selectNodesOnDrag={false}
+        nodesDraggable={true}
+        nodesConnectable={true}
+        elementsSelectable={true}
       >
-        <Controls />
-        <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
+        <Controls 
+          showZoom={true}
+          showFitView={true}
+          showInteractive={true}
+          position="top-left"
+        />
+        <Background 
+          variant={BackgroundVariant.Dots} 
+          gap={16} 
+          size={1}
+          color="#94a3b8"
+        />
+        <MiniMap 
+          nodeColor={(node) => {
+            if (node.type === 'prompt-text') return '#a78bfa';
+            if (node.type === 'wan2' || node.type === 'wan2-video') return '#60a5fa';
+            if (node.type?.includes('twitter')) return '#38bdf8';
+            if (node.type?.includes('instagram')) return '#ec4899';
+            if (node.type?.includes('facebook')) return '#6366f1';
+            return '#94a3b8';
+          }}
+          maskColor="rgba(0, 0, 0, 0.1)"
+          position="bottom-right"
+          style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            border: '1px solid #e5e7eb',
+            borderRadius: '8px',
+          }}
+        />
       </ReactFlow>
 
       {/* Save indicator */}
       {isSaving && (
-        <div className="absolute top-4 left-4 z-10 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-2">
+        <div className="absolute top-4 left-4 z-[100] px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-2 pointer-events-none">
           <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
           <span className="text-xs font-medium text-blue-700">Saving...</span>
         </div>
       )}
 
       {/* Toolbar with execute button */}
-      <div className="absolute top-4 right-4 z-10 flex gap-2">
+      <div className="absolute top-4 right-4 z-[100] flex gap-2">
         <button
           onClick={onExecute}
           disabled={executionStatus === 'running' || nodes.length === 0}

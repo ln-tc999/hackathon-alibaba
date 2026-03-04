@@ -177,6 +177,24 @@ export default function ChatInterface({
       },
     ];
 
+    // Add preview node after image generation
+    const previewNode: WorkflowNode = {
+      id: 'node-preview',
+      type: 'preview',
+      position: { x: 1000, y: 100 },
+      data: {
+        type: 'preview',
+        mediaType: 'auto',
+        showMetadata: true,
+      },
+    };
+    nodes.push(previewNode);
+    edges.push({
+      id: 'edge-preview',
+      source: 'node-3',
+      target: 'node-preview',
+    });
+
     const isTwitterRequested = prompt.toLowerCase().includes('twitter') || prompt.toLowerCase().includes('x');
     const isInstagramRequested = prompt.toLowerCase().includes('instagram') || prompt.toLowerCase().includes('ig');
     let currentY = 50;
@@ -186,7 +204,7 @@ export default function ChatInterface({
       nodes.push({
         id: 'node-twitter',
         type: 'twitter',
-        position: { x: 1000, y: currentY },
+        position: { x: 1300, y: currentY },
         data: {
           type: 'twitter',
           authenticated: false,
@@ -194,7 +212,7 @@ export default function ChatInterface({
       });
       edges.push({
         id: `edge-twitter`,
-        source: 'node-3',
+        source: 'node-preview',
         target: 'node-twitter',
       });
       currentY += 150;
@@ -205,7 +223,7 @@ export default function ChatInterface({
       nodes.push({
         id: 'node-instagram',
         type: 'instagram',
-        position: { x: 1000, y: currentY },
+        position: { x: 1300, y: currentY },
         data: {
           type: 'instagram',
           authenticated: false,
@@ -213,7 +231,7 @@ export default function ChatInterface({
       });
       edges.push({
         id: `edge-instagram`,
-        source: 'node-3',
+        source: 'node-preview',
         target: 'node-instagram',
       });
     }
@@ -226,6 +244,8 @@ export default function ChatInterface({
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
+
+    console.log('[ChatInterface] Generated workflow:', workflow);
 
     return workflow;
   };
