@@ -97,11 +97,10 @@ const AppHeader = memo(
           {onScheduleClick && (
             <button
               onClick={onScheduleClick}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all ${
-                appMode === 'schedule'
-                  ? 'bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200'
-                  : 'bg-white border border-gray-200 hover:border-gray-300'
-              }`}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all ${appMode === 'schedule'
+                ? 'bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200'
+                : 'bg-white border border-gray-200 hover:border-gray-300'
+                }`}
             >
               <CalendarDays
                 className={`w-3.5 h-3.5 ${appMode === 'schedule' ? 'text-purple-600' : 'text-gray-600'}`}
@@ -343,7 +342,7 @@ export default function App({ onBackToHome }: AppProps = {}) {
         {appMode === 'chat' ? (
           /* Chat Mode - Full screen chat */
           <div className="flex flex-1 overflow-hidden px-6 pb-6 pt-4 gap-6">
-            <div className="flex-1 relative">
+            <div className="flex-1 relative h-full">
               <ChatInterface
                 sessionId={currentSessionId}
                 onWorkflowGenerated={handleWorkflowGenerated}
@@ -383,17 +382,15 @@ export default function App({ onBackToHome }: AppProps = {}) {
             {/* Scheduler Status Banner */}
             {schedulerStatus && (
               <div
-                className={`px-6 py-3 rounded-xl border flex items-center justify-between ${
-                  schedulerStatus.running
-                    ? 'bg-green-50 border-green-200'
-                    : 'bg-yellow-50 border-yellow-200'
-                }`}
+                className={`px-6 py-3 rounded-xl border flex items-center justify-between ${schedulerStatus.running
+                  ? 'bg-green-50 border-green-200'
+                  : 'bg-yellow-50 border-yellow-200'
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <div
-                    className={`w-2 h-2 rounded-full ${
-                      schedulerStatus.running ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'
-                    }`}
+                    className={`w-2 h-2 rounded-full ${schedulerStatus.running ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'
+                      }`}
                   ></div>
                   <span className="text-sm font-medium text-gray-700">
                     Scheduler {schedulerStatus.running ? 'Running' : 'Stopped'} •{' '}

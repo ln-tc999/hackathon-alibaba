@@ -7,7 +7,6 @@ import {
   ArrowRight,
   Bot,
   CheckCircle2,
-  Zap,
   Image as ImageIcon,
   Twitter,
   Instagram,
@@ -15,8 +14,8 @@ import {
   Wand2,
   Video,
   Eye,
-  Palette,
-  MessageSquare
+  MessageSquare,
+  Zap,
 } from 'lucide-react';
 import type { Workflow, WorkflowNode, WorkflowEdge } from '@vlowgen/shared';
 import { saveChatSession } from '@/lib/db';
@@ -39,7 +38,7 @@ interface ChatInterfaceProps {
   centered?: boolean;
 }
 
-// Memoized Message Component for better performance
+// Memoized Message Component
 const MessageBubble = memo(({
   message,
   isUser
@@ -47,20 +46,28 @@ const MessageBubble = memo(({
   message: Message;
   isUser: boolean;
 }) => (
-  <div
-    className={`max-w-[85%] rounded-2xl px-4 py-2.5 shadow-sm ${isUser
-      ? 'bg-blue-600 text-white'
-      : 'bg-gray-50 text-gray-900 border border-gray-200'
-      }`}
-  >
-    <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
-    <span className={`text-xs mt-1.5 block ${isUser ? 'text-blue-100' : 'text-gray-500'
-      }`}>
-      {message.timestamp.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-      })}
-    </span>
+  <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
+    {!isUser && (
+      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mr-3 flex-shrink-0 mt-0.5 shadow-sm">
+        <Bot className="w-4 h-4 text-white" />
+      </div>
+    )}
+    <div
+      className={`max-w-[80%] rounded-2xl px-4 py-3 ${isUser
+        ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-200'
+        : 'bg-white text-gray-800 shadow-sm border border-gray-100'
+        }`}
+    >
+      <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+      <span className={`text-[10px] mt-1.5 block ${isUser ? 'text-blue-100' : 'text-gray-400'}`}>
+        {message.timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+      </span>
+    </div>
+    {isUser && (
+      <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center ml-3 flex-shrink-0 mt-0.5">
+        <span className="text-xs font-semibold text-gray-600">U</span>
+      </div>
+    )}
   </div>
 ));
 
@@ -84,12 +91,12 @@ export default function ChatInterface({
   const [input, setInput] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Load session messages when sessionId changes
   useEffect(() => {
     const loadSession = async () => {
       if (!sessionId || sessionId.startsWith('session_')) {
-        // New session, reset to default message
         setMessages([
           {
             id: '1',
@@ -101,7 +108,6 @@ export default function ChatInterface({
         return;
       }
 
-      // Load existing session
       const { getChatSession } = await import('@/lib/db');
       const session = await getChatSession(sessionId);
 
@@ -128,112 +134,66 @@ export default function ChatInterface({
   }, [messages]);
 
   const generateWorkflowFromPrompt = async (prompt: string): Promise<Workflow> => {
-    // Simulate AI generating workflow
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    // AI intelligently creates workflow based on user intent
-    // This demonstrates the "AI shows its work" concept
     const nodes: WorkflowNode[] = [
       {
         id: 'node-1',
         type: 'prompt-text',
         position: { x: 100, y: 100 },
-        data: {
-          type: 'prompt-text',
-          promptText: prompt,
-        },
+        data: { type: 'prompt-text', promptText: prompt },
       },
       {
         id: 'node-2',
         type: 'prompt-enhancer-image',
         position: { x: 400, y: 100 },
-        data: {
-          type: 'prompt-enhancer-image',
-          userPrompt: prompt,
-        },
+        data: { type: 'prompt-enhancer-image', userPrompt: prompt },
       },
       {
         id: 'node-3',
         type: 'wan2',
         position: { x: 700, y: 100 },
-        data: {
-          type: 'wan2',
-          model: 'wan2.1-t2i-turbo',
-          size: '1024*1024',
-        },
+        data: { type: 'wan2', model: 'wan2.1-t2i-turbo', size: '1024*1024' },
       },
     ];
 
     const edges: WorkflowEdge[] = [
-      {
-        id: 'edge-1',
-        source: 'node-1',
-        target: 'node-2',
-      },
-      {
-        id: 'edge-2',
-        source: 'node-2',
-        target: 'node-3',
-      },
+      { id: 'edge-1', source: 'node-1', target: 'node-2' },
+      { id: 'edge-2', source: 'node-2', target: 'node-3' },
     ];
 
-    // Add preview node after image generation
     const previewNode: WorkflowNode = {
       id: 'node-preview',
       type: 'preview',
       position: { x: 1000, y: 100 },
-      data: {
-        type: 'preview',
-        mediaType: 'auto',
-        showMetadata: true,
-      },
+      data: { type: 'preview', mediaType: 'auto', showMetadata: true },
     };
     nodes.push(previewNode);
-    edges.push({
-      id: 'edge-preview',
-      source: 'node-3',
-      target: 'node-preview',
-    });
+    edges.push({ id: 'edge-preview', source: 'node-3', target: 'node-preview' });
 
-    const isTwitterRequested = prompt.toLowerCase().includes('twitter') || prompt.toLowerCase().includes('x');
+    const isTwitterRequested = prompt.toLowerCase().includes('twitter') || prompt.toLowerCase().includes(' x ');
     const isInstagramRequested = prompt.toLowerCase().includes('instagram') || prompt.toLowerCase().includes('ig');
     let currentY = 50;
 
-    // Add twitter node if mentioned
     if (isTwitterRequested) {
       nodes.push({
         id: 'node-twitter',
         type: 'twitter',
         position: { x: 1300, y: currentY },
-        data: {
-          type: 'twitter',
-          authenticated: false,
-        },
+        data: { type: 'twitter', authenticated: false },
       });
-      edges.push({
-        id: `edge-twitter`,
-        source: 'node-preview',
-        target: 'node-twitter',
-      });
+      edges.push({ id: 'edge-twitter', source: 'node-preview', target: 'node-twitter' });
       currentY += 150;
     }
 
-    // Add instagram node if mentioned
     if (isInstagramRequested) {
       nodes.push({
         id: 'node-instagram',
         type: 'instagram',
         position: { x: 1300, y: currentY },
-        data: {
-          type: 'instagram',
-          authenticated: false,
-        },
+        data: { type: 'instagram', authenticated: false },
       });
-      edges.push({
-        id: `edge-instagram`,
-        source: 'node-preview',
-        target: 'node-instagram',
-      });
+      edges.push({ id: 'edge-instagram', source: 'node-preview', target: 'node-instagram' });
     }
 
     const workflow: Workflow = {
@@ -244,8 +204,6 @@ export default function ChatInterface({
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-
-    console.log('[ChatInterface] Generated workflow:', workflow);
 
     return workflow;
   };
@@ -279,16 +237,13 @@ export default function ChatInterface({
       setMessages(updatedMessages);
       onWorkflowGenerated(workflow);
 
-      // Save workflow first, then save session
       if (sessionId) {
         const userId = getUserId();
         const title = input.slice(0, 50) + (input.length > 50 ? '...' : '');
 
-        // Save workflow to IndexedDB
         const { saveWorkflow: saveWorkflowToDb } = await import('@/lib/workflow-api');
         await saveWorkflowToDb(workflow);
 
-        // Then save chat session with workflow reference
         await saveChatSession(
           sessionId,
           userId,
@@ -301,7 +256,6 @@ export default function ChatInterface({
           workflow.id
         );
 
-        // Notify session list to refresh
         sessionEvents.emit();
       }
     } catch (error) {
@@ -326,7 +280,6 @@ export default function ChatInterface({
 
   const handleDownloadWorkflow = useCallback(() => {
     if (!workflow) return;
-
     const dataStr = JSON.stringify(workflow, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
@@ -347,7 +300,7 @@ export default function ChatInterface({
       'twitter': { icon: <Twitter className="w-3 h-3" />, label: 'Twitter' },
       'instagram': { icon: <Instagram className="w-3 h-3" />, label: 'Instagram' },
     };
-    return iconMap[nodeType] || { icon: <Sparkles className="w-3 h-3" />, label: 'Unknown' };
+    return iconMap[nodeType] || { icon: <Sparkles className="w-3 h-3" />, label: 'AI Node' };
   }, []);
 
   const hasGeneratedWorkflow = useMemo(() =>
@@ -355,103 +308,118 @@ export default function ChatInterface({
     [workflow]
   );
 
+
+
+  // Example prompts
+  const examplePrompts = [
+    { icon: <Instagram className="w-3.5 h-3.5" />, label: 'Product Photo', action: () => setInput('Create a professional product photo and post to Instagram') },
+    { icon: <Twitter className="w-3.5 h-3.5" />, label: 'Viral Meme', action: () => setInput('Generate a viral meme about AI and share on Twitter') },
+    { icon: <Video className="w-3.5 h-3.5" />, label: 'Video Content', action: () => setInput('Create cinematic video of a dragon and post everywhere') },
+  ];
+
+  // ─── CENTERED MODE (Hero / Landing page) ───────────────────────────────────
   if (centered) {
     return (
-      <div className="flex items-center justify-center h-full bg-gradient-to-br from-gray-50 to-gray-100 p-8">
-        <div className="w-full max-w-4xl space-y-8">
-          {/* Welcome Header */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center p-4"
+        style={{
+          background: 'radial-gradient(ellipse at 60% 40%, rgba(219,234,254,0.45) 0%, rgba(238,242,255,0.3) 50%, rgba(255,255,255,0) 100%)',
+        }}
+      >
+        <div className="w-full max-w-2xl flex flex-col gap-3">
+
+          {/* Header */}
           <div className="text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 bg-gradient-to-br from-blue-500 to-indigo-600">
-              <Bot className="w-10 h-10 text-white" />
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-sm font-medium mb-3">
+              <Sparkles className="w-4 h-4" />
+              <span>Powered by Qwen AI</span>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-4xl font-bold text-gray-900 tracking-tight mb-1.5">
               VlowGen
             </h1>
-            <p className="text-gray-600 max-w-md mx-auto">
+            <p className="text-gray-400 text-sm">
               AI-powered workflow automation. Describe what you want, and watch it build automatically.
             </p>
           </div>
 
-          {/* Messages - with card containers */}
+          {/* Messages area (shown only after first message) */}
           {messages.length > 1 && (
-            <div className="space-y-4 max-h-96 overflow-y-auto px-2">
+            <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-4 max-h-72 overflow-y-auto">
               {messages.slice(1).map((message) => (
                 <div key={message.id}>
-                  <div
-                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div
-                      className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-lg ${message.role === 'user'
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-white text-gray-900 border border-gray-200'
-                        }`}
-                    >
-                      <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                  <div className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} mb-3`}>
+                    {message.role === 'assistant' && (
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mr-2.5 flex-shrink-0 mt-0.5 shadow-sm">
+                        <Bot className="w-3.5 h-3.5 text-white" />
+                      </div>
+                    )}
+                    <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${message.role === 'user'
+                      ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-100'
+                      : 'bg-white text-gray-800 border border-gray-100 shadow-sm'
+                      }`}>
+                      <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
                     </div>
                   </div>
 
-                  {/* Action buttons below AI message if workflow was generated */}
+                  {/* Workflow preview card */}
                   {message.role === 'assistant' && message.workflow && hasGeneratedWorkflow && (
-                    <div className="flex justify-start mt-3">
-                      <div className="max-w-[85%] space-y-3">
-                        {/* Mini Workflow Preview */}
-                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
-                          <div className="flex items-center gap-2 mb-3">
-                            <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
-                            <span className="text-xs font-semibold text-blue-900">Workflow Preview</span>
-                          </div>
-                          <div className="flex items-center gap-2 overflow-x-auto pb-2">
-                            {message.workflow.nodes.map((node, idx) => {
-                              const { icon, label } = getNodeLabel(node.type);
-                              return (
-                                <div key={node.id} className="flex items-center gap-2 flex-shrink-0">
-                                  <div className="px-3 py-2 bg-white rounded-lg border border-blue-200 shadow-sm">
-                                    <div className="flex items-center gap-1.5 text-xs font-medium text-gray-700 whitespace-nowrap">
-                                      {icon}
-                                      <span>{label}</span>
-                                    </div>
+                    <div className="ml-9 mb-3">
+                      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-3">
+                        <div className="flex items-center gap-1.5 mb-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                          <span className="text-[11px] font-semibold text-blue-700 uppercase tracking-wide">Workflow Preview</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+                          {message.workflow.nodes.map((node, idx) => {
+                            const { icon, label } = getNodeLabel(node.type);
+                            return (
+                              <div key={node.id} className="flex items-center gap-1.5 flex-shrink-0">
+                                <div className="px-2.5 py-1.5 bg-white rounded-lg border border-blue-100 shadow-sm">
+                                  <div className="flex items-center gap-1 text-[11px] font-medium text-gray-700 whitespace-nowrap">
+                                    {icon}
+                                    <span>{label}</span>
                                   </div>
-                                  {idx < message.workflow!.nodes.length - 1 && (
-                                    <ArrowRight className="w-3 h-3 text-blue-400" />
-                                  )}
                                 </div>
-                              );
-                            })}
-                          </div>
-                          <div className="mt-3 flex items-center gap-2 text-xs text-blue-700">
-                            <CheckCircle2 className="w-3 h-3" />
-                            <span>{message.workflow!.nodes.length} nodes • {message.workflow!.edges.length} connections</span>
-                          </div>
+                                {idx < message.workflow!.nodes.length - 1 && (
+                                  <ArrowRight className="w-3 h-3 text-blue-300 flex-shrink-0" />
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
-
-                        {/* Action Buttons */}
-                        <div className="flex gap-2">
-                          <button
-                            onClick={handleDownloadWorkflow}
-                            className="px-3 py-1.5 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1.5 text-xs font-medium border border-gray-300 shadow-sm"
-                          >
-                            <Download className="w-3 h-3" />
-                            <span>Download</span>
-                          </button>
-                          <button
-                            onClick={onContinueToWorkflow}
-                            className="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1.5 text-xs font-medium shadow-sm"
-                          >
-                            <span>Open Editor</span>
-                            <ArrowRight className="w-3 h-3" />
-                          </button>
+                        <div className="flex items-center gap-1.5 mt-2 text-[11px] text-blue-500">
+                          <CheckCircle2 className="w-3 h-3" />
+                          <span>{message.workflow.nodes.length} nodes • {message.workflow.edges.length} connections</span>
                         </div>
+                      </div>
+                      <div className="flex gap-2 mt-2">
+                        <button
+                          onClick={handleDownloadWorkflow}
+                          className="px-3 py-1.5 bg-white text-gray-600 rounded-lg hover:bg-gray-50 border border-gray-200 text-xs font-medium flex items-center gap-1.5 transition-colors shadow-sm"
+                        >
+                          <Download className="w-3 h-3" />
+                          Download
+                        </button>
+                        <button
+                          onClick={onContinueToWorkflow}
+                          className="px-3 py-1.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:opacity-90 text-xs font-medium flex items-center gap-1.5 transition-opacity shadow-sm shadow-blue-200"
+                        >
+                          Open Editor
+                          <ArrowRight className="w-3 h-3" />
+                        </button>
                       </div>
                     </div>
                   )}
                 </div>
               ))}
               {isGenerating && (
-                <div className="flex justify-start">
-                  <div className="max-w-[85%] rounded-2xl px-4 py-3 bg-white shadow-lg border border-gray-200">
+                <div className="flex justify-start mb-3">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mr-2.5 flex-shrink-0">
+                    <Bot className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <div className="bg-white border border-gray-100 rounded-2xl px-4 py-2.5 shadow-sm">
                     <div className="flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
-                      <span className="text-sm text-gray-700">Generating workflow...</span>
+                      <Loader2 className="w-3.5 h-3.5 text-blue-500 animate-spin" />
+                      <span className="text-sm text-gray-500">Building your workflow...</span>
                     </div>
                   </div>
                 </div>
@@ -460,95 +428,90 @@ export default function ChatInterface({
             </div>
           )}
 
-          {/* Input - standalone */}
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-4">
-            <div className="flex gap-3">
+          {/* Input card — single flex row */}
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-lg shadow-gray-100/80">
+            <div className="flex items-center gap-4 px-5 py-4">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
+                <Sparkles className="w-4 h-4 text-white" />
+              </div>
               <input
+                ref={inputRef}
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Describe what you want to create..."
                 disabled={isGenerating}
-                className="flex-1 px-4 py-3 text-sm border-0 focus:outline-none focus:ring-0 disabled:bg-white disabled:text-gray-500"
+                className="flex-1 text-base text-gray-700 placeholder-gray-400 border-0 focus:outline-none focus:ring-0 bg-transparent disabled:opacity-50"
               />
               <button
                 onClick={handleSend}
                 disabled={!input.trim() || isGenerating}
-                className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2 font-medium text-sm"
+                className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-opacity shadow-sm shadow-blue-200 flex-shrink-0"
               >
-                <Send className="w-4 h-4" />
-                <span>Generate</span>
+                <Send className="w-4 h-4 text-white" />
               </button>
             </div>
           </div>
 
-          {/* Quick Actions */}
+          {/* Example prompt pills */}
           <div className="text-center">
-            <p className="text-sm text-gray-500 mb-3 flex items-center justify-center gap-2">
-              <Zap className="w-4 h-4" />
-              <span>Quick examples:</span>
+            <p className="text-sm text-gray-400 mb-2.5 flex items-center justify-center gap-1.5">
+              <Zap className="w-3.5 h-3.5" />
+              Quick examples:
             </p>
-            <div className="flex flex-wrap gap-2 justify-center">
-              <button
-                onClick={() => setInput('Create a professional product photo and post to Instagram')}
-                className="px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all flex items-center gap-2"
-              >
-                <Instagram className="w-3 h-3" />
-                <span>Product Photo</span>
-              </button>
-              <button
-                onClick={() => setInput('Generate a viral meme about AI and share on Twitter')}
-                className="px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all flex items-center gap-2"
-              >
-                <Twitter className="w-3 h-3" />
-                <span>Viral Meme</span>
-              </button>
-              <button
-                onClick={() => setInput('Create cinematic video of a dragon and post everywhere')}
-                className="px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all flex items-center gap-2"
-              >
-                <Video className="w-3 h-3" />
-                <span>Video Content</span>
-              </button>
+            <div className="flex flex-wrap gap-2.5 justify-center">
+              {examplePrompts.map((ex) => (
+                <button
+                  key={ex.label}
+                  onClick={ex.action}
+                  className="flex items-center gap-2 px-5 py-2 bg-white/80 hover:bg-white border border-gray-200 hover:border-gray-300 rounded-full text-sm text-gray-600 hover:text-gray-800 font-medium transition-all shadow-sm hover:shadow"
+                >
+                  {ex.icon}
+                  {ex.label}
+                </button>
+              ))}
             </div>
           </div>
+
         </div>
       </div>
     );
   }
 
+  // ─── SIDEBAR / PANEL MODE ───────────────────────────────────────────────────
   return (
-    <div className="flex flex-col h-full bg-white">
+    <div className="flex flex-col h-full bg-gray-50/50">
+
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-            <Bot className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h2 className="text-sm font-semibold text-gray-900">AI Assistant</h2>
-            <p className="text-xs text-gray-500">Autonomous Workflow Builder</p>
-          </div>
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 bg-white">
+        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm shadow-blue-200">
+          <Bot className="w-4 h-4 text-white" />
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-gray-800">AI Assistant</p>
+          <p className="text-[11px] text-gray-400">Workflow Builder</p>
+        </div>
+        <div className="ml-auto flex items-center gap-1.5">
+          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-[11px] text-gray-400">Online</span>
         </div>
       </div>
 
-      {/* Messages - with card containers */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
         {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            <MessageBubble message={message} isUser={message.role === 'user'} />
-          </div>
+          <MessageBubble key={message.id} message={message} isUser={message.role === 'user'} />
         ))}
         {isGenerating && (
-          <div className="flex justify-start">
-            <div className="max-w-[85%] rounded-2xl px-4 py-2.5 bg-gray-50 shadow-sm border border-gray-200">
+          <div className="flex justify-start mb-4">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mr-3 flex-shrink-0 shadow-sm">
+              <Bot className="w-4 h-4 text-white" />
+            </div>
+            <div className="bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100">
               <div className="flex items-center gap-2">
-                <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
-                <span className="text-sm text-gray-700">Generating workflow...</span>
+                <Loader2 className="w-3.5 h-3.5 text-blue-500 animate-spin" />
+                <span className="text-sm text-gray-500">Building your workflow...</span>
               </div>
             </div>
           </div>
@@ -556,27 +519,32 @@ export default function ChatInterface({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
-      <div className="p-4 border-t border-gray-200">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Describe your workflow..."
-            disabled={isGenerating}
-            className="flex-1 px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
-          />
-          <button
-            onClick={handleSend}
-            disabled={!input.trim() || isGenerating}
-            className="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2 font-medium text-sm"
-          >
-            <Send className="w-4 h-4" />
-          </button>
+      {/* Input area */}
+      <div className="px-3 py-3 border-t border-gray-100 bg-white">
+        <div className="bg-gray-50 rounded-2xl border border-gray-200 overflow-hidden">
+          {/* Input row */}
+          <div className="flex items-center gap-2 px-3 pb-2.5 pt-1">
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Describe your workflow..."
+              disabled={isGenerating}
+              rows={1}
+              className="flex-1 text-sm text-gray-700 placeholder-gray-400 resize-none border-0 focus:outline-none focus:ring-0 bg-transparent disabled:opacity-50 leading-relaxed"
+              style={{ minHeight: '24px', maxHeight: '96px' }}
+            />
+            <button
+              onClick={handleSend}
+              disabled={!input.trim() || isGenerating}
+              className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-opacity shadow-sm shadow-blue-200 flex-shrink-0"
+            >
+              <Send className="w-3.5 h-3.5 text-white" />
+            </button>
+          </div>
         </div>
       </div>
+
     </div>
   );
 }
