@@ -100,58 +100,58 @@ export default function ScheduleCalendar({
     const pendingPosts = scheduledPosts.filter(p => p.status === 'pending').length;
 
     return (
-        <div className="flex flex-col lg:flex-row h-full gap-4">
+        <div className="flex flex-col lg:flex-row h-full gap-4 sm:gap-5 lg:gap-6">
             {/* Main Calendar */}
             <div className="flex-1 flex flex-col bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden min-h-0">
                 {/* Header */}
-                <div className="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
-                        <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg flex-shrink-0">
-                                <Calendar className="w-7 h-7 text-white" />
+                <div className="px-4 sm:px-5 lg:px-6 py-4 sm:py-5 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-5">
+                        <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
+                            <div className="w-11 h-11 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg flex-shrink-0">
+                                <Calendar className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                             </div>
                             <div>
-                                <h2 className="text-xl font-bold text-gray-900">Content Calendar</h2>
-                                <p className="text-sm text-gray-600">{totalPosts} posts scheduled • {pendingPosts} pending</p>
+                                <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">Content Calendar</h2>
+                                <p className="text-xs sm:text-sm text-gray-600">{totalPosts} posts • {pendingPosts} pending</p>
                             </div>
                         </div>
                         
                         <button
                             onClick={() => setShowAddModal(true)}
-                            className="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all font-medium text-sm flex items-center justify-center gap-2 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 hover:scale-105"
+                            className="w-full sm:w-auto px-4 sm:px-5 py-2.5 sm:py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all font-medium text-sm sm:text-base flex items-center justify-center gap-2 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 hover:scale-105"
                         >
-                            <Plus className="w-4 h-4" />
+                            <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
                             <span>New Post</span>
                         </button>
                     </div>
 
                     {/* Month Navigation */}
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-                        <div className="flex items-center gap-2">
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
+                        <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-center sm:justify-start">
                             <button
                                 onClick={previousMonth}
-                                className="p-2 hover:bg-white/60 rounded-lg transition-colors"
+                                className="p-2 sm:p-2.5 hover:bg-white/60 rounded-lg transition-colors"
                                 aria-label="Previous month"
                             >
-                                <ChevronLeft className="w-5 h-5 text-gray-700" />
+                                <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" />
                             </button>
                             
-                            <h3 className="text-lg font-bold text-gray-900 min-w-[180px] text-center">
+                            <h3 className="text-base sm:text-lg lg:text-xl font-bold text-gray-900 min-w-[160px] sm:min-w-[200px] text-center">
                                 {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
                             </h3>
                             
                             <button
                                 onClick={nextMonth}
-                                className="p-2 hover:bg-white/60 rounded-lg transition-colors"
+                                className="p-2 sm:p-2.5 hover:bg-white/60 rounded-lg transition-colors"
                                 aria-label="Next month"
                             >
-                                <ChevronRight className="w-5 h-5 text-gray-700" />
+                                <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" />
                             </button>
                         </div>
                         
                         <button
                             onClick={goToToday}
-                            className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-white/60 rounded-lg transition-colors"
+                            className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-blue-600 hover:bg-white/60 rounded-lg transition-colors"
                         >
                             Today
                         </button>
@@ -159,18 +159,19 @@ export default function ScheduleCalendar({
                 </div>
 
                 {/* Calendar Grid */}
-                <div className="flex-1 p-4 overflow-auto">
+                <div className="flex-1 p-3 sm:p-4 lg:p-5 overflow-auto">
                     {/* Day headers */}
-                    <div className="grid grid-cols-7 gap-2 mb-2">
+                    <div className="grid grid-cols-7 gap-1.5 sm:gap-2 lg:gap-3 mb-2 sm:mb-3">
                         {dayNames.map(day => (
-                            <div key={day} className="text-center text-xs font-bold text-gray-500 py-2 uppercase tracking-wide">
-                                {day}
+                            <div key={day} className="text-center text-[10px] sm:text-xs lg:text-sm font-bold text-gray-500 py-2 sm:py-2.5 uppercase tracking-wide">
+                                <span className="hidden sm:inline">{day}</span>
+                                <span className="sm:hidden">{day.slice(0, 1)}</span>
                             </div>
                         ))}
                     </div>
 
                     {/* Calendar days */}
-                    <div className="grid grid-cols-7 gap-2">
+                    <div className="grid grid-cols-7 gap-1.5 sm:gap-2 lg:gap-3">
                         {calendarDays.map((date, index) => {
                             const posts = getPostsForDate(date);
                             const isToday = date && 
@@ -186,7 +187,7 @@ export default function ScheduleCalendar({
                                 <div
                                     key={index}
                                     onClick={() => date && setSelectedDate(date)}
-                                    className={`min-h-[120px] p-3 rounded-xl border-2 transition-all cursor-pointer ${
+                                    className={`min-h-[80px] sm:min-h-[100px] md:min-h-[120px] lg:min-h-[140px] p-2 sm:p-2.5 md:p-3 rounded-xl border-2 transition-all cursor-pointer ${
                                         date
                                             ? isSelected
                                                 ? 'border-blue-500 bg-blue-50 shadow-md'
@@ -198,33 +199,33 @@ export default function ScheduleCalendar({
                                 >
                                     {date && (
                                         <>
-                                            <div className={`text-sm font-bold mb-2 flex items-center justify-between ${
+                                            <div className={`text-xs sm:text-sm font-bold mb-1.5 sm:mb-2 flex items-center justify-between ${
                                                 isToday ? 'text-blue-600' : 'text-gray-700'
                                             }`}>
                                                 <span>{date.getDate()}</span>
                                                 {posts.length > 0 && (
-                                                    <span className="text-[10px] px-1.5 py-0.5 bg-blue-500 text-white rounded-full font-semibold">
+                                                    <span className="text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0.5 bg-blue-500 text-white rounded-full font-semibold">
                                                         {posts.length}
                                                     </span>
                                                 )}
                                             </div>
                                             
                                             {/* Posts for this day */}
-                                            <div className="space-y-1.5">
-                                                {posts.slice(0, 3).map(post => (
+                                            <div className="space-y-1 sm:space-y-1.5">
+                                                {posts.slice(0, 2).map(post => (
                                                     <div
                                                         key={post.id}
-                                                        className={`px-2 py-1.5 rounded-lg text-[10px] font-medium ${getPlatformColor(post.platform)} shadow-sm`}
+                                                        className={`px-1.5 sm:px-2 py-1 sm:py-1.5 rounded-lg text-[9px] sm:text-[10px] font-medium ${getPlatformColor(post.platform)} shadow-sm`}
                                                     >
-                                                        <div className="flex items-center gap-1.5">
-                                                            {getPlatformIcon(post.platform)}
-                                                            <span className="truncate flex-1">{post.content.substring(0, 20)}...</span>
+                                                        <div className="flex items-center gap-1 sm:gap-1.5">
+                                                            <span className="hidden sm:inline">{getPlatformIcon(post.platform)}</span>
+                                                            <span className="truncate flex-1">{post.content.substring(0, 15)}...</span>
                                                         </div>
                                                     </div>
                                                 ))}
-                                                {posts.length > 3 && (
-                                                    <div className="text-[10px] text-gray-600 font-semibold text-center py-1">
-                                                        +{posts.length - 3} more
+                                                {posts.length > 2 && (
+                                                    <div className="text-[9px] sm:text-[10px] text-gray-600 font-semibold text-center py-0.5 sm:py-1">
+                                                        +{posts.length - 2} more
                                                     </div>
                                                 )}
                                             </div>
@@ -239,10 +240,10 @@ export default function ScheduleCalendar({
 
             {/* Right Sidebar - Selected Date Details */}
             {selectedDate && (
-                <div className="w-full lg:w-96 flex flex-col bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden lg:max-h-full">
-                    <div className="px-5 py-4 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-pink-50 flex-shrink-0">
-                        <div className="flex items-center justify-between mb-2">
-                            <h4 className="text-lg font-bold text-gray-900">
+                <div className="w-full lg:w-96 xl:w-[420px] flex flex-col bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden lg:max-h-full max-h-[500px] lg:max-h-none">
+                    <div className="px-4 sm:px-5 py-3 sm:py-4 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-pink-50 flex-shrink-0">
+                        <div className="flex items-center justify-between mb-1 sm:mb-2">
+                            <h4 className="text-base sm:text-lg lg:text-xl font-bold text-gray-900">
                                 {selectedDate.toLocaleDateString('en-US', { 
                                     month: 'long', 
                                     day: 'numeric',
@@ -251,47 +252,47 @@ export default function ScheduleCalendar({
                             </h4>
                             <button
                                 onClick={() => setSelectedDate(null)}
-                                className="p-1.5 hover:bg-white/60 rounded-lg transition-colors"
+                                className="p-1.5 sm:p-2 hover:bg-white/60 rounded-lg transition-colors"
                             >
-                                <X className="w-4 h-4 text-gray-600" />
+                                <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
                             </button>
                         </div>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-xs sm:text-sm text-gray-600">
                             {getPostsForDate(selectedDate).length} post(s) scheduled
                         </p>
                     </div>
                     
-                    <div className="flex-1 overflow-auto p-4">
-                        <div className="space-y-3">
+                    <div className="flex-1 overflow-auto p-3 sm:p-4">
+                        <div className="space-y-2.5 sm:space-y-3">
                             {getPostsForDate(selectedDate).map(post => (
                                 <div
                                     key={post.id}
-                                    className="p-4 bg-gray-50 rounded-xl border border-gray-200 hover:border-gray-300 transition-all hover:shadow-sm"
+                                    className="p-3 sm:p-4 bg-gray-50 rounded-xl border border-gray-200 hover:border-gray-300 transition-all hover:shadow-sm"
                                 >
-                                    <div className="flex items-start justify-between gap-3 mb-3">
-                                        <div className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${getPlatformColor(post.platform)} shadow-sm flex items-center gap-1.5`}>
+                                    <div className="flex items-start justify-between gap-2 sm:gap-3 mb-2 sm:mb-3">
+                                        <div className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-semibold ${getPlatformColor(post.platform)} shadow-sm flex items-center gap-1 sm:gap-1.5`}>
                                             {getPlatformIcon(post.platform)}
                                             <span className="capitalize">{post.platform}</span>
                                         </div>
-                                        <div className="flex items-center gap-1">
+                                        <div className="flex items-center gap-0.5 sm:gap-1">
                                             <button
                                                 onClick={() => {/* TODO: Edit modal */}}
-                                                className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                className="p-1 sm:p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                             >
-                                                <Edit2 className="w-3.5 h-3.5" />
+                                                <Edit2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                                             </button>
                                             <button
                                                 onClick={() => onDeletePost(post.id)}
-                                                className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                className="p-1 sm:p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                             >
-                                                <Trash2 className="w-3.5 h-3.5" />
+                                                <Trash2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                                             </button>
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-2 mb-2 text-xs text-gray-500">
-                                        <Clock className="w-3.5 h-3.5" />
-                                        <span className="font-medium">
+                                    <div className="flex items-center gap-1.5 sm:gap-2 mb-2 text-xs text-gray-500">
+                                        <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                                        <span className="font-medium text-[10px] sm:text-xs">
                                             {new Date(post.scheduledTime).toLocaleTimeString('en-US', { 
                                                 hour: '2-digit', 
                                                 minute: '2-digit' 
@@ -299,14 +300,14 @@ export default function ScheduleCalendar({
                                         </span>
                                     </div>
 
-                                    <p className="text-sm text-gray-700 mb-3 line-clamp-3">{post.content}</p>
+                                    <p className="text-xs sm:text-sm text-gray-700 mb-2 sm:mb-3 line-clamp-3">{post.content}</p>
                                     
                                     {post.mediaUrl && (
-                                        <div className="flex items-center gap-2 text-xs text-gray-500 bg-white px-2 py-1.5 rounded-lg border border-gray-200">
+                                        <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-gray-500 bg-white px-2 py-1 sm:py-1.5 rounded-lg border border-gray-200">
                                             {post.mediaType === 'video' ? (
-                                                <Video className="w-3.5 h-3.5" />
+                                                <Video className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                                             ) : (
-                                                <Image className="w-3.5 h-3.5" />
+                                                <Image className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                                             )}
                                             <span className="font-medium">Media attached</span>
                                         </div>
@@ -315,14 +316,14 @@ export default function ScheduleCalendar({
                             ))}
                             
                             {getPostsForDate(selectedDate).length === 0 && (
-                                <div className="text-center py-12">
-                                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                        <Calendar className="w-8 h-8 text-gray-400" />
+                                <div className="text-center py-8 sm:py-12">
+                                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
+                                        <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
                                     </div>
-                                    <p className="text-sm text-gray-500 mb-4">No posts scheduled for this day</p>
+                                    <p className="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">No posts scheduled for this day</p>
                                     <button
                                         onClick={() => setShowAddModal(true)}
-                                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                                        className="px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs sm:text-sm font-medium"
                                     >
                                         Schedule a Post
                                     </button>

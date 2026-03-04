@@ -56,51 +56,51 @@ export default function AddPostModal({ isOpen, onClose, onAdd }: AddPostModalPro
     ] as const;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-auto m-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-auto">
                 {/* Header */}
-                <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-                            <Calendar className="w-6 h-6 text-white" />
+                <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-10">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                            <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                         </div>
                         <div>
-                            <h3 className="text-lg font-bold text-gray-900">Schedule New Post</h3>
-                            <p className="text-xs text-gray-500">Plan your content ahead</p>
+                            <h3 className="text-base sm:text-lg font-bold text-gray-900">Schedule New Post</h3>
+                            <p className="text-[10px] sm:text-xs text-gray-500">Plan your content ahead</p>
                         </div>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                        className="p-1.5 sm:p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
                     >
                         <X className="w-5 h-5" />
                     </button>
                 </div>
 
                 {/* Form */}
-                <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                     {/* Platform Selection */}
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-3">
+                        <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3">
                             Select Platform
                         </label>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-2 gap-2 sm:gap-3">
                             {platforms.map(({ value, label, icon: Icon, color }) => (
                                 <button
                                     key={value}
                                     type="button"
                                     onClick={() => setPlatform(value)}
-                                    className={`p-4 rounded-xl border-2 transition-all ${
+                                    className={`p-3 sm:p-4 rounded-xl border-2 transition-all ${
                                         platform === value
                                             ? `border-${color}-500 bg-${color}-50`
                                             : 'border-gray-200 hover:border-gray-300'
                                     }`}
                                 >
-                                    <div className="flex items-center gap-3">
-                                        <Icon className={`w-5 h-5 ${
+                                    <div className="flex items-center gap-2 sm:gap-3">
+                                        <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${
                                             platform === value ? `text-${color}-600` : 'text-gray-400'
                                         }`} />
-                                        <span className={`font-medium ${
+                                        <span className={`text-xs sm:text-sm font-medium ${
                                             platform === value ? `text-${color}-700` : 'text-gray-700'
                                         }`}>
                                             {label}
@@ -113,14 +113,14 @@ export default function AddPostModal({ isOpen, onClose, onAdd }: AddPostModalPro
 
                     {/* Content */}
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
                             Post Content *
                         </label>
                         <textarea
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                             placeholder="What do you want to share?"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
                             rows={4}
                             required
                         />
@@ -130,34 +130,34 @@ export default function AddPostModal({ isOpen, onClose, onAdd }: AddPostModalPro
                     </div>
 
                     {/* Date & Time */}
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
                                 Date *
                             </label>
                             <div className="relative">
-                                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                                 <input
                                     type="date"
                                     value={scheduledDate}
                                     onChange={(e) => setScheduledDate(e.target.value)}
                                     min={new Date().toISOString().split('T')[0]}
-                                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                                     required
                                 />
                             </div>
                         </div>
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
                                 Time *
                             </label>
                             <div className="relative">
-                                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                                 <input
                                     type="time"
                                     value={scheduledTime}
                                     onChange={(e) => setScheduledTime(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                                     required
                                 />
                             </div>
@@ -166,7 +166,7 @@ export default function AddPostModal({ isOpen, onClose, onAdd }: AddPostModalPro
 
                     {/* Media URL (Optional) */}
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
                             Media URL (Optional)
                         </label>
                         <input
@@ -174,15 +174,15 @@ export default function AddPostModal({ isOpen, onClose, onAdd }: AddPostModalPro
                             value={mediaUrl}
                             onChange={(e) => setMediaUrl(e.target.value)}
                             placeholder="https://example.com/image.jpg"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                         />
                         
                         {mediaUrl && (
-                            <div className="mt-3 flex gap-3">
+                            <div className="mt-3 flex gap-2 sm:gap-3">
                                 <button
                                     type="button"
                                     onClick={() => setMediaType('image')}
-                                    className={`flex-1 px-4 py-2 rounded-lg border-2 transition-all ${
+                                    className={`flex-1 px-3 sm:px-4 py-2 rounded-lg border-2 transition-all ${
                                         mediaType === 'image'
                                             ? 'border-blue-500 bg-blue-50 text-blue-700'
                                             : 'border-gray-200 text-gray-600 hover:border-gray-300'
@@ -194,7 +194,7 @@ export default function AddPostModal({ isOpen, onClose, onAdd }: AddPostModalPro
                                 <button
                                     type="button"
                                     onClick={() => setMediaType('video')}
-                                    className={`flex-1 px-4 py-2 rounded-lg border-2 transition-all ${
+                                    className={`flex-1 px-3 sm:px-4 py-2 rounded-lg border-2 transition-all ${
                                         mediaType === 'video'
                                             ? 'border-blue-500 bg-blue-50 text-blue-700'
                                             : 'border-gray-200 text-gray-600 hover:border-gray-300'
@@ -208,17 +208,17 @@ export default function AddPostModal({ isOpen, onClose, onAdd }: AddPostModalPro
                     </div>
 
                     {/* Actions */}
-                    <div className="flex gap-3 pt-4">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+                            className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium text-sm"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium"
+                            className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium text-sm"
                         >
                             Schedule Post
                         </button>

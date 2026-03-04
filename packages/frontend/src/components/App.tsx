@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, memo, useEffect, lazy, Suspense } from 'react';
+import { useState, useCallback, memo, useEffect, lazy, Suspense } from 'react';
 import ChatInterface from '@/components/chat/ChatInterface';
 import type { Workflow, ExecutionResult } from '@vlowgen/shared';
 import { executeWorkflow } from '@/lib/api-client';
@@ -38,24 +38,24 @@ const AppHeader = memo(
     onBackToHome?: () => void;
     onScheduleClick?: () => void;
   }) => (
-    <div className="px-6 pt-6 pb-0">
-      <div className="flex justify-between items-center px-6 py-3 bg-white/80 backdrop-blur-lg rounded-2xl border border-gray-200/50 shadow-lg shadow-gray-200/50">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-            <Bot className="w-6 h-6 text-white" />
+    <div className="px-4 sm:px-5 lg:px-6 pt-4 sm:pt-5 lg:pt-6 pb-0">
+      <div className="flex justify-between items-center px-4 sm:px-5 lg:px-6 py-2.5 sm:py-3 bg-white/80 backdrop-blur-lg rounded-2xl border border-gray-200/50 shadow-lg shadow-gray-200/50">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+            <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-base font-bold text-gray-900">VlowGen</h1>
-            <p className="text-xs text-gray-500">AI Workflow Platform</p>
+            <h1 className="text-sm sm:text-base font-bold text-gray-900">VlowGen</h1>
+            <p className="text-[10px] sm:text-xs text-gray-500">AI Workflow Platform</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3">
           {/* Back to Home button - show when onBackToHome is provided */}
           {onBackToHome && (
             <button
               onClick={onBackToHome}
-              className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-gray-50 to-slate-50 border border-gray-200 rounded-lg hover:from-gray-100 hover:to-slate-100 transition-all"
+              className="hidden sm:flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 bg-gradient-to-r from-gray-50 to-slate-50 border border-gray-200 rounded-lg hover:from-gray-100 hover:to-slate-100 transition-all"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -70,7 +70,7 @@ const AppHeader = memo(
               >
                 <path d="m15 18-6-6 6-6" />
               </svg>
-              <span className="text-xs font-semibold text-gray-700">Back to Home</span>
+              <span className="text-xs font-semibold text-gray-700">Home</span>
             </button>
           )}
 
@@ -78,18 +78,18 @@ const AppHeader = memo(
           {appMode === 'workflow' && onBackToChat && (
             <button
               onClick={onBackToChat}
-              className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg hover:from-blue-100 hover:to-indigo-100 transition-all"
+              className="hidden sm:flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg hover:from-blue-100 hover:to-indigo-100 transition-all"
             >
-              <MessageSquare className="w-3.5 h-3.5 text-blue-600" />
-              <span className="text-xs font-semibold text-blue-700">Back to Chat</span>
+              <MessageSquare className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-blue-600" />
+              <span className="text-xs font-semibold text-blue-700">Chat</span>
             </button>
           )}
 
           {/* Mode indicator */}
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
-            <Zap className="w-3.5 h-3.5 text-green-600" />
+          <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+            <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-green-600" />
             <span className="text-xs font-semibold text-green-700">
-              {appMode === 'chat' ? 'AI Mode' : appMode === 'workflow' ? 'Building' : 'Schedule'}
+              {appMode === 'chat' ? 'AI' : appMode === 'workflow' ? 'Build' : 'Schedule'}
             </span>
           </div>
 
@@ -97,16 +97,16 @@ const AppHeader = memo(
           {onScheduleClick && (
             <button
               onClick={onScheduleClick}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all ${appMode === 'schedule'
+              className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-lg transition-all ${appMode === 'schedule'
                 ? 'bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200'
                 : 'bg-white border border-gray-200 hover:border-gray-300'
                 }`}
             >
               <CalendarDays
-                className={`w-3.5 h-3.5 ${appMode === 'schedule' ? 'text-purple-600' : 'text-gray-600'}`}
+                className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${appMode === 'schedule' ? 'text-purple-600' : 'text-gray-600'}`}
               />
               <span
-                className={`text-xs font-semibold ${appMode === 'schedule' ? 'text-purple-700' : 'text-gray-700'}`}
+                className={`text-xs font-semibold hidden sm:inline ${appMode === 'schedule' ? 'text-purple-700' : 'text-gray-700'}`}
               >
                 Schedule
               </span>
@@ -341,8 +341,8 @@ export default function App({ onBackToHome }: AppProps = {}) {
         {/* Main content */}
         {appMode === 'chat' ? (
           /* Chat Mode - Full screen chat */
-          <div className="flex flex-1 overflow-hidden px-6 pb-6 pt-4 gap-6">
-            <div className="flex-1 relative h-full">
+          <div className="flex flex-1 overflow-hidden px-2 sm:px-4 lg:px-6 pb-2 sm:pb-4 lg:pb-6 pt-2 sm:pt-3 lg:pt-4 gap-3 lg:gap-6">
+            <div className="flex-1 relative h-full min-w-0">
               <ChatInterface
                 sessionId={currentSessionId}
                 onWorkflowGenerated={handleWorkflowGenerated}
@@ -351,19 +351,20 @@ export default function App({ onBackToHome }: AppProps = {}) {
                 centered
               />
 
-              {/* Floating button to open right sidebar when collapsed */}
+              {/* Floating button to open right sidebar when collapsed — hidden on mobile */}
               {!rightSidebarOpen && (
                 <button
                   onClick={toggleRightSidebar}
-                  className="absolute top-8 right-8 p-3 bg-white/90 backdrop-blur-sm rounded-xl border border-gray-200/50 shadow-lg hover:shadow-xl transition-all z-10 group hover:scale-105"
+                  className="hidden lg:flex absolute top-8 right-8 p-3 bg-white/90 backdrop-blur-sm rounded-xl border border-gray-200/50 shadow-lg hover:shadow-xl transition-all z-10 group hover:scale-105"
                   aria-label="Open session history"
                 >
                   <Clock className="w-5 h-5 text-gray-600 group-hover:text-blue-600 transition-colors" />
                 </button>
               )}
             </div>
+            {/* Session history sidebar — only on large screens */}
             {rightSidebarOpen && (
-              <div className="w-80 flex-shrink-0">
+              <div className="hidden lg:block w-80 flex-shrink-0">
                 <Suspense
                   fallback={<div className="animate-pulse bg-gray-100 h-full rounded-xl"></div>}
                 >
@@ -378,26 +379,26 @@ export default function App({ onBackToHome }: AppProps = {}) {
           </div>
         ) : appMode === 'schedule' ? (
           /* Schedule Mode - Calendar view */
-          <div className="flex flex-1 overflow-hidden px-6 pb-6 pt-4 flex-col gap-4">
+          <div className="flex flex-1 overflow-hidden px-2 sm:px-4 lg:px-6 pb-2 sm:pb-4 lg:pb-6 pt-2 sm:pt-3 lg:pt-4 flex-col gap-2 sm:gap-3 lg:gap-4">
             {/* Scheduler Status Banner */}
             {schedulerStatus && (
               <div
-                className={`px-6 py-3 rounded-xl border flex items-center justify-between ${schedulerStatus.running
+                className={`px-3 sm:px-5 py-2 sm:py-3 rounded-xl border flex items-center justify-between gap-2 ${schedulerStatus.running
                   ? 'bg-green-50 border-green-200'
                   : 'bg-yellow-50 border-yellow-200'
                   }`}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                   <div
-                    className={`w-2 h-2 rounded-full ${schedulerStatus.running ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'
+                    className={`w-2 h-2 flex-shrink-0 rounded-full ${schedulerStatus.running ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'
                       }`}
                   ></div>
-                  <span className="text-sm font-medium text-gray-700">
+                  <span className="text-xs sm:text-sm font-medium text-gray-700 truncate">
                     Scheduler {schedulerStatus.running ? 'Running' : 'Stopped'} •{' '}
-                    {schedulerStatus.pendingPosts} pending post(s)
+                    {schedulerStatus.pendingPosts} pending
                   </span>
                 </div>
-                <span className="text-xs text-gray-500">Auto-posting enabled</span>
+                <span className="text-xs text-gray-500 flex-shrink-0 hidden sm:inline">Auto-posting enabled</span>
               </div>
             )}
 
@@ -414,10 +415,9 @@ export default function App({ onBackToHome }: AppProps = {}) {
           </div>
         ) : (
           /* Workflow Mode - Canvas with sidebars */
-          <div className="flex flex-1 overflow-hidden px-6 pb-6 pt-4 gap-6">
-            {/* Left Sidebar - AI Chat Only */}
-            <div className="w-80 flex-shrink-0 flex flex-col bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-              {/* AI Chat Content */}
+          <div className="flex flex-1 overflow-hidden px-2 sm:px-4 lg:px-6 pb-2 sm:pb-4 lg:pb-6 pt-2 sm:pt-3 lg:pt-4 gap-2 sm:gap-4 lg:gap-6">
+            {/* Left Sidebar - AI Chat — hidden on mobile */}
+            <div className="hidden md:flex w-72 lg:w-80 flex-shrink-0 flex-col bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
               <div className="flex-1 overflow-hidden">
                 <ChatInterface
                   sessionId={currentSessionId}
@@ -430,8 +430,8 @@ export default function App({ onBackToHome }: AppProps = {}) {
             </div>
 
             {/* Canvas */}
-            <div className="flex-1 flex gap-6">
-              <div className="flex-1 relative h-full">
+            <div className="flex-1 flex gap-2 sm:gap-4 lg:gap-6 min-w-0">
+              <div className="flex-1 relative h-full min-w-0">
                 <Suspense fallback={<LoadingSpinner />}>
                   <WorkflowCanvas
                     workflow={workflow}
@@ -442,11 +442,11 @@ export default function App({ onBackToHome }: AppProps = {}) {
                   />
                 </Suspense>
 
-                {/* Floating button to open right sidebar when collapsed */}
+                {/* Floating button to open right sidebar — hidden on mobile */}
                 {!rightSidebarOpen && (
                   <button
                     onClick={toggleRightSidebar}
-                    className="absolute top-4 right-4 p-3 bg-white/90 backdrop-blur-sm rounded-xl border border-gray-200/50 shadow-lg hover:shadow-xl transition-all z-[100] group hover:scale-105"
+                    className="hidden lg:flex absolute top-4 right-4 p-3 bg-white/90 backdrop-blur-sm rounded-xl border border-gray-200/50 shadow-lg hover:shadow-xl transition-all z-[100] group hover:scale-105"
                     aria-label="Open session history"
                   >
                     <Clock className="w-5 h-5 text-gray-600 group-hover:text-blue-600 transition-colors" />
@@ -454,9 +454,9 @@ export default function App({ onBackToHome }: AppProps = {}) {
                 )}
               </div>
 
-              {/* Right Sidebar */}
+              {/* Right Sidebar — only on large screens */}
               {rightSidebarOpen && (
-                <div className="w-80 flex-shrink-0">
+                <div className="hidden lg:block w-80 flex-shrink-0">
                   <Suspense
                     fallback={<div className="animate-pulse bg-gray-100 h-full rounded-xl"></div>}
                   >
