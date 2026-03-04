@@ -30,7 +30,7 @@ services:
       dockerfile: packages/frontend/Dockerfile
     container_name: vlowgen-frontend
     ports:
-      - "4321:4321"
+      - "413:4321"
     environment:
       - NODE_ENV=${NODE_ENV:-production}
       - HOST=0.0.0.0
