@@ -29,8 +29,8 @@ if git diff --cached --quiet; then
 fi
 
 # Get list of staged files with their status
-declare -a changed_files
-declare -A file_status
+changed_files=()
+file_statuses=()
 while IFS= read -r line; do
     # Extract status and file path
     status="${line:0:2}"
@@ -41,7 +41,7 @@ while IFS= read -r line; do
     file="${file#\"}"
 
     changed_files+=("$file")
-    file_status["$file"]="$status"
+    file_statuses+=("$status")
 done < <(git status --porcelain)
 
 echo "Found ${#changed_files[@]} changed file(s)"
@@ -64,7 +64,8 @@ get_status_label() {
 # Function to commit a single file
 commit_file() {
     local file="$1"
-    local status="${file_status[$file]}"
+    local idx="$2"
+    local status="${file_statuses[$idx]}"
     local label=$(get_status_label "$status")
     
     echo "[$label] $file"
@@ -92,8 +93,9 @@ interactive_mode() {
     echo ""
     
     local i=1
-    for file in "${changed_files[@]}"; do
-        local status="${file_status[$file]}"
+    for idx in "${!changed_files[@]}"; do
+        local file="${changed_files[$idx]}"
+        local status="${file_statuses[$idx]}"
         local label=$(get_status_label "$status")
         printf "  %2d) [%s] %s\n" "$i" "$label" "$file"
         ((i++))
@@ -105,20 +107,22 @@ interactive_mode() {
     
     if [ "$selection" = "a" ]; then
         # Commit all files one by one
-        for file in "${changed_files[@]}"; do
-            commit_file "$file"
+        for idx in "${!changed_files[@]}"; do
+            local file="${changed_files[$idx]}"
+            commit_file "$file" "$idx"
             echo ""
         done
     else
         # Parse selected numbers
         local selected_indices=($selection)
-        for idx in "${selected_indices[@]}"; do
-            if [[ "$idx" =~ ^[0-9]+$ ]] && [ "$idx" -ge 1 ] && [ "$idx" -le "${#changed_files[@]}" ]; then
-                local file="${changed_files[$((idx-1))]}"
-                commit_file "$file"
+        for sel in "${selected_indices[@]}"; do
+            if [[ "$sel" =~ ^[0-9]+$ ]] && [ "$sel" -ge 1 ] && [ "$sel" -le "${#changed_files[@]}" ]; then
+                local idx=$((sel-1))
+                local file="${changed_files[$idx]}"
+                commit_file "$file" "$idx"
                 echo ""
             else
-                echo "Invalid selection: $idx"
+                echo "Invalid selection: $sel"
             fi
         done
     fi
@@ -129,19 +133,20 @@ individual_mode() {
     echo ""
     echo "Committing files one by one..."
     echo ""
-    
-    for file in "${changed_files[@]}"; do
-        local status="${file_status[$file]}"
+
+    for idx in "${!changed_files[@]}"; do
+        local file="${changed_files[$idx]}"
+        local status="${file_statuses[$idx]}"
         local label=$(get_status_label "$status")
-        
+
         echo -n "Commit [$label] $file? (y/n/skip-all): "
         read confirm
-        
+
         if [ "$confirm" = "skip-all" ]; then
             echo "Skipping remaining files."
             break
         elif [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
-            commit_file "$file"
+            commit_file "$file" "$idx"
             echo ""
         else
             echo "Skipped: $file"
@@ -169,10 +174,11 @@ if [ ${#changed_files[@]} -gt 0 ]; then
         M|C|D|A|R)
             # Commit only files matching the status type
             echo "Committing only $commit_mode files..."
-            for file in "${changed_files[@]}"; do
-                local status="${file_status[$file]}"
+            for idx in "${!changed_files[@]}"; do
+                local file="${changed_files[$idx]}"
+                local status="${file_statuses[$idx]}"
                 if [[ "$status" == ${commit_mode}* ]]; then
-                    commit_file "$file"
+                    commit_file "$file" "$idx"
                     echo ""
                 fi
             done

@@ -3,28 +3,45 @@ import { Handle, Position } from 'reactflow';
 
 interface Wan2VideoNodeProps {
   data: {
-    model: 'wan2.1-t2v-turbo' | 'wan2.1-t2v-plus';
-    size: '832*480' | '720*1280' | '1280*720';
+    model: 
+      | 'wan2.5-t2v-preview'
+      | 'wan2.6-t2v'
+      | 'wan2.1-i2v-turbo'
+      | 'wan2.5-i2v-preview'
+      | 'wan2.6-i2v'
+      | 'wan2.6-i2v-flash'
+      | 'wan2.1-kf2v-plus'
+      | 'wan2.6-r2v'
+      | 'wan2.6-r2v-flash';
+    size: '832*480' | '720*1280' | '1280*720' | '1920*1080';
+    duration?: number;
     negativePrompt?: string;
     onChange?: (data: any) => void;
   };
 }
 
 export const Wan2VideoNode: React.FC<Wan2VideoNodeProps> = ({ data }) => {
-  const [model, setModel] = useState(data.model || 'wan2.1-t2v-turbo');
-  const [size, setSize] = useState(data.size || '832*480');
+  const [model, setModel] = useState(data.model || 'wan2.6-t2v');
+  const [size, setSize] = useState(data.size || '1280*720');
+  const [duration, setDuration] = useState(data.duration || 5);
   const [negativePrompt, setNegativePrompt] = useState(data.negativePrompt || '');
 
   const handleModelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newModel = e.target.value as 'wan2.1-t2v-turbo' | 'wan2.1-t2v-plus';
+    const newModel = e.target.value as any;
     setModel(newModel);
     data.onChange?.({ ...data, model: newModel });
   };
 
   const handleSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newSize = e.target.value as '832*480' | '720*1280' | '1280*720';
+    const newSize = e.target.value as any;
     setSize(newSize);
     data.onChange?.({ ...data, size: newSize });
+  };
+
+  const handleDurationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newDuration = parseInt(e.target.value);
+    setDuration(newDuration);
+    data.onChange?.({ ...data, duration: newDuration });
   };
 
   const handleNegativePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -61,8 +78,40 @@ export const Wan2VideoNode: React.FC<Wan2VideoNodeProps> = ({ data }) => {
             onChange={handleModelChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
           >
-            <option value="wan2.1-t2v-turbo">wan2.1-t2v-turbo (Cheapest)</option>
-            <option value="wan2.1-t2v-plus">wan2.1-t2v-plus (Better Quality)</option>
+            <optgroup label="Text-to-Video">
+              <option value="wan2.6-t2v">Wan2.6 T2V (Latest)</option>
+              <option value="wan2.5-t2v-preview">Wan2.5 T2V Preview</option>
+            </optgroup>
+            <optgroup label="Image-to-Video">
+              <option value="wan2.6-i2v">Wan2.6 I2V</option>
+              <option value="wan2.6-i2v-flash">Wan2.6 I2V Flash (Fastest)</option>
+              <option value="wan2.5-i2v-preview">Wan2.5 I2V Preview</option>
+              <option value="wan2.1-i2v-turbo">Wan2.1 I2V Turbo</option>
+            </optgroup>
+            <optgroup label="Keyframe-to-Video">
+              <option value="wan2.1-kf2v-plus">Wan2.1 KF2V Plus</option>
+            </optgroup>
+            <optgroup label="Reference-to-Video">
+              <option value="wan2.6-r2v">Wan2.6 R2V</option>
+              <option value="wan2.6-r2v-flash">Wan2.6 R2V Flash</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Duration
+          </label>
+          <select
+            value={duration}
+            onChange={handleDurationChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+          >
+            <option value="2">2 seconds</option>
+            <option value="3">3 seconds</option>
+            <option value="5">5 seconds</option>
+            <option value="10">10 seconds</option>
+            <option value="15">15 seconds</option>
           </select>
         </div>
 
@@ -75,11 +124,11 @@ export const Wan2VideoNode: React.FC<Wan2VideoNodeProps> = ({ data }) => {
             onChange={handleSizeChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
           >
-            <option value="832*480">480P (16:9) - Cheapest</option>
+            <option value="832*480">480P (16:9)</option>
             <option value="1280*720">720P (16:9)</option>
+            <option value="1920*1080">1080P (16:9)</option>
             <option value="720*1280">720P (9:16) Portrait</option>
           </select>
-          <p className="text-xs text-gray-500 mt-1">Cost: {getPricing()}</p>
         </div>
 
         <div>

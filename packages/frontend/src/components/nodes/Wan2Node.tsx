@@ -55,11 +55,20 @@ export default function Wan2Node({ data, selected }: NodeProps<Wan2NodeData & { 
             onChange={handleModelChange}
             className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="wan2.1-t2i-turbo">Wan2.1 Turbo (Cheapest - $0.025)</option>
-            <option value="wan2.1-t2i-plus">Wan2.1 Plus (Higher Quality - $0.05)</option>
-            <option value="wan2.6-t2i">Wan2.6 (Latest - $0.03)</option>
-            <option value="wanx-v1">Wanx V1 (Legacy)</option>
-            <option value="wanx-v2">Wanx V2 (Legacy)</option>
+            <optgroup label="Turbo (Fastest & Cheapest)">
+              <option value="wan2.1-t2i-turbo">Wan2.1 Turbo - $0.025</option>
+              <option value="wan2.1-t2i-plus">Wan2.1 Plus - $0.05</option>
+            </optgroup>
+            <optgroup label="Latest (Best Quality)">
+              <option value="wan2.6-t2i">Wan2.6 T2I - $0.03</option>
+              <option value="wan2.6-image">Wan2.6 Image - $0.03</option>
+            </optgroup>
+            <optgroup label="Preview">
+              <option value="wan2.5-t2i-preview">Wan2.5 Preview</option>
+            </optgroup>
+            <optgroup label="Qwen">
+              <option value="qwen-image-plus">Qwen Image Plus</option>
+            </optgroup>
           </select>
         </div>
 
