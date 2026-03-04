@@ -7,7 +7,7 @@ import { Router, Request, Response } from 'express';
 import { schedulerService } from '../services/scheduler.service';
 import type { ScheduledPost } from '../services/scheduler.service';
 
-const router = Router();
+const router: Router = Router();
 
 /**
  * Sync scheduled posts from frontend

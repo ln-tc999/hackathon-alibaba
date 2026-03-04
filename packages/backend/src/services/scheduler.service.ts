@@ -35,21 +35,19 @@ class SchedulerService {
     private registerNodeHandlers() {
         // Import and register all handlers
         import('../nodes').then(nodes => {
-            const registry = nodes.NodeHandlerRegistry.getInstance();
-            
-            // Register all handlers
-            registry.register('prompt-text', new nodes.PromptTextNodeHandler());
-            registry.register('prompt-enhancer-image', new nodes.PromptEnhancerImageHandler());
-            registry.register('prompt-enhancer-video', new nodes.PromptEnhancerVideoHandler());
-            registry.register('wan2', new nodes.Wan2NodeHandler());
-            registry.register('vision-analyzer', new nodes.VisionAnalyzerHandler());
-            registry.register('preview', new nodes.PreviewNodeHandler());
-            registry.register('twitter', new nodes.TwitterNodeHandler());
-            registry.register('instagram', new nodes.InstagramNodeHandler());
-            registry.register('facebook', new nodes.FacebookNodeHandler());
-            registry.register('tiktok', new nodes.TikTokNodeHandler());
-            registry.register('youtube', new nodes.YouTubeNodeHandler());
-            
+            // Register all handlers directly on execution engine
+            this.executionEngine.registerNodeHandler('prompt-text', new nodes.PromptTextNodeHandler());
+            this.executionEngine.registerNodeHandler('prompt-enhancer-image', new nodes.PromptEnhancerImageHandler());
+            this.executionEngine.registerNodeHandler('prompt-enhancer-video', new nodes.PromptEnhancerVideoHandler());
+            this.executionEngine.registerNodeHandler('wan2', new nodes.Wan2NodeHandler());
+            this.executionEngine.registerNodeHandler('vision-analyzer', new nodes.VisionAnalyzerHandler());
+            this.executionEngine.registerNodeHandler('preview', new nodes.PreviewNodeHandler());
+            this.executionEngine.registerNodeHandler('twitter', new nodes.TwitterNodeHandler());
+            this.executionEngine.registerNodeHandler('instagram', new nodes.InstagramNodeHandler());
+            this.executionEngine.registerNodeHandler('facebook', new nodes.FacebookNodeHandler());
+            this.executionEngine.registerNodeHandler('tiktok', new nodes.TikTokNodeHandler());
+            this.executionEngine.registerNodeHandler('youtube', new nodes.YouTubeNodeHandler());
+
             console.log('[Scheduler] Node handlers registered');
         }).catch(error => {
             console.error('[Scheduler] Failed to register node handlers:', error);
@@ -106,7 +104,7 @@ class SchedulerService {
         const now = new Date();
         return Array.from(this.scheduledPosts.values()).filter(post => {
             if (post.status !== 'pending') return false;
-            
+
             const scheduledTime = new Date(post.scheduledTime);
             // Post is due if scheduled time is in the past or within next minute
             return scheduledTime <= new Date(now.getTime() + 60000);
