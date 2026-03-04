@@ -45,7 +45,7 @@ app.use(requestLogger);
 
 // Health check endpoint
 app.get('/health', (req: Request, res: Response) => {
-  res.json({ 
+  res.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
@@ -122,6 +122,20 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 // Start server with optional SSL
 function startServer(): https.Server | ReturnType<typeof app.listen> {
   let server: https.Server | ReturnType<typeof app.listen>;
+  let isHttps = false;
+
+  const onListen = () => {
+    logger.info(`Backend server started`, {
+      protocol: isHttps ? 'HTTPS' : 'HTTP',
+      port: PORT,
+      environment: process.env.NODE_ENV || 'development',
+      ssl: isHttps,
+    });
+
+    // Auto-start scheduler service
+    logger.info('Starting scheduler service...');
+    schedulerService.start();
+  };
 
   if (USE_SSL && SSL_CERT_PATH && SSL_KEY_PATH) {
     try {
@@ -129,33 +143,19 @@ function startServer(): https.Server | ReturnType<typeof app.listen> {
       const key = fs.readFileSync(SSL_KEY_PATH, 'utf8');
 
       server = https.createServer({ cert, key }, app);
+      isHttps = true;
       logger.info('HTTPS server created with SSL certificates');
     } catch (error) {
       logger.error('Failed to load SSL certificates', { error: (error as Error).message });
       logger.info('Falling back to HTTP');
-      server = app.listen(PORT);
+      server = app.listen(PORT, onListen);
     }
   } else {
-    server = app.listen(PORT);
+    server = app.listen(PORT, onListen);
   }
 
-  if (server instanceof https.Server || 'listen' in server) {
-    const protocol = USE_SSL && SSL_CERT_PATH && SSL_KEY_PATH ? 'HTTPS' : 'HTTP';
-    
-    if (server instanceof https.Server) {
-      server.listen(PORT, () => {
-        logger.info(`Backend server started`, {
-          protocol,
-          port: PORT,
-          environment: process.env.NODE_ENV || 'development',
-          ssl: USE_SSL,
-        });
-
-        // Auto-start scheduler service
-        logger.info('Starting scheduler service...');
-        schedulerService.start();
-      });
-    }
+  if (isHttps && server instanceof https.Server) {
+    server.listen(PORT, onListen);
   }
 
   return server;
