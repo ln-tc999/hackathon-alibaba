@@ -39,13 +39,7 @@ interface ChatInterfaceProps {
 }
 
 // Memoized Message Component
-const MessageBubble = memo(({
-  message,
-  isUser
-}: {
-  message: Message;
-  isUser: boolean;
-}) => (
+const MessageBubble = memo(({ message, isUser }: { message: Message; isUser: boolean }) => (
   <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-3 sm:mb-4`}>
     {!isUser && (
       <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mr-2 sm:mr-3 flex-shrink-0 mt-0.5 shadow-sm">
@@ -53,13 +47,16 @@ const MessageBubble = memo(({
       </div>
     )}
     <div
-      className={`max-w-[85%] sm:max-w-[80%] rounded-2xl px-3 py-2.5 sm:px-4 sm:py-3 ${isUser
-        ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-200'
-        : 'bg-white text-gray-800 shadow-sm border border-gray-100'
-        }`}
+      className={`max-w-[85%] sm:max-w-[80%] rounded-2xl px-3 py-2.5 sm:px-4 sm:py-3 ${
+        isUser
+          ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-200'
+          : 'bg-white text-gray-800 shadow-sm border border-gray-100'
+      }`}
     >
       <p className="text-xs sm:text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
-      <span className={`text-[9px] sm:text-[10px] mt-1 sm:mt-1.5 block ${isUser ? 'text-blue-100' : 'text-gray-400'}`}>
+      <span
+        className={`text-[9px] sm:text-[10px] mt-1 sm:mt-1.5 block ${isUser ? 'text-blue-100' : 'text-gray-400'}`}
+      >
         {message.timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
       </span>
     </div>
@@ -78,13 +75,14 @@ export default function ChatInterface({
   onWorkflowGenerated,
   onContinueToWorkflow,
   workflow,
-  centered = false
+  centered = false,
 }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
       role: 'assistant',
-      content: 'Hi! I\'m your AI assistant.\n\nTell me what you want to create, and I\'ll build an optimized workflow automatically.\n\nTry: "Create a viral meme and post to Instagram"',
+      content:
+        'Hi! I\'m your AI assistant.\n\nTell me what you want to create, and I\'ll build an optimized workflow automatically.\n\nTry: "Create a viral meme and post to Instagram"',
       timestamp: new Date(),
     },
   ]);
@@ -101,7 +99,8 @@ export default function ChatInterface({
           {
             id: '1',
             role: 'assistant',
-            content: 'Hi! I\'m your AI assistant.\n\nTell me what you want to create, and I\'ll build an optimized workflow automatically.\n\nTry: "Create a viral meme and post to Instagram"',
+            content:
+              'Hi! I\'m your AI assistant.\n\nTell me what you want to create, and I\'ll build an optimized workflow automatically.\n\nTry: "Create a viral meme and post to Instagram"',
             timestamp: new Date(),
           },
         ]);
@@ -134,7 +133,7 @@ export default function ChatInterface({
   }, [messages]);
 
   const generateWorkflowFromPrompt = async (prompt: string): Promise<Workflow> => {
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     const nodes: WorkflowNode[] = [
       {
@@ -171,8 +170,10 @@ export default function ChatInterface({
     nodes.push(previewNode);
     edges.push({ id: 'edge-preview', source: 'node-3', target: 'node-preview' });
 
-    const isTwitterRequested = prompt.toLowerCase().includes('twitter') || prompt.toLowerCase().includes(' x ');
-    const isInstagramRequested = prompt.toLowerCase().includes('instagram') || prompt.toLowerCase().includes('ig');
+    const isTwitterRequested =
+      prompt.toLowerCase().includes('twitter') || prompt.toLowerCase().includes(' x ');
+    const isInstagramRequested =
+      prompt.toLowerCase().includes('instagram') || prompt.toLowerCase().includes('ig');
     let currentY = 50;
 
     if (isTwitterRequested) {
@@ -218,7 +219,7 @@ export default function ChatInterface({
       timestamp: new Date(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setInput('');
     setIsGenerating(true);
 
@@ -248,7 +249,7 @@ export default function ChatInterface({
           sessionId,
           userId,
           title,
-          updatedMessages.map(m => ({
+          updatedMessages.map((m) => ({
             role: m.role,
             content: m.content,
             timestamp: m.timestamp.getTime(),
@@ -265,7 +266,7 @@ export default function ChatInterface({
         content: 'Sorry, there was an error creating the workflow. Please try again.',
         timestamp: new Date(),
       };
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsGenerating(false);
     }
@@ -296,37 +297,45 @@ export default function ChatInterface({
       'prompt-enhancer-image': { icon: <Wand2 className="w-3 h-3" />, label: 'AI Enhancer' },
       'prompt-enhancer-video': { icon: <Video className="w-3 h-3" />, label: 'Video Enhancer' },
       'vision-analyzer': { icon: <Eye className="w-3 h-3" />, label: 'Vision AI' },
-      'wan2': { icon: <ImageIcon className="w-3 h-3" />, label: 'Image Gen' },
-      'twitter': { icon: <Twitter className="w-3 h-3" />, label: 'Twitter' },
-      'instagram': { icon: <Instagram className="w-3 h-3" />, label: 'Instagram' },
+      wan2: { icon: <ImageIcon className="w-3 h-3" />, label: 'Image Gen' },
+      twitter: { icon: <Twitter className="w-3 h-3" />, label: 'Twitter' },
+      instagram: { icon: <Instagram className="w-3 h-3" />, label: 'Instagram' },
     };
     return iconMap[nodeType] || { icon: <Sparkles className="w-3 h-3" />, label: 'AI Node' };
   }, []);
 
-  const hasGeneratedWorkflow = useMemo(() =>
-    workflow && workflow.nodes.length > 0,
-    [workflow]
-  );
-
-
+  const hasGeneratedWorkflow = useMemo(() => workflow && workflow.nodes.length > 0, [workflow]);
 
   // Example prompts
   const examplePrompts = [
-    { icon: <Instagram className="w-3.5 h-3.5" />, label: 'Product Photo', action: () => setInput('Create a professional product photo and post to Instagram') },
-    { icon: <Twitter className="w-3.5 h-3.5" />, label: 'Viral Meme', action: () => setInput('Generate a viral meme about AI and share on Twitter') },
-    { icon: <Video className="w-3.5 h-3.5" />, label: 'Video Content', action: () => setInput('Create cinematic video of a dragon and post everywhere') },
+    {
+      icon: <Instagram className="w-3.5 h-3.5" />,
+      label: 'Product Photo',
+      action: () => setInput('Create a professional product photo and post to Instagram'),
+    },
+    {
+      icon: <Twitter className="w-3.5 h-3.5" />,
+      label: 'Viral Meme',
+      action: () => setInput('Generate a viral meme about AI and share on Twitter'),
+    },
+    {
+      icon: <Video className="w-3.5 h-3.5" />,
+      label: 'Video Content',
+      action: () => setInput('Create cinematic video of a dragon and post everywhere'),
+    },
   ];
 
   // ─── CENTERED MODE (Hero / Landing page) ───────────────────────────────────
   if (centered) {
     return (
-      <div className="absolute inset-0 flex flex-col items-center justify-center p-3 sm:p-4 md:p-6"
+      <div
+        className="absolute inset-0 flex flex-col items-center justify-center p-3 sm:p-4 md:p-6"
         style={{
-          background: 'radial-gradient(ellipse at 60% 40%, rgba(219,234,254,0.45) 0%, rgba(238,242,255,0.3) 50%, rgba(255,255,255,0) 100%)',
+          background:
+            'radial-gradient(ellipse at 60% 40%, rgba(219,234,254,0.45) 0%, rgba(238,242,255,0.3) 50%, rgba(255,255,255,0) 100%)',
         }}
       >
         <div className="w-full max-w-2xl flex flex-col gap-2.5 sm:gap-3 md:gap-4">
-
           {/* Header */}
           <div className="text-center px-2">
             <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-xs sm:text-sm font-medium mb-2.5 sm:mb-3">
@@ -337,7 +346,8 @@ export default function ChatInterface({
               VlowGen
             </h1>
             <p className="text-gray-400 text-xs sm:text-sm md:text-base max-w-xl mx-auto">
-              AI-powered workflow automation. Describe what you want, and watch it build automatically.
+              AI-powered workflow automation. Describe what you want, and watch it build
+              automatically.
             </p>
           </div>
 
@@ -346,16 +356,21 @@ export default function ChatInterface({
             <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm p-3 sm:p-4 max-h-60 sm:max-h-72 md:max-h-80 overflow-y-auto">
               {messages.slice(1).map((message) => (
                 <div key={message.id}>
-                  <div className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} mb-2.5 sm:mb-3`}>
+                  <div
+                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} mb-2.5 sm:mb-3`}
+                  >
                     {message.role === 'assistant' && (
                       <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mr-2 sm:mr-2.5 flex-shrink-0 mt-0.5 shadow-sm">
                         <Bot className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" />
                       </div>
                     )}
-                    <div className={`max-w-[85%] sm:max-w-[80%] rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm ${message.role === 'user'
-                      ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-100'
-                      : 'bg-white text-gray-800 border border-gray-100 shadow-sm'
-                      }`}>
+                    <div
+                      className={`max-w-[85%] sm:max-w-[80%] rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm ${
+                        message.role === 'user'
+                          ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-100'
+                          : 'bg-white text-gray-800 border border-gray-100 shadow-sm'
+                      }`}
+                    >
                       <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
                     </div>
                   </div>
@@ -366,13 +381,18 @@ export default function ChatInterface({
                       <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-2.5 sm:p-3">
                         <div className="flex items-center gap-1.5 mb-1.5 sm:mb-2">
                           <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                          <span className="text-[10px] sm:text-[11px] font-semibold text-blue-700 uppercase tracking-wide">Workflow Preview</span>
+                          <span className="text-[10px] sm:text-[11px] font-semibold text-blue-700 uppercase tracking-wide">
+                            Workflow Preview
+                          </span>
                         </div>
                         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-blue-200 scrollbar-track-transparent">
                           {message.workflow.nodes.map((node, idx) => {
                             const { icon, label } = getNodeLabel(node.type);
                             return (
-                              <div key={node.id} className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
+                              <div
+                                key={node.id}
+                                className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0"
+                              >
                                 <div className="px-2 py-1 sm:px-2.5 sm:py-1.5 bg-white rounded-lg border border-blue-100 shadow-sm">
                                   <div className="flex items-center gap-1 text-[10px] sm:text-[11px] font-medium text-gray-700 whitespace-nowrap">
                                     {icon}
@@ -388,7 +408,10 @@ export default function ChatInterface({
                         </div>
                         <div className="flex items-center gap-1.5 mt-1.5 sm:mt-2 text-[10px] sm:text-[11px] text-blue-500">
                           <CheckCircle2 className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                          <span>{message.workflow.nodes.length} nodes • {message.workflow.edges.length} connections</span>
+                          <span>
+                            {message.workflow.nodes.length} nodes • {message.workflow.edges.length}{' '}
+                            connections
+                          </span>
                         </div>
                       </div>
                       <div className="flex flex-col sm:flex-row gap-1.5 sm:gap-2 mt-2">
@@ -419,7 +442,9 @@ export default function ChatInterface({
                   <div className="bg-white border border-gray-100 rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 shadow-sm">
                     <div className="flex items-center gap-1.5 sm:gap-2">
                       <Loader2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-blue-500 animate-spin" />
-                      <span className="text-xs sm:text-sm text-gray-500">Building your workflow...</span>
+                      <span className="text-xs sm:text-sm text-gray-500">
+                        Building your workflow...
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -473,7 +498,6 @@ export default function ChatInterface({
               ))}
             </div>
           </div>
-
         </div>
       </div>
     );
@@ -482,7 +506,6 @@ export default function ChatInterface({
   // ─── SIDEBAR / PANEL MODE ───────────────────────────────────────────────────
   return (
     <div className="flex flex-col h-full bg-gray-50/50">
-
       {/* Header */}
       <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 border-b border-gray-100 bg-white">
         <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm shadow-blue-200">
@@ -544,7 +567,6 @@ export default function ChatInterface({
           </div>
         </div>
       </div>
-
     </div>
   );
 }
