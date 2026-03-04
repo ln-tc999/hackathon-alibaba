@@ -28,6 +28,12 @@ services:
     build:
       context: .
       dockerfile: packages/frontend/Dockerfile
+      args:
+        - PUBLIC_API_URL=${PUBLIC_API_URL:-http://localhost:3001}
+        - PUBLIC_WAN2_API_KEY=${PUBLIC_WAN2_API_KEY}
+        - PUBLIC_OPENROUTER_API_KEY=${PUBLIC_OPENROUTER_API_KEY}
+        - PUBLIC_COMPOSIO_API_KEY=${PUBLIC_COMPOSIO_API_KEY}
+        - PUBLIC_FINGERPRINT_API_KEY=${PUBLIC_FINGERPRINT_API_KEY}
     container_name: vlowgen-frontend
     ports:
       - "413:4321"
