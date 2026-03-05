@@ -14,7 +14,7 @@ import {
   Wand2,
   Video,
   Eye,
-  Sparkles
+  Sparkles,
 } from 'lucide-react';
 import type { Workflow, WorkflowNode, WorkflowEdge } from '@vlowgen/shared';
 import { saveChatSession } from '@/lib/db';
@@ -37,18 +37,11 @@ interface ChatInterfaceProps {
 }
 
 // Memoized Message Component
-const MessageBubble = memo(({
-  message,
-  isUser
-}: {
-  message: Message;
-  isUser: boolean;
-}) => (
+const MessageBubble = memo(({ message, isUser }: { message: Message; isUser: boolean }) => (
   <div
-    className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-lg ${isUser
-      ? 'bg-blue-600 text-white'
-      : 'bg-white text-gray-900 border border-gray-200'
-      }`}
+    className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-lg ${
+      isUser ? 'bg-blue-600 text-white' : 'bg-white text-gray-900 border border-gray-200'
+    }`}
   >
     <p className="text-sm whitespace-pre-line leading-relaxed font-sans">{message.content}</p>
   </div>
@@ -60,7 +53,7 @@ export default function ChatInterface({
   sessionId,
   onWorkflowGenerated,
   onContinueToWorkflow,
-  workflow
+  workflow,
 }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -109,7 +102,7 @@ export default function ChatInterface({
 
   const generateNewWorkflow = (prompt: string): Workflow => {
     const promptLower = prompt.toLowerCase();
-    
+
     const nodes: WorkflowNode[] = [
       {
         id: 'node-1',
@@ -224,7 +217,7 @@ export default function ChatInterface({
     prompt: string,
     existingWorkflow?: Workflow
   ): Promise<Workflow> => {
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     return generateNewWorkflow(prompt);
   };
 
@@ -238,7 +231,7 @@ export default function ChatInterface({
       timestamp: new Date(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setInput('');
     setIsGenerating(true);
 
@@ -269,7 +262,7 @@ export default function ChatInterface({
           sessionId,
           userId,
           title,
-          updatedMessages.map(m => ({
+          updatedMessages.map((m) => ({
             role: m.role,
             content: m.content,
             timestamp: m.timestamp.getTime(),
@@ -286,7 +279,7 @@ export default function ChatInterface({
         content: 'Sorry, there was an error creating the workflow. Please try again.',
         timestamp: new Date(),
       };
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsGenerating(false);
     }
@@ -318,32 +311,31 @@ export default function ChatInterface({
       'prompt-enhancer-image': { icon: <Wand2 className="w-3 h-3" />, label: 'AI Enhancer' },
       'prompt-enhancer-video': { icon: <Video className="w-3 h-3" />, label: 'Video Enhancer' },
       'vision-analyzer': { icon: <Eye className="w-3 h-3" />, label: 'Vision AI' },
-      'wan2': { icon: <ImageIcon className="w-3 h-3" />, label: 'Image Gen' },
-      'twitter': { icon: <Twitter className="w-3 h-3" />, label: 'Twitter' },
-      'instagram': { icon: <Instagram className="w-3 h-3" />, label: 'Instagram' },
+      wan2: { icon: <ImageIcon className="w-3 h-3" />, label: 'Image Gen' },
+      twitter: { icon: <Twitter className="w-3 h-3" />, label: 'Twitter' },
+      instagram: { icon: <Instagram className="w-3 h-3" />, label: 'Instagram' },
     };
     return iconMap[nodeType] || { icon: <Sparkles className="w-3 h-3" />, label: 'Unknown' };
   }, []);
 
   return (
-    <div className="flex items-center justify-center h-full bg-gradient-to-br from-gray-50 to-gray-100 p-8">
-      <div className="w-full max-w-4xl space-y-8">
+    <div className="flex items-center justify-center h-full bg-gradient-to-br from-gray-50 to-gray-100 p-4 sm:p-6 lg:p-8">
+      <div className="w-full max-w-4xl space-y-4 sm:space-y-6 lg:space-y-8">
         {/* Welcome Header */}
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-none mb-4 bg-[#0446ff] shadow-lg shadow-[#0446ff]/25">
-            <img src="/logo.svg" alt="VlowGen" className="w-10 h-10" />
+          <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-none mb-3 sm:mb-4 bg-[#0446ff] shadow-lg shadow-[#0446ff]/25">
+            <img src="/logo.svg" alt="VlowGen" className="w-8 h-8 sm:w-10 sm:h-10" />
           </div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2 font-sans">
-            VlowGen
-          </h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2 font-sans">VlowGen</h1>
           <p className="text-gray-600 max-w-md mx-auto">
-            AI-powered workflow automation. Describe what you want, and watch it build automatically.
+            AI-powered workflow automation. Describe what you want, and watch it build
+            automatically.
           </p>
         </div>
 
         {/* Messages */}
         {messages.length > 0 && (
-          <div className="space-y-4 max-h-96 overflow-y-auto px-2">
+          <div className="space-y-4 max-h-48 sm:max-h-64 lg:max-h-96 overflow-y-auto px-2">
             {messages.map((message) => (
               <div key={message.id}>
                 <div
@@ -359,7 +351,9 @@ export default function ChatInterface({
                       <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
                         <div className="flex items-center gap-2 mb-3">
                           <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
-                          <span className="text-xs font-semibold text-blue-900">Workflow Preview</span>
+                          <span className="text-xs font-semibold text-blue-900">
+                            Workflow Preview
+                          </span>
                         </div>
                         <div className="flex items-center gap-2 overflow-x-auto pb-2">
                           {message.workflow.nodes.map((node, idx) => {
@@ -381,7 +375,10 @@ export default function ChatInterface({
                         </div>
                         <div className="mt-3 flex items-center gap-2 text-xs text-blue-700">
                           <CheckCircle2 className="w-3 h-3" />
-                          <span>{message.workflow!.nodes.length} nodes • {message.workflow!.edges.length} connections</span>
+                          <span>
+                            {message.workflow!.nodes.length} nodes •{' '}
+                            {message.workflow!.edges.length} connections
+                          </span>
                         </div>
                       </div>
 
@@ -422,8 +419,8 @@ export default function ChatInterface({
         )}
 
         {/* Input */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-4">
-          <div className="flex gap-3">
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-3 sm:p-4">
+          <div className="flex gap-2 sm:gap-3">
             <input
               type="text"
               value={input}
@@ -431,15 +428,15 @@ export default function ChatInterface({
               onKeyPress={handleKeyPress}
               placeholder="Describe what you want to create..."
               disabled={isGenerating}
-              className="flex-1 px-4 py-3 text-sm border-0 focus:outline-none focus:ring-0 disabled:bg-white disabled:text-gray-500"
+              className="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 text-sm border-0 focus:outline-none focus:ring-0 disabled:bg-white disabled:text-gray-500"
             />
             <button
               onClick={handleSend}
               disabled={!input.trim() || isGenerating}
-              className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2 font-medium text-sm"
+              className="px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5 sm:gap-2 font-medium text-sm whitespace-nowrap"
             >
               <Send className="w-4 h-4" />
-              <span>Generate</span>
+              <span className="hidden sm:inline">Generate</span>
             </button>
           </div>
         </div>
@@ -453,21 +450,21 @@ export default function ChatInterface({
           <div className="flex flex-wrap gap-2 justify-center">
             <button
               onClick={() => setInput('Create a professional product photo and post to Instagram')}
-              className="px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all flex items-center gap-2"
+              className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all flex items-center gap-1.5 sm:gap-2"
             >
               <Instagram className="w-3 h-3" />
               <span>Product Photo</span>
             </button>
             <button
               onClick={() => setInput('Generate a viral meme about AI and share on Twitter')}
-              className="px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all flex items-center gap-2"
+              className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all flex items-center gap-1.5 sm:gap-2"
             >
               <Twitter className="w-3 h-3" />
               <span>Viral Meme</span>
             </button>
             <button
               onClick={() => setInput('Create cinematic video of a dragon and post everywhere')}
-              className="px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all flex items-center gap-2"
+              className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all flex items-center gap-1.5 sm:gap-2"
             >
               <Video className="w-3 h-3" />
               <span>Video Content</span>
