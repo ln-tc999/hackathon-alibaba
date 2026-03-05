@@ -53,13 +53,15 @@ export interface PromptTextNodeData {
 
 export interface Wan2NodeData {
   type: 'wan2';
-  model: 
+  model:
     // Turbo models (fastest, cheapest)
-    | 'wan2.1-t2i-turbo' 
+    | 'wan2.1-t2i-turbo'
     | 'wan2.1-t2i-plus'
     // Latest models (best quality)
     | 'wan2.6-t2i'
     | 'wan2.6-image'
+    | 'wanx-v1'
+    | 'wanx-v2'
     // Preview models
     | 'wan2.5-t2i-preview'
     // Qwen image
@@ -71,7 +73,7 @@ export interface Wan2NodeData {
 
 export interface Wan2VideoNodeData {
   type: 'wan2-video';
-  model: 
+  model:
     // Text-to-Video
     | 'wan2.5-t2v-preview'
     | 'wan2.6-t2v'

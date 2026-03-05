@@ -1,5 +1,6 @@
 import { useState, useCallback, memo, useEffect, lazy, Suspense } from 'react';
 import ChatInterface from '@/components/chat/ChatInterface';
+import ChatSidebar from '@/components/chat/ChatSidebar';
 import type { Workflow, ExecutionResult } from '@vlowgen/shared';
 import { executeWorkflow } from '@/lib/api-client';
 import { toast, Toaster } from 'sonner';
@@ -41,11 +42,11 @@ const AppHeader = memo(
     <div className="px-4 sm:px-5 lg:px-6 pt-4 sm:pt-5 lg:pt-6 pb-0">
       <div className="flex justify-between items-center px-4 sm:px-5 lg:px-6 py-2.5 sm:py-3 bg-white/80 backdrop-blur-lg rounded-2xl border border-gray-200/50 shadow-lg shadow-gray-200/50">
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-            <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-none bg-[#0446ff] flex items-center justify-center shadow-lg shadow-[#0446ff]/25">
+            <img src="/logo.svg" alt="VlowGen" className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
           <div>
-            <h1 className="text-sm sm:text-base font-bold text-gray-900">VlowGen</h1>
+            <h1 className="text-sm sm:text-base font-bold text-gray-900 font-sans">VlowGen</h1>
             <p className="text-[10px] sm:text-xs text-gray-500">AI Workflow Platform</p>
           </div>
         </div>
@@ -226,24 +227,44 @@ export default function App({ onBackToHome }: AppProps = {}) {
 
   const handleSelectSession = useCallback(
     async (session: any) => {
+      console.log('[App] handleSelectSession called with session:', session.id);
+      
+      // Force reload by temporarily setting to empty, then setting to actual session
+      // This ensures useEffect in ChatInterface triggers even for same session
+      if (currentSessionId === session.id) {
+        setCurrentSessionId('');
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
+      
       setCurrentSessionId(session.id);
       setAppMode('chat');
+
+      // Reset workflow first
+      setWorkflow({
+        id: 'demo-workflow',
+        name: 'Demo Workflow',
+        nodes: [],
+        edges: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
 
       // If session has workflow, load it
       if (session.workflowId) {
         try {
           const { loadWorkflow } = await import('@/lib/workflow-api');
           const loadedWorkflow = await loadWorkflow(session.workflowId);
+          console.log('[App] Loaded workflow:', loadedWorkflow);
           setWorkflow(loadedWorkflow);
           handleWorkflowGenerated(loadedWorkflow);
         } catch (error) {
-          console.error('Failed to load workflow:', error);
+          console.error('[App] Failed to load workflow:', error);
           // Workflow not found, but session can still be loaded
           // Just show the chat messages without the workflow
         }
       }
     },
-    [handleWorkflowGenerated]
+    [handleWorkflowGenerated, currentSessionId]
   );
 
   const handleExecute = useCallback(async () => {
@@ -330,7 +351,7 @@ export default function App({ onBackToHome }: AppProps = {}) {
 
   return (
     <>
-      <main className="flex h-screen flex-col bg-gray-50">
+      <main className="flex h-full flex-col bg-gray-50 overflow-hidden">
         {/* Floating Header */}
         <AppHeader
           appMode={appMode}
@@ -342,14 +363,13 @@ export default function App({ onBackToHome }: AppProps = {}) {
         {/* Main content */}
         {appMode === 'chat' ? (
           /* Chat Mode - Full screen chat */
-          <div className="flex flex-1 overflow-hidden px-2 sm:px-4 lg:px-6 pb-2 sm:pb-4 lg:pb-6 pt-2 sm:pt-3 lg:pt-4 gap-3 lg:gap-6">
-            <div className="flex-1 relative h-full min-w-0">
+          <div className="flex flex-1 overflow-hidden px-2 sm:px-4 lg:px-6 pb-2 sm:pb-4 lg:pb-6 pt-2 sm:pt-3 lg:pt-4 gap-3 lg:gap-6 min-h-0">
+            <div className="flex-1 relative h-full min-w-0 overflow-hidden">
               <ChatInterface
                 sessionId={currentSessionId}
                 onWorkflowGenerated={handleWorkflowGenerated}
                 onContinueToWorkflow={handleContinueToWorkflow}
                 workflow={workflow}
-                centered
               />
 
               {/* Floating button to open right sidebar when collapsed — hidden on mobile */}
@@ -365,7 +385,7 @@ export default function App({ onBackToHome }: AppProps = {}) {
             </div>
             {/* Session history sidebar — only on large screens */}
             {rightSidebarOpen && (
-              <div className="hidden lg:block w-80 flex-shrink-0">
+              <div className="hidden lg:block w-80 flex-shrink-0 h-full overflow-hidden">
                 <Suspense
                   fallback={<div className="animate-pulse bg-gray-100 h-full rounded-xl"></div>}
                 >
@@ -380,11 +400,11 @@ export default function App({ onBackToHome }: AppProps = {}) {
           </div>
         ) : appMode === 'schedule' ? (
           /* Schedule Mode - Calendar view */
-          <div className="flex flex-1 overflow-hidden px-2 sm:px-4 lg:px-6 pb-2 sm:pb-4 lg:pb-6 pt-2 sm:pt-3 lg:pt-4 flex-col gap-2 sm:gap-3 lg:gap-4">
+          <div className="flex flex-1 overflow-hidden px-2 sm:px-4 lg:px-6 pb-2 sm:pb-4 lg:pb-6 pt-2 sm:pt-3 lg:pt-4 flex-col gap-2 sm:gap-3 lg:gap-4 min-h-0">
             {/* Scheduler Status Banner */}
             {schedulerStatus && (
               <div
-                className={`px-3 sm:px-5 py-2 sm:py-3 rounded-xl border flex items-center justify-between gap-2 ${
+                className={`px-3 sm:px-5 py-2 sm:py-3 rounded-xl border flex items-center justify-between gap-2 flex-shrink-0 ${
                   schedulerStatus.running
                     ? 'bg-green-50 border-green-200'
                     : 'bg-yellow-50 border-yellow-200'
@@ -407,7 +427,7 @@ export default function App({ onBackToHome }: AppProps = {}) {
               </div>
             )}
 
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1 overflow-hidden min-h-0">
               <Suspense fallback={<LoadingSpinner />}>
                 <ScheduleCalendar
                   scheduledPosts={scheduledPosts}
@@ -420,23 +440,19 @@ export default function App({ onBackToHome }: AppProps = {}) {
           </div>
         ) : (
           /* Workflow Mode - Canvas with sidebars */
-          <div className="flex flex-1 overflow-hidden px-2 sm:px-4 lg:px-6 pb-2 sm:pb-4 lg:pb-6 pt-2 sm:pt-3 lg:pt-4 gap-2 sm:gap-4 lg:gap-6">
+          <div className="flex flex-1 overflow-hidden px-2 sm:px-4 lg:px-6 pb-2 sm:pb-4 lg:pb-6 pt-2 sm:pt-3 lg:pt-4 gap-2 sm:gap-4 lg:gap-6 min-h-0">
             {/* Left Sidebar - AI Chat — hidden on mobile */}
-            <div className="hidden md:flex w-72 lg:w-80 flex-shrink-0 flex-col bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-              <div className="flex-1 overflow-hidden">
-                <ChatInterface
-                  sessionId={currentSessionId}
-                  onWorkflowGenerated={handleWorkflowGenerated}
-                  onContinueToWorkflow={handleContinueToWorkflow}
-                  workflow={workflow}
-                  centered={false}
-                />
-              </div>
+            <div className="hidden md:flex w-72 lg:w-80 flex-shrink-0 flex-col bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden h-full">
+              <ChatSidebar
+                sessionId={currentSessionId}
+                onWorkflowGenerated={handleWorkflowGenerated}
+                workflow={workflow}
+              />
             </div>
 
             {/* Canvas */}
-            <div className="flex-1 flex gap-2 sm:gap-4 lg:gap-6 min-w-0">
-              <div className="flex-1 relative h-full min-w-0">
+            <div className="flex-1 flex gap-2 sm:gap-4 lg:gap-6 min-w-0 h-full overflow-hidden">
+              <div className="flex-1 relative h-full min-w-0 overflow-hidden">
                 <Suspense fallback={<LoadingSpinner />}>
                   <WorkflowCanvas
                     workflow={workflow}
@@ -461,7 +477,7 @@ export default function App({ onBackToHome }: AppProps = {}) {
 
               {/* Right Sidebar — only on large screens */}
               {rightSidebarOpen && (
-                <div className="hidden lg:block w-80 flex-shrink-0">
+                <div className="hidden lg:block w-80 flex-shrink-0 h-full overflow-hidden">
                   <Suspense
                     fallback={<div className="animate-pulse bg-gray-100 h-full rounded-xl"></div>}
                   >

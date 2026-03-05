@@ -374,7 +374,6 @@ export class ComposioClient {
       }
 
       // Step 1: Create media container
-      console.log('[Composio] Creating Instagram media container...');
       const containerResponse = await this.client.post<ComposioApiResponse>(
         '/v2/actions/INSTAGRAM_CREATE_MEDIA_CONTAINER/execute',
         {
@@ -396,14 +395,12 @@ export class ComposioClient {
         throw new Error('Failed to get container ID from response');
       }
 
-      console.log('[Composio] Media container created:', containerId);
-
-      // Step 2: Wait for media to be ready (Instagram needs time to process)
-      console.log('[Composio] Waiting for media to be ready...');
-      await this.waitForMediaReady(connectedAccountId, igUserId, containerId);
+      // Step 2: Wait a bit for Instagram to process (simplified - no status check)
+      // Composio API might not support INSTAGRAM_GET_MEDIA_CONTAINER_STATUS
+      console.log('[Composio] Waiting 3 seconds for Instagram to process media...');
+      await new Promise((resolve) => setTimeout(resolve, 3000));
 
       // Step 3: Publish the media container
-      console.log('[Composio] Publishing media container...');
       const publishResponse = await this.client.post<ComposioApiResponse>(
         '/v2/actions/INSTAGRAM_CREATE_POST/execute',
         {

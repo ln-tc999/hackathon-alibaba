@@ -5,21 +5,18 @@ interface Props {
 }
 
 const {
-  title = 'VlowGen - AI-Powered Workflow Automation Platform',
-  description = 'Build powerful content automation workflows using a drag-and-drop interface with AI-powered image generation and social media distribution.',
+  title = 'VlowGen - AI Workflow Platform',
+  description = 'Build powerful content automation workflows using AI-powered workflow builder.',
 } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" class="h-full">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
     <meta name="description" content={description} />
-    <meta
-      name="keywords"
-      content="AI workflow, automation, content generation, visual workflow, autonomous AI, Alibaba Cloud, Wan2.1"
-    />
+    <meta name="keywords" content="AI workflow, automation, content generation, visual workflow, autonomous AI" />
     <meta name="author" content="VlowGen Team" />
     <meta name="robots" content="index, follow" />
 
@@ -40,21 +37,25 @@ const {
     <link rel="icon" href="/logo.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/logo.png" />
 
-    <!-- Google Fonts - Space Grotesk + Inter -->
+    <!-- Google Fonts - Space Grotesk -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
 
-    <!-- Performance hints -->
-    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
-
     <title>{title}</title>
+
+    <!-- ReactFlow styles -->
+    <style is:global>
+      @import 'reactflow/dist/style.css';
+    </style>
   </head>
-  <body class="min-h-screen text-slate-800 bg-slate-50 antialiased font-sans overflow-x-hidden">
-    <slot />
+  <body class="h-full bg-gray-50 antialiased font-sans overflow-hidden m-0 p-0">
+    <!-- App container with fixed viewport height -->
+    <div id="app-root" class="h-full w-full overflow-hidden">
+      <slot />
+    </div>
   </body>
 </html>

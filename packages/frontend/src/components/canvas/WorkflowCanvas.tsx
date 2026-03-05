@@ -186,34 +186,12 @@ function WorkflowCanvasInner({
   }, [nodes, edges, workflowId, workflow?.name]);
 
   // Update node styles based on execution results
-  // Highlights failed nodes with red border (Requirement 15.2)
+  // Highlights failed nodes with red border, success with green, running with blue
   useEffect(() => {
-    if (!executionResult) return;
-
-    setNodes((currentNodes) =>
-      currentNodes.map((node) => {
-        const nodeResult = executionResult.nodeResults[node.id];
-
-        if (!nodeResult) return node;
-
-        // Add error styling for failed nodes
-        if (nodeResult.status === 'error') {
-          return {
-            ...node,
-            style: {
-              ...node.style,
-              border: '2px solid #dc2626',
-              boxShadow: '0 0 0 2px rgba(220, 38, 38, 0.2)',
-            },
-            data: {
-              ...node.data,
-              error: nodeResult.error,
-            },
-          };
-        }
-
-        // Reset styling for successful nodes
-        return {
+    if (!executionResult) {
+      // Reset all node styles when no execution
+      setNodes((currentNodes) =>
+        currentNodes.map((node) => ({
           ...node,
           style: {
             ...node.style,
@@ -223,11 +201,91 @@ function WorkflowCanvasInner({
           data: {
             ...node.data,
             error: undefined,
+            executionStatus: undefined,
+          },
+        }))
+      );
+      return;
+    }
+
+    setNodes((currentNodes) =>
+      currentNodes.map((node) => {
+        const nodeResult = executionResult.nodeResults[node.id];
+
+        if (!nodeResult) {
+          // Node hasn't been executed yet - show as pending if execution is running
+          if (executionStatus === 'running') {
+            return {
+              ...node,
+              style: {
+                ...node.style,
+                border: '2px solid #94a3b8',
+                boxShadow: '0 0 0 2px rgba(148, 163, 184, 0.2)',
+                opacity: 0.6,
+              },
+              data: {
+                ...node.data,
+                executionStatus: 'pending',
+              },
+            };
+          }
+          return node;
+        }
+
+        // Add error styling for failed nodes
+        if (nodeResult.status === 'error') {
+          return {
+            ...node,
+            style: {
+              ...node.style,
+              border: '2px solid #dc2626',
+              boxShadow: '0 0 0 4px rgba(220, 38, 38, 0.2)',
+              backgroundColor: '#fef2f2',
+            },
+            data: {
+              ...node.data,
+              error: nodeResult.error,
+              executionStatus: 'error',
+            },
+          };
+        }
+
+        // Add success styling for successful nodes
+        if (nodeResult.status === 'success') {
+          return {
+            ...node,
+            style: {
+              ...node.style,
+              border: '2px solid #16a34a',
+              boxShadow: '0 0 0 4px rgba(22, 163, 74, 0.2)',
+              backgroundColor: '#f0fdf4',
+            },
+            data: {
+              ...node.data,
+              error: undefined,
+              executionStatus: 'success',
+            },
+          };
+        }
+
+        // Default: reset styling
+        return {
+          ...node,
+          style: {
+            ...node.style,
+            border: undefined,
+            boxShadow: undefined,
+            backgroundColor: undefined,
+          },
+          data: {
+            ...node.data,
+            error: undefined,
+            executionStatus: undefined,
           },
         };
       })
     );
-  }, [executionResult, setNodes]);
+  }, [executionResult, executionStatus, setNodes]);
 
   // Notify parent of workflow changes
   const notifyWorkflowChange = useCallback(
@@ -375,11 +433,18 @@ function WorkflowCanvasInner({
   const handleNodesChange: OnNodesChange = useCallback(
     (changes) => {
       onNodesChange(changes);
-      // Notify parent after state update
-      setNodes((currentNodes) => {
-        notifyWorkflowChange(currentNodes, edges);
-        return currentNodes;
-      });
+      
+      // Only notify parent for significant changes (not during drag)
+      const hasSignificantChange = changes.some(
+        (change) => change.type === 'remove' || change.type === 'add' || change.type === 'reset'
+      );
+      
+      if (hasSignificantChange) {
+        setNodes((currentNodes) => {
+          notifyWorkflowChange(currentNodes, edges);
+          return currentNodes;
+        });
+      }
     },
     [onNodesChange, setNodes, edges, notifyWorkflowChange]
   );
@@ -463,21 +528,28 @@ function WorkflowCanvasInner({
         fitViewOptions={{
           padding: 0.2,
           includeHiddenNodes: false,
+          minZoom: 0.5,
+          maxZoom: 1.5,
         }}
-        minZoom={0.1}
-        maxZoom={4}
-        defaultViewport={{ x: 0, y: 0, zoom: 1 }}
+        minZoom={0.2}
+        maxZoom={2}
+        defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
         attributionPosition="bottom-left"
         proOptions={{ hideAttribution: true }}
         panOnScroll
-        panOnDrag
+        panOnDrag={[1, 2]} // Only pan with middle mouse or right mouse
         zoomOnScroll
         zoomOnPinch
-        zoomOnDoubleClick
+        zoomOnDoubleClick={false}
         selectNodesOnDrag={false}
         nodesDraggable={true}
         nodesConnectable={true}
         elementsSelectable={true}
+        preventScrolling={true}
+        nodesFocusable={true}
+        edgesFocusable={true}
+        autoPanOnNodeDrag={true}
+        autoPanOnConnect={true}
       >
         <Controls 
           showZoom={true}
@@ -523,11 +595,85 @@ function WorkflowCanvasInner({
         <button
           onClick={onExecute}
           disabled={executionStatus === 'running' || nodes.length === 0}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium shadow-lg"
+          className={`px-4 py-2 rounded-lg font-medium shadow-lg transition-all flex items-center gap-2 ${
+            executionStatus === 'running'
+              ? 'bg-blue-500 text-white cursor-wait'
+              : executionStatus === 'success'
+              ? 'bg-green-600 text-white hover:bg-green-700'
+              : executionStatus === 'error'
+              ? 'bg-red-600 text-white hover:bg-red-700'
+              : 'bg-blue-600 text-white hover:bg-blue-700'
+          } ${nodes.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
-          {executionStatus === 'running' ? 'Executing...' : 'Execute Workflow'}
+          {executionStatus === 'running' && (
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          )}
+          {executionStatus === 'success' && (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          )}
+          {executionStatus === 'error' && (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          )}
+          <span>
+            {executionStatus === 'running'
+              ? 'Executing...'
+              : executionStatus === 'success'
+              ? 'Success!'
+              : executionStatus === 'error'
+              ? 'Failed'
+              : 'Execute Workflow'}
+          </span>
         </button>
       </div>
+      
+      {/* Execution status indicator */}
+      {executionStatus === 'running' && (
+        <div className="absolute top-20 right-4 z-[100] px-4 py-3 bg-blue-50 border-2 border-blue-200 rounded-lg shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse" />
+            <div>
+              <p className="text-sm font-semibold text-blue-900">Executing Workflow</p>
+              <p className="text-xs text-blue-600">Processing nodes...</p>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {executionStatus === 'success' && executionResult && (
+        <div className="absolute top-20 right-4 z-[100] px-4 py-3 bg-green-50 border-2 border-green-200 rounded-lg shadow-lg">
+          <div className="flex items-center gap-3">
+            <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <div>
+              <p className="text-sm font-semibold text-green-900">Execution Complete</p>
+              <p className="text-xs text-green-600">
+                {Object.keys(executionResult.nodeResults).length} nodes executed
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {executionStatus === 'error' && executionResult && (
+        <div className="absolute top-20 right-4 z-[100] px-4 py-3 bg-red-50 border-2 border-red-200 rounded-lg shadow-lg max-w-sm">
+          <div className="flex items-start gap-3">
+            <svg className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-red-900">Execution Failed</p>
+              <p className="text-xs text-red-600 mt-1 break-words">
+                {executionResult.error || 'Unknown error occurred'}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

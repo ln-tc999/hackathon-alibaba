@@ -114,15 +114,33 @@ export class PreviewNodeHandler implements NodeHandler {
       console.log(`[PreviewHandler] Preview ${mediaType}:`, mediaUrl);
 
       // Pass through the media URL with metadata
+      const output: any = {
+        mediaUrl,
+        mediaType,
+        previewUrl: mediaUrl,
+      };
+
+      // Add imageUrl or videoUrl for social media handlers
+      if (mediaType === 'image') {
+        output.imageUrl = mediaUrl;
+      } else if (mediaType === 'video') {
+        output.videoUrl = mediaUrl;
+      }
+
+      // Pass through additional properties from input
+      if (typeof input === 'object' && input !== null) {
+        for (const [key, value] of Object.entries(input)) {
+          if (!output[key] && value !== undefined && value !== null) {
+            output[key] = value;
+          }
+        }
+      }
+
       const endTime = new Date().toISOString();
       return {
         nodeId: node.id,
         status: 'success',
-        output: {
-          mediaUrl,
-          mediaType,
-          previewUrl: mediaUrl, // For frontend display
-        },
+        output,
         startTime,
         endTime,
         duration: new Date(endTime).getTime() - new Date(startTime).getTime()
