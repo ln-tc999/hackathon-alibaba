@@ -137,18 +137,18 @@ export default function ScheduleCalendar({
   const pendingPosts = scheduledPosts.filter((p) => p.status === 'pending').length;
 
   return (
-    <div className="flex flex-col lg:flex-row h-full gap-4 sm:gap-5 lg:gap-6">
+    <div className="flex flex-col lg:flex-row h-full gap-4 sm:gap-5 lg:gap-6 overflow-hidden">
       {/* Main Calendar */}
-      <div className="flex-1 flex flex-col bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden min-h-0">
+      <div className="flex-1 flex flex-col bg-white rounded-none border border-gray-200 shadow-sm overflow-hidden min-h-0">
         {/* Header */}
-        <div className="px-4 sm:px-5 lg:px-6 py-4 sm:py-5 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+        <div className="px-4 sm:px-5 lg:px-6 py-4 sm:py-5 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 flex-shrink-0">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-5">
             <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
-              <div className="w-11 h-11 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg flex-shrink-0">
-                <Calendar className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+              <div className="w-11 h-11 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-none bg-[#0446ff] flex items-center justify-center shadow-lg shadow-[#0446ff]/25 flex-shrink-0">
+                <img src="/logo.svg" alt="VlowGen" className="w-6 h-6 sm:w-7 sm:h-7" />
               </div>
               <div>
-                <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">
+                <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 font-sans">
                   Content Calendar
                 </h2>
                 <p className="text-xs sm:text-sm text-gray-600">
@@ -159,7 +159,7 @@ export default function ScheduleCalendar({
 
             <button
               onClick={() => setShowAddModal(true)}
-              className="w-full sm:w-auto px-4 sm:px-5 py-2.5 sm:py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all font-medium text-sm sm:text-base flex items-center justify-center gap-2 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 hover:scale-105"
+              className="w-full sm:w-auto px-4 sm:px-5 py-2.5 sm:py-3 bg-[#0446ff] text-white rounded-none hover:bg-[#0335cc] transition-all font-medium text-sm sm:text-base flex items-center justify-center gap-2 shadow-lg shadow-[#0446ff]/25 hover:shadow-xl hover:shadow-[#0446ff]/30 hover:scale-105"
             >
               <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
               <span>New Post</span>
@@ -177,7 +177,7 @@ export default function ScheduleCalendar({
                 <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" />
               </button>
 
-              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-gray-900 min-w-[160px] sm:min-w-[200px] text-center">
+              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-gray-900 font-sans min-w-[160px] sm:min-w-[200px] text-center">
                 {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
               </h3>
 
@@ -192,7 +192,7 @@ export default function ScheduleCalendar({
 
             <button
               onClick={goToToday}
-              className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-blue-600 hover:bg-white/60 rounded-lg transition-colors"
+              className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-[#0446ff] hover:bg-white/60 rounded-lg transition-colors"
             >
               Today
             </button>
@@ -200,7 +200,7 @@ export default function ScheduleCalendar({
         </div>
 
         {/* Calendar Grid */}
-        <div className="flex-1 p-3 sm:p-4 lg:p-5 overflow-auto">
+        <div className="flex-1 p-3 sm:p-4 lg:p-5 overflow-y-auto">
           {/* Day headers */}
           <div className="grid grid-cols-7 gap-1.5 sm:gap-2 lg:gap-3 mb-2 sm:mb-3">
             {dayNames.map((day) => (
@@ -234,12 +234,12 @@ export default function ScheduleCalendar({
                 <div
                   key={index}
                   onClick={() => date && setSelectedDate(date)}
-                  className={`min-h-[80px] sm:min-h-[100px] md:min-h-[120px] lg:min-h-[140px] p-2 sm:p-2.5 md:p-3 rounded-xl border-2 transition-all cursor-pointer ${
+                  className={`min-h-[80px] sm:min-h-[100px] md:min-h-[120px] lg:min-h-[140px] p-2 sm:p-2.5 md:p-3 rounded-none border-2 transition-all cursor-pointer ${
                     date
                       ? isSelected
-                        ? 'border-blue-500 bg-blue-50 shadow-md'
+                        ? 'border-[#0446ff] bg-blue-50 shadow-md'
                         : isToday
-                          ? 'border-blue-300 bg-blue-50/50 hover:border-blue-400'
+                          ? 'border-[#0446ff]/50 bg-blue-50/50 hover:border-[#0446ff]'
                           : 'border-gray-200 bg-gray-50 hover:border-gray-300 hover:shadow-sm'
                       : 'bg-transparent border-transparent'
                   }`}
@@ -247,13 +247,13 @@ export default function ScheduleCalendar({
                   {date && (
                     <>
                       <div
-                        className={`text-xs sm:text-sm font-bold mb-1.5 sm:mb-2 flex items-center justify-between ${
-                          isToday ? 'text-blue-600' : 'text-gray-700'
+                        className={`text-xs sm:text-sm font-bold mb-1.5 sm:mb-2 flex items-center justify-between font-sans ${
+                          isToday ? 'text-[#0446ff]' : 'text-gray-700'
                         }`}
                       >
                         <span>{date.getDate()}</span>
                         {posts.length > 0 && (
-                          <span className="text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0.5 bg-blue-500 text-white rounded-full font-semibold">
+                          <span className="text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0.5 bg-[#0446ff] text-white rounded-none font-semibold">
                             {posts.length}
                           </span>
                         )}
@@ -264,7 +264,7 @@ export default function ScheduleCalendar({
                         {posts.slice(0, 2).map((post) => (
                           <div
                             key={post.id}
-                            className={`px-1.5 sm:px-2 py-1 sm:py-1.5 rounded-lg text-[9px] sm:text-[10px] font-medium ${getPlatformColor(post.platform)} shadow-sm`}
+                            className={`px-1.5 sm:px-2 py-1 sm:py-1.5 rounded-none text-[9px] sm:text-[10px] font-medium ${getPlatformColor(post.platform)} shadow-sm`}
                           >
                             <div className="flex items-center gap-1 sm:gap-1.5">
                               <span className="hidden sm:inline">
@@ -293,10 +293,10 @@ export default function ScheduleCalendar({
 
       {/* Right Sidebar - Selected Date Details */}
       {selectedDate && (
-        <div className="w-full lg:w-96 xl:w-[420px] flex flex-col bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden lg:max-h-full max-h-[500px] lg:max-h-none">
+        <div className="w-full lg:w-96 xl:w-[420px] flex flex-col bg-white rounded-none border border-gray-200 shadow-sm overflow-hidden">
           <div className="px-4 sm:px-5 py-3 sm:py-4 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-pink-50 flex-shrink-0">
             <div className="flex items-center justify-between mb-1 sm:mb-2">
-              <h4 className="text-base sm:text-lg lg:text-xl font-bold text-gray-900">
+              <h4 className="text-base sm:text-lg lg:text-xl font-bold text-gray-900 font-sans">
                 {selectedDate.toLocaleDateString('en-US', {
                   month: 'long',
                   day: 'numeric',
@@ -315,16 +315,16 @@ export default function ScheduleCalendar({
             </p>
           </div>
 
-          <div className="flex-1 overflow-auto p-3 sm:p-4">
+          <div className="flex-1 overflow-y-auto p-3 sm:p-4">
             <div className="space-y-2.5 sm:space-y-3">
               {getPostsForDate(selectedDate).map((post) => (
                 <div
                   key={post.id}
-                  className="p-3 sm:p-4 bg-gray-50 rounded-xl border border-gray-200 hover:border-gray-300 transition-all hover:shadow-sm"
+                  className="p-3 sm:p-4 bg-gray-50 rounded-none border border-gray-200 hover:border-gray-300 transition-all hover:shadow-sm"
                 >
                   <div className="flex items-start justify-between gap-2 sm:gap-3 mb-2 sm:mb-3">
                     <div
-                      className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-semibold ${getPlatformColor(post.platform)} shadow-sm flex items-center gap-1 sm:gap-1.5`}
+                      className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-none text-[10px] sm:text-xs font-semibold ${getPlatformColor(post.platform)} shadow-sm flex items-center gap-1 sm:gap-1.5`}
                     >
                       {getPlatformIcon(post.platform)}
                       <span className="capitalize">{post.platform}</span>
@@ -334,7 +334,7 @@ export default function ScheduleCalendar({
                         onClick={() => {
                           /* TODO: Edit modal */
                         }}
-                        className="p-1 sm:p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        className="p-1 sm:p-1.5 text-gray-500 hover:text-[#0446ff] hover:bg-blue-50 rounded-lg transition-colors"
                       >
                         <Edit2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                       </button>
@@ -357,12 +357,12 @@ export default function ScheduleCalendar({
                     </span>
                   </div>
 
-                  <p className="text-xs sm:text-sm text-gray-700 mb-2 sm:mb-3 line-clamp-3">
+                  <p className="text-xs sm:text-sm text-gray-700 mb-2 sm:mb-3 line-clamp-3 font-sans">
                     {post.content}
                   </p>
 
                   {post.mediaUrl && (
-                    <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-gray-500 bg-white px-2 py-1 sm:py-1.5 rounded-lg border border-gray-200">
+                    <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-gray-500 bg-white px-2 py-1 sm:py-1.5 rounded-none border border-gray-200">
                       {post.mediaType === 'video' ? (
                         <Video className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                       ) : (
@@ -376,15 +376,15 @@ export default function ScheduleCalendar({
 
               {getPostsForDate(selectedDate).length === 0 && (
                 <div className="text-center py-8 sm:py-12">
-                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
-                    <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-[#0446ff] rounded-none flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg shadow-[#0446ff]/25">
+                    <img src="/logo.svg" alt="VlowGen" className="w-6 h-6 sm:w-8 sm:h-8" />
                   </div>
-                  <p className="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">
+                  <p className="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4 font-sans">
                     No posts scheduled for this day
                   </p>
                   <button
                     onClick={() => setShowAddModal(true)}
-                    className="px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs sm:text-sm font-medium"
+                    className="px-3 sm:px-4 py-1.5 sm:py-2 bg-[#0446ff] text-white rounded-none hover:bg-[#0335cc] transition-colors text-xs sm:text-sm font-medium"
                   >
                     Schedule a Post
                   </button>

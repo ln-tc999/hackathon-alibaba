@@ -4,15 +4,42 @@ import HowItWorksTimeline from './HowItWorksTimeline';
 
 <section id="how-it-works" class="relative py-24 md:py-32">
   <div class="section-glow-divider mb-24"></div>
+  <div class="absolute inset-0 radial-glow pointer-events-none opacity-20"></div>
 
   <div class="max-w-7xl mx-auto px-6 relative z-10">
+    <!-- Section header -->
     <div class="text-center mb-16">
-      <span class="text-sm font-semibold text-blue-600 tracking-wider uppercase">How It Works</span>
+      <span class="text-sm font-semibold text-[#0446ff] tracking-wider uppercase">How It Works</span>
       <h2 class="text-3xl md:text-5xl font-bold text-slate-900 mt-3">
-        Five simple <span class="gradient-text">steps</span>
+        From idea to viral content in <span class="gradient-text">5 simple steps</span>
       </h2>
+      <p class="text-slate-600 mt-4 max-w-3xl mx-auto text-base md:text-lg">
+        VlowGen automates your entire content workflow—from AI-powered generation to multi-platform distribution. Build once, publish everywhere.
+      </p>
     </div>
 
+    <!-- Timeline Component -->
     <HowItWorksTimeline client:visible />
+
+    <!-- Bottom CTA -->
+    <div class="mt-16 text-center">
+      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-none bg-blue-50 border border-blue-100 text-blue-700 text-sm font-medium mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+        <span>Powered by Alibaba Cloud Wan2.1 & Qwen AI</span>
+      </div>
+      <h3 class="text-2xl md:text-3xl font-bold text-slate-900 mb-4">
+        Ready to automate your workflow?
+      </h3>
+      <p class="text-slate-600 mb-8 max-w-2xl mx-auto">
+        Join creators who are saving 60-70% of their time with AI-powered automation.
+      </p>
+      <a
+        href="/app"
+        class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-none font-semibold hover:opacity-90 transition-opacity shadow-lg shadow-blue-200"
+      >
+        <span>Start Building Free</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+      </a>
+    </div>
   </div>
 </section>

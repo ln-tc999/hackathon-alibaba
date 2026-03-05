@@ -1,35 +1,36 @@
-<section id="features" class="relative py-16 sm:py-20 md:py-24 lg:py-32">
-  <div class="section-glow-divider mb-16 sm:mb-20 md:mb-24"></div>
+---
+---
+
+<section id="features" class="relative py-24 md:py-32">
+  <div class="section-glow-divider mb-24"></div>
   <div class="absolute inset-0 radial-glow pointer-events-none opacity-30"></div>
 
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+  <div class="max-w-7xl mx-auto px-6 relative z-10">
     <!-- Section header -->
-    <div class="text-center mb-12 sm:mb-14 md:mb-16">
-      <span class="text-xs sm:text-sm font-semibold text-blue-600 tracking-wider uppercase">Core Features</span
+    <div class="text-center mb-16">
+      <span class="text-sm font-semibold text-[#0446ff] tracking-wider uppercase">Core Features</span
       >
-      <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mt-2 sm:mt-3">
+      <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mt-3">
         Everything you need to <span class="gradient-text">automate content</span>
       </h2>
-      <p class="text-sm sm:text-base lg:text-lg text-slate-600 mt-3 sm:mt-4 max-w-2xl mx-auto px-4">
+      <p class="text-slate-600 mt-4 max-w-2xl mx-auto">
         From AI image generation to social media distribution, VlowGen handles the entire content
         pipeline with a visual workflow builder.
       </p>
     </div>
 
     <!-- Feature cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <!-- Feature 1: AI Image Generation (Large horizontally) -->
-      <div
-        class="glass-card rounded-2xl p-6 sm:p-7 md:p-8 lg:p-9 group md:col-span-2 relative overflow-hidden flex flex-col justify-end min-h-[280px] sm:min-h-[300px] lg:min-h-[320px]"
-      >
+      <div class="md:col-span-2 glass-card rounded-none p-8 group relative overflow-hidden flex flex-col justify-end min-h-[300px]">
         <!-- Decorative Background for Bento -->
         <div
-          class="absolute top-0 right-0 w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 bg-blue-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none group-hover:bg-blue-500/20 transition-all duration-500"
+          class="absolute top-0 right-0 w-64 h-64 bg-[#0446ff]/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none group-hover:bg-[#0446ff]/20 transition-all duration-500"
         >
         </div>
 
         <div
-          class="relative z-10 w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-xl bg-blue-500/15 flex items-center justify-center mb-4 sm:mb-5 md:mb-6 icon-glow"
+          class="relative z-10 w-14 h-14 rounded-none bg-[#0446ff]/15 flex items-center justify-center mb-6 icon-glow"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -47,14 +48,14 @@
               r="2"></circle><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path></svg
           >
         </div>
-        <div class="relative z-10 md:w-4/5 lg:w-3/4">
-          <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 mb-2 sm:mb-3 tracking-tight">AI Image Generation</h3>
-          <p class="text-slate-600 text-sm sm:text-base leading-relaxed mb-4 sm:mb-5 md:mb-6">
+        <div class="relative z-10 md:w-3/4 lg:w-2/3">
+          <h3 class="text-2xl font-bold text-slate-900 mb-3 tracking-tight">AI Image Generation</h3>
+          <p class="text-slate-600 text-sm leading-relaxed mb-6">
             Generate stunning images with Alibaba Cloud's Wan2.1 model. Create high-quality visuals
             from text prompts in seconds — up to 1024×1024 resolution natively.
           </p>
-          <div class="flex items-center gap-2 text-blue-600">
-            <span class="text-xs sm:text-sm font-semibold uppercase tracking-wider">Powered by Wan2.1</span>
+          <div class="flex items-center gap-2 text-[#0446ff]">
+            <span class="text-xs font-semibold uppercase tracking-wider">Powered by Wan2.1</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="14"
@@ -71,16 +72,14 @@
       </div>
 
       <!-- Feature 2: Visual Workflow Builder (Tall) -->
-      <div
-        class="glass-card rounded-2xl p-6 sm:p-7 md:p-8 lg:p-9 group lg:row-span-2 relative overflow-hidden flex flex-col min-h-[280px] sm:min-h-[300px] lg:min-h-[320px]"
-      >
+      <div class="lg:row-span-2 glass-card rounded-none p-8 group relative overflow-hidden flex flex-col min-h-[300px]">
         <div
-          class="absolute -bottom-10 -right-10 w-40 h-40 sm:w-48 sm:h-48 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none group-hover:bg-indigo-500/20 transition-all duration-500"
+          class="absolute -bottom-10 -right-10 w-48 h-48 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none group-hover:bg-indigo-500/20 transition-all duration-500"
         >
         </div>
 
         <div
-          class="relative z-10 w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-xl bg-indigo-500/15 flex items-center justify-center mb-4 sm:mb-5 md:mb-6 icon-glow"
+          class="relative z-10 w-14 h-14 rounded-none bg-indigo-500/15 flex items-center justify-center mb-6 icon-glow"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -103,13 +102,13 @@
           >
         </div>
         <div class="relative z-10 mt-auto">
-          <h3 class="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900 mb-2 sm:mb-3">Visual Workflow Builder</h3>
-          <p class="text-slate-600 text-sm sm:text-base leading-relaxed mb-4 sm:mb-5 md:mb-6">
+          <h3 class="text-xl font-bold text-slate-900 mb-3">Visual Workflow Builder</h3>
+          <p class="text-slate-600 text-sm leading-relaxed mb-6">
             Drag-and-drop node interface with real-time connection validation. Build complex content
             pipelines visually, no coding required.
           </p>
           <div class="flex items-center gap-2 text-indigo-600">
-            <span class="text-xs sm:text-sm font-semibold uppercase tracking-wider">Drag & Drop</span>
+            <span class="text-xs font-semibold uppercase tracking-wider">Drag & Drop</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="14"
@@ -126,14 +125,14 @@
       </div>
 
       <!-- Feature 3: Video Content Generation (Square) -->
-      <div class="glass-card rounded-2xl p-6 sm:p-7 md:p-8 group relative overflow-hidden min-h-[240px] sm:min-h-[260px]">
+      <div class="glass-card rounded-none p-8 group relative overflow-hidden">
         <div
           class="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
         >
         </div>
 
         <div
-          class="relative z-10 w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-purple-500/15 flex items-center justify-center mb-4 sm:mb-5 md:mb-6 icon-glow group-hover:-translate-y-1 transition-transform duration-300"
+          class="relative z-10 w-14 h-14 rounded-none bg-purple-500/15 flex items-center justify-center mb-6 icon-glow group-hover:-translate-y-1 transition-transform duration-300"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -165,12 +164,12 @@
           >
         </div>
         <div class="relative z-10">
-          <h3 class="text-lg sm:text-xl font-bold text-slate-900 mb-2 sm:mb-3">Video Content</h3>
-          <p class="text-slate-600 text-sm sm:text-base leading-relaxed mb-4 sm:mb-5">
+          <h3 class="text-lg font-bold text-slate-900 mb-2">Video Content</h3>
+          <p class="text-slate-600 text-sm leading-relaxed mb-5">
             Transform ideas into captivating videos automatically within pipelines.
           </p>
           <div class="flex items-center gap-2 text-purple-600">
-            <span class="text-[10px] sm:text-xs font-bold uppercase tracking-widest">AI Video</span>
+            <span class="text-[10px] font-bold uppercase tracking-widest">AI Video</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="12"
@@ -187,14 +186,14 @@
       </div>
 
       <!-- Feature 4: Social Media Automation (Square) -->
-      <div class="glass-card rounded-2xl p-6 sm:p-7 md:p-8 group relative overflow-hidden min-h-[240px] sm:min-h-[260px]">
+      <div class="glass-card rounded-none p-8 group relative overflow-hidden">
         <div
           class="absolute inset-0 bg-gradient-to-bl from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
         >
         </div>
 
         <div
-          class="relative z-10 w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-cyan-500/15 flex items-center justify-center mb-4 sm:mb-5 md:mb-6 icon-glow group-hover:-translate-y-1 transition-transform duration-300"
+          class="relative z-10 w-14 h-14 rounded-none bg-cyan-500/15 flex items-center justify-center mb-6 icon-glow group-hover:-translate-y-1 transition-transform duration-300"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -211,12 +210,12 @@
           >
         </div>
         <div class="relative z-10">
-          <h3 class="text-lg sm:text-xl font-bold text-slate-900 mb-2 sm:mb-3">Social Automation</h3>
-          <p class="text-slate-600 text-sm sm:text-base leading-relaxed mb-4 sm:mb-5">
+          <h3 class="text-lg font-bold text-slate-900 mb-2">Social Automation</h3>
+          <p class="text-slate-600 text-sm leading-relaxed mb-5">
             Auto-post to Twitter/X via Composio. Schedule and track natively.
           </p>
           <div class="flex items-center gap-2 text-cyan-600">
-            <span class="text-[10px] sm:text-xs font-bold uppercase tracking-widest">Composio</span>
+            <span class="text-[10px] font-bold uppercase tracking-widest">Composio</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="12"
