@@ -23,7 +23,7 @@
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
-    --radius: 0.5rem;
+    --radius: 0rem;
   }
 
   .dark {
@@ -132,7 +132,7 @@
 
 /* Gradient text */
 .gradient-text {
-  background: linear-gradient(135deg, #60a5fa, #3b82f6, #818cf8);
+  background: linear-gradient(135deg, #0446ff, #0446ff, #0446ff);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -153,13 +153,18 @@
   -webkit-backdrop-filter: blur(20px);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 24px -8px rgba(0, 0, 0, 0.05);
+  position: relative;
+  z-index: 1;
+  will-change: transform, box-shadow;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .glass-card:hover {
   border-color: rgba(148, 163, 184, 0.4);
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.8) 100%);
   transform: translateY(-4px);
-  box-shadow: 0 20px 60px -15px rgba(59, 130, 246, 0.15);
+  box-shadow: 0 20px 60px -15px rgba(4, 70, 255, 0.15);
 }
 
 /* Feature icon glow */
@@ -170,8 +175,8 @@
   content: '';
   position: absolute;
   inset: -8px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, transparent 70%);
+  border-radius: 0rem;
+  background: radial-gradient(circle, rgba(4, 70, 255, 0.3) 0%, transparent 70%);
   z-index: -1;
   animation: glow-pulse 4s ease-in-out infinite;
 }
@@ -179,28 +184,28 @@
 /* Background grid pattern */
 .bg-grid-pattern {
   background-image:
-    linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+    linear-gradient(rgba(4, 70, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(4, 70, 255, 0.03) 1px, transparent 1px);
   background-size: 60px 60px;
 }
 
 /* Radial glow backgrounds */
 .radial-glow {
-  background: radial-gradient(ellipse at center, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+  background: radial-gradient(ellipse at center, rgba(4, 70, 255, 0.15) 0%, transparent 70%);
 }
 
 .radial-glow-top {
-  background: radial-gradient(ellipse at top, rgba(59, 130, 246, 0.12) 0%, transparent 60%);
+  background: radial-gradient(ellipse at top, rgba(4, 70, 255, 0.12) 0%, transparent 60%);
 }
 
 /* Button styles */
 .btn-primary {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  box-shadow: 0 4px 20px -4px rgba(37, 99, 235, 0.5);
+  background: linear-gradient(135deg, #0446ff 0%, #0446ff 100%);
+  box-shadow: 0 4px 20px -4px rgba(4, 70, 255, 0.5);
   transition: all 0.3s ease;
 }
 .btn-primary:hover {
-  box-shadow: 0 8px 30px -4px rgba(37, 99, 235, 0.6);
+  box-shadow: 0 8px 30px -4px rgba(4, 70, 255, 0.6);
   transform: translateY(-2px);
 }
 
@@ -209,15 +214,15 @@
   transition: all 0.3s ease;
 }
 .btn-outline:hover {
-  border-color: rgba(59, 130, 246, 0.5);
-  background: rgba(59, 130, 246, 0.05);
+  border-color: rgba(4, 70, 255, 0.5);
+  background: rgba(4, 70, 255, 0.05);
   transform: translateY(-2px);
 }
 
 /* Section divider glow */
 .section-glow-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent);
+  background: linear-gradient(90deg, transparent, rgba(4, 70, 255, 0.3), transparent);
 }
 
 /* Scrollbar styling for dark theme */
@@ -234,8 +239,8 @@
 
 /* Use case card chart mock */
 .chart-bar {
-  background: linear-gradient(to top, #2563eb, #60a5fa);
-  border-radius: 4px 4px 0 0;
+  background: linear-gradient(to top, #0446ff, #0446ff);
+  border-radius: 0rem;
 }
 
 /* Navbar blur */
@@ -244,4 +249,17 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+/* Performance optimizations for animations */
+.animate-float,
+.animate-float-slow,
+.animate-float-delay {
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.animate-glow-pulse {
+  will-change: opacity, transform;
 }

@@ -53,7 +53,19 @@ export interface PromptTextNodeData {
 
 export interface Wan2NodeData {
   type: 'wan2';
-  model: 'wanx-v1' | 'wanx-v2' | 'wan2.1-t2i-turbo' | 'wan2.1-t2i-plus' | 'wan2.6-t2i';
+  model:
+    // Turbo models (fastest, cheapest)
+    | 'wan2.1-t2i-turbo'
+    | 'wan2.1-t2i-plus'
+    // Latest models (best quality)
+    | 'wan2.6-t2i'
+    | 'wan2.6-image'
+    | 'wanx-v1'
+    | 'wanx-v2'
+    // Preview models
+    | 'wan2.5-t2i-preview'
+    // Qwen image
+    | 'qwen-image-plus';
   size: '1024*1024' | '512*512' | '720*1280' | '1280*720';
   style?: string;
   negativePrompt?: string;
@@ -61,8 +73,22 @@ export interface Wan2NodeData {
 
 export interface Wan2VideoNodeData {
   type: 'wan2-video';
-  model: 'wan2.1-t2v-turbo' | 'wan2.1-t2v-plus';
-  size: '832*480' | '720*1280' | '1280*720';
+  model:
+    // Text-to-Video
+    | 'wan2.5-t2v-preview'
+    | 'wan2.6-t2v'
+    // Image-to-Video
+    | 'wan2.1-i2v-turbo'
+    | 'wan2.5-i2v-preview'
+    | 'wan2.6-i2v'
+    | 'wan2.6-i2v-flash'
+    // Keyframe-to-Video
+    | 'wan2.1-kf2v-plus'
+    // Reference-to-Video
+    | 'wan2.6-r2v'
+    | 'wan2.6-r2v-flash';
+  size: '832*480' | '720*1280' | '1280*720' | '1920*1080';
+  duration?: number; // 2-15 seconds
   negativePrompt?: string;
 }
 

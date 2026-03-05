@@ -9,8 +9,17 @@ import axios, { AxiosInstance, AxiosError } from 'axios';
 
 export interface Wan2VideoGenerateParams {
   prompt: string;
-  model: 'wan2.1-t2v-turbo' | 'wan2.1-t2v-plus';
-  size: '832*480' | '720*1280' | '1280*720';
+  model:
+    | 'wan2.5-t2v-preview'
+    | 'wan2.6-t2v'
+    | 'wan2.1-i2v-turbo'
+    | 'wan2.5-i2v-preview'
+    | 'wan2.6-i2v'
+    | 'wan2.6-i2v-flash'
+    | 'wan2.1-kf2v-plus'
+    | 'wan2.6-r2v'
+    | 'wan2.6-r2v-flash';
+  size: '832*480' | '720*1280' | '1280*720' | '1920*1080';
   negativePrompt?: string;
 }
 

@@ -17,6 +17,7 @@
     "@astrojs/react": "^4.2.0",
     "@astrojs/tailwind": "^6.0.0",
     "@fingerprintjs/fingerprintjs-pro": "^3.12.7",
+    "@studio-freight/lenis": "^1.0.42",
     "@vlowgen/shared": "workspace:*",
     "astro": "^5.5.0",
     "framer-motion": "11",
