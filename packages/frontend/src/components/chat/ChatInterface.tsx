@@ -15,6 +15,7 @@ import {
   Video,
   Eye,
   Sparkles,
+  TrendingUp,
 } from 'lucide-react';
 import type { Workflow, WorkflowNode, WorkflowEdge } from '@vlowgen/shared';
 import { saveChatSession } from '@/lib/db';
@@ -27,6 +28,13 @@ interface Message {
   content: string;
   timestamp: Date;
   workflow?: Workflow;
+  researchResult?: {
+    relevantTopics: string[];
+    suggestedTitles: string[];
+    recommendedReferences: string[];
+    hashtags: string[];
+    insights: string;
+  };
 }
 
 interface ChatInterfaceProps {
@@ -213,12 +221,166 @@ export default function ChatInterface({
     };
   };
 
+  const viralKeywords = [
+    'viral',
+    'trending',
+    'konten',
+    'research',
+    'lucu',
+    'funny',
+    'comedy',
+    'love',
+    'emotional',
+    'meme',
+    'hot',
+    'most',
+  ];
+
+  const isViralResearchQuery = (prompt: string): boolean => {
+    const promptLower = prompt.toLowerCase();
+    return viralKeywords.some((keyword) => promptLower.includes(keyword));
+  };
+
   const generateWorkflowFromPrompt = async (
     prompt: string,
     existingWorkflow?: Workflow
-  ): Promise<Workflow> => {
+  ): Promise<{
+    workflow?: Workflow;
+    researchResult?: Message['researchResult'];
+    enhancedPrompt?: string;
+  }> => {
+    const promptLower = prompt.toLowerCase();
+
+    if (isViralResearchQuery(prompt)) {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/nodes/viral-research`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              query: prompt,
+              nodeId: 'viral-research-node',
+              enhanceWithQwen: true,
+            }),
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.output) {
+            const research = data.output;
+
+            // Use Qwen-enhanced prompt if available, otherwise fall back to suggested titles
+            let finalPrompt = research.qwenResponse || research.enhancedPrompt;
+
+            if (!finalPrompt && research.suggestedTitles && research.suggestedTitles.length > 0) {
+              finalPrompt = `${research.suggestedTitles[0]} ${research.hashtags
+                .slice(0, 5)
+                .map((h: string) => '#' + h)
+                .join(' ')}`;
+            }
+
+            if (finalPrompt) {
+              const workflow = generateViralWorkflow(finalPrompt, research);
+              return { workflow, researchResult: research, enhancedPrompt: finalPrompt };
+            }
+
+            return { researchResult: research };
+          }
+        }
+      } catch (error) {
+        console.error('Viral research error:', error);
+      }
+    }
+
     await new Promise((resolve) => setTimeout(resolve, 2000));
-    return generateNewWorkflow(prompt);
+    return { workflow: generateNewWorkflow(prompt) };
+  };
+
+  const generateViralWorkflow = (
+    enhancedPrompt: string,
+    research: Message['researchResult']
+  ): Workflow => {
+    const hashtags = research?.hashtags?.slice(0, 5).join(' ') || 'viral fyp';
+
+    const nodes: WorkflowNode[] = [
+      {
+        id: 'node-1',
+        type: 'prompt-text',
+        position: { x: 100, y: 100 },
+        data: {
+          type: 'prompt-text',
+          promptText: enhancedPrompt,
+        },
+      },
+      {
+        id: 'node-2',
+        type: 'prompt-enhancer-image',
+        position: { x: 400, y: 100 },
+        data: {
+          type: 'prompt-enhancer-image',
+          userPrompt: enhancedPrompt,
+        },
+      },
+      {
+        id: 'node-3',
+        type: 'wan2',
+        position: { x: 700, y: 100 },
+        data: {
+          type: 'wan2',
+          model: 'wan2.1-t2i-turbo',
+          size: '1024*1024',
+        },
+      },
+    ];
+
+    const edges: WorkflowEdge[] = [
+      { id: 'edge-1', source: 'node-1', target: 'node-2' },
+      { id: 'edge-2', source: 'node-2', target: 'node-3' },
+    ];
+
+    const previewNode: WorkflowNode = {
+      id: 'node-preview',
+      type: 'preview',
+      position: { x: 1000, y: 100 },
+      data: {
+        type: 'preview',
+        mediaType: 'auto',
+        showMetadata: true,
+      },
+    };
+    nodes.push(previewNode);
+    edges.push({ id: 'edge-preview', source: 'node-3', target: 'node-preview' });
+
+    // Add social platforms
+    let currentY = 50;
+
+    nodes.push({
+      id: 'node-twitter',
+      type: 'twitter',
+      position: { x: 1300, y: currentY },
+      data: { type: 'twitter', authenticated: false },
+    });
+    edges.push({ id: 'edge-twitter', source: 'node-preview', target: 'node-twitter' });
+    currentY += 150;
+
+    nodes.push({
+      id: 'node-instagram',
+      type: 'instagram',
+      position: { x: 1300, y: currentY },
+      data: { type: 'instagram', authenticated: false },
+    });
+    edges.push({ id: 'edge-instagram', source: 'node-preview', target: 'node-instagram' });
+
+    return {
+      id: `workflow-${Date.now()}`,
+      name: 'Viral Content Workflow',
+      nodes,
+      edges,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
   };
 
   const handleSend = async () => {
@@ -236,41 +398,87 @@ export default function ChatInterface({
     setIsGenerating(true);
 
     try {
-      const workflow = await generateWorkflowFromPrompt(input, currentWorkflow);
-      setCurrentWorkflow(workflow);
+      const result = await generateWorkflowFromPrompt(input, currentWorkflow);
 
-      const assistantMessage: Message = {
-        id: `msg-${Date.now()}-assistant`,
-        role: 'assistant',
-        content: `Perfect! I've created your workflow:\n\n${input}\n\nSteps:\n1. Prompt enhancement\n2. Image generation\n3. Multi-platform posting\n\nClick "Open Editor" to review and execute.`,
-        timestamp: new Date(),
-        workflow,
-      };
+      let assistantMessage: Message;
+
+      if (result.researchResult && result.workflow) {
+        const r = result.researchResult;
+        assistantMessage = {
+          id: `msg-${Date.now()}-assistant`,
+          role: 'assistant',
+          content:
+            `📊 **Viral Content Research + AI Generation**\n\n` +
+            `**Research Insights:**\n${r.insights.slice(0, 200)}...\n\n` +
+            `**Selected Title:** ${result.enhancedPrompt}\n\n` +
+            `**Hashtags:** ${r.hashtags
+              .slice(0, 8)
+              .map((h: string) => `#${h}`)
+              .join(' ')}\n\n` +
+            `✅ Generated workflow with viral-optimized prompt!`,
+          timestamp: new Date(),
+          workflow: result.workflow,
+          researchResult: r,
+        };
+      } else if (result.researchResult) {
+        const r = result.researchResult;
+        assistantMessage = {
+          id: `msg-${Date.now()}-assistant`,
+          role: 'assistant',
+          content:
+            `📊 **Viral Content Research Results**\n\n` +
+            `**Top Topics:**\n${r.relevantTopics.map((t) => `• ${t}`).join('\n')}\n\n` +
+            `**Trending Titles:**\n${r.suggestedTitles.map((t) => `• ${t}`).join('\n')}\n\n` +
+            `**Hashtags:** ${r.hashtags.map((h) => `#${h}`).join(' ')}\n\n` +
+            `💡 ${r.insights}`,
+          timestamp: new Date(),
+          researchResult: r,
+        };
+      } else if (result.workflow) {
+        setCurrentWorkflow(result.workflow);
+        assistantMessage = {
+          id: `msg-${Date.now()}-assistant`,
+          role: 'assistant',
+          content: `Perfect! I've created your workflow:\n\n${input}\n\nSteps:\n1. Prompt enhancement\n2. Image generation\n3. Multi-platform posting\n\nClick "Open Editor" to review and execute.`,
+          timestamp: new Date(),
+          workflow: result.workflow,
+        };
+      } else {
+        assistantMessage = {
+          id: `msg-${Date.now()}-assistant`,
+          role: 'assistant',
+          content: 'Sorry, there was an error processing your request. Please try again.',
+          timestamp: new Date(),
+        };
+      }
 
       const updatedMessages = [...messages, userMessage, assistantMessage];
       setMessages(updatedMessages);
-      onWorkflowGenerated(workflow);
 
-      if (sessionId) {
-        const userId = getUserId();
-        const title = input.slice(0, 50) + (input.length > 50 ? '...' : '');
+      if (result.workflow) {
+        onWorkflowGenerated(result.workflow);
 
-        const { saveWorkflow: saveWorkflowToDb } = await import('@/lib/workflow-api');
-        await saveWorkflowToDb(workflow);
+        if (sessionId) {
+          const userId = getUserId();
+          const title = input.slice(0, 50) + (input.length > 50 ? '...' : '');
 
-        await saveChatSession(
-          sessionId,
-          userId,
-          title,
-          updatedMessages.map((m) => ({
-            role: m.role,
-            content: m.content,
-            timestamp: m.timestamp.getTime(),
-          })),
-          workflow.id
-        );
+          const { saveWorkflow: saveWorkflowToDb } = await import('@/lib/workflow-api');
+          await saveWorkflowToDb(result.workflow);
 
-        sessionEvents.emit();
+          await saveChatSession(
+            sessionId,
+            userId,
+            title,
+            updatedMessages.map((m) => ({
+              role: m.role,
+              content: m.content,
+              timestamp: m.timestamp.getTime(),
+            })),
+            result.workflow.id
+          );
+
+          sessionEvents.emit();
+        }
       }
     } catch (error) {
       const errorMessage: Message = {
@@ -441,11 +649,57 @@ export default function ChatInterface({
           </div>
         </div>
 
-        {/* Quick Actions */}
+        {/* Quick Actions - Viral Research */}
+        <div className="text-center">
+          <p className="text-sm text-gray-500 mb-3 flex items-center justify-center gap-2">
+            <TrendingUp className="w-4 h-4 text-pink-500" />
+            <span>Cari konten viral:</span>
+          </p>
+          <div className="flex flex-wrap gap-2 justify-center">
+            <button
+              onClick={() => setInput('viral lucu indonesia')}
+              className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-gradient-to-r from-pink-400 to-pink-500 text-white border-0 rounded-lg hover:from-pink-500 hover:to-pink-600 hover:shadow-md transition-all flex items-center gap-1.5"
+            >
+              <span>Funny</span>
+            </button>
+            <button
+              onClick={() => setInput('viral love emotional')}
+              className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-gradient-to-r from-red-400 to-red-500 text-white border-0 rounded-lg hover:from-red-500 hover:to-red-600 hover:shadow-md transition-all flex items-center gap-1.5"
+            >
+              <span>Love</span>
+            </button>
+            <button
+              onClick={() => setInput('viral berita indonesia')}
+              className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-gradient-to-r from-blue-400 to-blue-500 text-white border-0 rounded-lg hover:from-blue-500 hover:to-blue-600 hover:shadow-md transition-all flex items-center gap-1.5"
+            >
+              <span>News</span>
+            </button>
+            <button
+              onClick={() => setInput('viral gadget tech')}
+              className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-gradient-to-r from-green-400 to-green-500 text-white border-0 rounded-lg hover:from-green-500 hover:to-green-600 hover:shadow-md transition-all flex items-center gap-1.5"
+            >
+              <span>Gadget</span>
+            </button>
+            <button
+              onClick={() => setInput('viral football sports')}
+              className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-gradient-to-r from-orange-400 to-orange-500 text-white border-0 rounded-lg hover:from-orange-500 hover:to-orange-600 hover:shadow-md transition-all flex items-center gap-1.5"
+            >
+              <span>Sports</span>
+            </button>
+            <button
+              onClick={() => setInput('viral dance challenge')}
+              className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-gradient-to-r from-purple-400 to-purple-500 text-white border-0 rounded-lg hover:from-purple-500 hover:to-purple-600 hover:shadow-md transition-all flex items-center gap-1.5"
+            >
+              <span>Dance</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Quick Actions - Create Content */}
         <div className="text-center">
           <p className="text-sm text-gray-500 mb-3 flex items-center justify-center gap-2">
             <Zap className="w-4 h-4" />
-            <span>Quick examples:</span>
+            <span>Atau buat konten:</span>
           </p>
           <div className="flex flex-wrap gap-2 justify-center">
             <button

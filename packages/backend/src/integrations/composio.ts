@@ -6,6 +6,14 @@
  */
 
 import axios, { AxiosInstance, AxiosError } from 'axios';
+import fs from 'fs';
+import path from 'path';
+import { promisify } from 'util';
+import { pipeline } from 'stream';
+import { createHash } from 'crypto';
+import FormData from 'form-data';
+
+const streamPipeline = promisify(pipeline);
 
 export interface PostToTwitterParams {
   connectedAccountId?: string;
@@ -14,8 +22,22 @@ export interface PostToTwitterParams {
   token: string;
 }
 
+export interface PostVideoToTwitterParams {
+  connectedAccountId?: string;
+  text?: string;
+  videoUrl?: string;
+  token: string;
+}
+
 export interface PostToInstagramParams {
   imageUrl: string;
+  caption?: string;
+  connectedAccountId?: string;
+  igUserId?: string;
+}
+
+export interface PostVideoToInstagramParams {
+  videoUrl: string;
   caption?: string;
   connectedAccountId?: string;
   igUserId?: string;
@@ -63,6 +85,8 @@ export interface PostToTikTokResponse {
 export interface UploadToYouTubeResponse {
   videoUrl?: string;
   videoId?: string;
+  manualUpload?: boolean;
+  instructions?: string;
 }
 
 export interface TwitterAuthUrlResponse {
@@ -131,35 +155,250 @@ export class ComposioClient {
   }
 
   /**
-   * Upload media to Twitter and get media ID
+   * Upload media to Twitter using presigned URL flow
    *
-   * @param imageUrl - URL of the image to upload
-   * @returns Promise resolving to media ID
+   * @param mediaUrl - URL of the media (image or video) to upload
+   * @returns Promise resolving to media ID (s3key)
    * @throws Error if upload fails
    */
-  async uploadMediaToTwitter(imageUrl: string): Promise<string> {
+  async uploadMediaToTwitter(mediaUrl: string): Promise<string> {
+    let tempFilePath: string | null = null;
+
     try {
+      console.log('[Composio] Uploading media to Twitter via presigned URL...');
+      
+      // Step 1: Download media to temporary file
+      tempFilePath = await this.downloadVideo(mediaUrl); // Works for both image and video
+
+      const stats = fs.statSync(tempFilePath);
+      console.log('[Composio] Media downloaded, size:', stats.size, 'bytes');
+
+      // Determine if it's image or video based on URL
+      const isVideo = mediaUrl.includes('.mp4') || mediaUrl.includes('.mov') || mediaUrl.includes('video');
+      const mimetype = isVideo ? 'video/mp4' : 'image/png';
+      const filename = isVideo ? 'media.mp4' : 'media.png';
+
+      // Step 2: Calculate MD5 hash
+      console.log('[Composio] Calculating MD5 hash...');
+      const md5Hash = await this.calculateMD5(tempFilePath);
+
+      // Step 3: Request presigned URL from Composio
+      const { s3key, presignedUrl } = await this.requestPresignedUrl(
+        filename,
+        mimetype,
+        md5Hash,
+        'twitter',
+        'TWITTER_UPLOAD_MEDIA'
+      );
+
+      // Step 4: Upload file to presigned URL (direct to S3)
+      await this.uploadToPresignedUrl(tempFilePath, presignedUrl, mimetype);
+
+      console.log('[Composio] Media uploaded successfully, s3key:', s3key);
+      
+      // Return s3key as media ID
+      return s3key;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError;
+
+        if (axiosError.code === 'ECONNABORTED') {
+          throw new Error('Composio API request timeout after 60 seconds');
+        }
+
+        if (axiosError.response) {
+          const status = axiosError.response.status;
+          const data = axiosError.response.data as any;
+
+          throw new Error(
+            `Composio API error (${status}): ${data?.error || data?.message || axiosError.message}`
+          );
+        }
+
+        throw new Error(`Composio API network error: ${axiosError.message}`);
+      }
+
+      throw error;
+    } finally {
+      // Always clean up temporary file
+      if (tempFilePath) {
+        this.deleteFile(tempFilePath);
+      }
+    }
+  }
+
+  /**
+   * Upload file to Composio storage for tool execution using v3 API
+   */
+  private async uploadFileToComposio(
+    fileUrl: string,
+    toolSlug: string,
+    toolkitSlug: string
+  ): Promise<any> {
+    let tempFilePath: string | null = null;
+
+    try {
+      console.log('[Composio] Uploading file to Composio storage via v3 API...');
+      console.log('[Composio] File URL:', fileUrl);
+
+      // Step 1: Download file
+      tempFilePath = await this.downloadVideo(fileUrl);
+      const stats = fs.statSync(tempFilePath);
+      const fileName = path.basename(tempFilePath);
+
+      // Step 2: Calculate MD5
+      const md5Hash = await this.calculateMD5(tempFilePath);
+
+      // Determine mimetype
+      const mimetype = fileName.endsWith('.mp4') ? 'video/mp4' : 'image/png';
+
+      // Step 3: Request presigned URL
+      const { s3key, presignedUrl } = await this.requestPresignedUrl(
+        fileName,
+        mimetype,
+        md5Hash,
+        toolkitSlug,
+        toolSlug
+      );
+
+      // Step 4: Upload to presigned URL
+      await this.uploadToPresignedUrl(tempFilePath, presignedUrl, mimetype);
+
+      console.log('[Composio] File uploaded successfully, s3key:', s3key);
+
+      // Return file metadata in format expected by Composio
+      return {
+        name: fileName,
+        mimetype: mimetype,
+        s3key: s3key,
+      };
+    } catch (error) {
+      console.error('[Composio] File upload failed:', error);
+      throw error;
+    } finally {
+      if (tempFilePath) {
+        this.deleteFile(tempFilePath);
+      }
+    }
+  }
+
+  /**
+   * Upload media to Twitter using v1.1 endpoint (via Composio)
+   * Returns media_id_string for use in tweet creation
+   */
+  private async uploadMediaToTwitterV1(
+    mediaUrl: string,
+    connectedAccountId: string,
+    mediaType: 'image' | 'video'
+  ): Promise<string> {
+    try {
+      console.log(`[Composio] Uploading ${mediaType} to Twitter v1.1 endpoint:`, mediaUrl);
+
+      // Download media to temp file
+      const tempFilePath = await this.downloadVideo(mediaUrl);
+      
+      try {
+        const fileBuffer = fs.readFileSync(tempFilePath);
+        const stats = fs.statSync(tempFilePath);
+        
+        console.log('[Composio] File size:', stats.size, 'bytes');
+
+        // Create form data for multipart upload
+        const formData = new FormData();
+        formData.append('media', fileBuffer, {
+          filename: path.basename(tempFilePath),
+          contentType: mediaType === 'video' ? 'video/mp4' : 'image/jpeg',
+        });
+
+        // Upload using Twitter v1.1 media/upload endpoint via Composio
+        const response = await this.client.post<ComposioApiResponse>(
+          '/v1/twitter/media/upload',
+          formData,
+          {
+            headers: {
+              ...formData.getHeaders(),
+              'X-Connected-Account-Id': connectedAccountId,
+            },
+          }
+        );
+
+        console.log('[Composio] Media upload response:', JSON.stringify(response.data, null, 2));
+
+        if (response.data.successful || response.data.successfull) {
+          const mediaId = response.data.data?.media_id_string || response.data.data?.media_id;
+          if (mediaId) {
+            console.log('[Composio] Media uploaded successfully, ID:', mediaId);
+            return mediaId;
+          }
+        }
+
+        throw new Error(response.data.error || 'Failed to upload media to Twitter');
+      } finally {
+        // Clean up temp file
+        this.deleteFile(tempFilePath);
+      }
+    } catch (error) {
+      console.error('[Composio] Media upload failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Post content to Twitter via Composio API v2
+   * Supports text-only and text with media (image/video)
+   *
+   * @param params - Post parameters including text and optional image URL
+   * @returns Promise resolving to tweet URL and ID
+   * @throws Error if API request fails or returns an error
+   */
+  async postToTwitter(params: PostToTwitterParams): Promise<PostToTwitterResponse> {
+    try {
+      const connectedAccountId = params.connectedAccountId || this.defaultConnectedAccountId;
+
+      const input: any = {
+        text: params.text || 'Posted via VlowGen',
+      };
+
+      // If image URL is provided, upload it first
+      if (params.imageUrl) {
+        try {
+          console.log('[Composio] Uploading image for tweet...');
+          const mediaId = await this.uploadMediaToTwitterV1(
+            params.imageUrl,
+            connectedAccountId,
+            'image'
+          );
+          input.media__media__ids = [mediaId];
+          console.log('[Composio] Will create tweet with image, media_id:', mediaId);
+        } catch (uploadError) {
+          console.warn('[Composio] Image upload failed, posting text-only:', uploadError);
+          // Continue with text-only if upload fails
+        }
+      }
+
+      console.log('[Composio] Creating tweet with TWITTER_CREATION_OF_A_POST');
+
       const response = await this.client.post<ComposioApiResponse>(
-        '/v2/actions/TWITTER_MEDIA_UPLOAD_MEDIA/execute',
+        '/v2/actions/TWITTER_CREATION_OF_A_POST/execute',
         {
-          connectedAccountId: this.defaultConnectedAccountId,
-          input: {
-            media_url: imageUrl,
-          },
+          connectedAccountId,
+          input,
         }
       );
 
+      console.log('[Composio] Twitter API response:', JSON.stringify(response.data, null, 2));
+
       if (!response.data.successful && !response.data.successfull) {
-        throw new Error(response.data.error || 'Failed to upload media to Twitter');
+        throw new Error(response.data.error || 'Failed to post to Twitter');
       }
 
-      const mediaId = response.data.data?.media_id_string || response.data.data?.media_id;
-      if (!mediaId) {
-        throw new Error('Failed to get media ID from Twitter upload response');
-      }
+      const tweetId = response.data.data?.data?.id || response.data.data?.id;
+      const tweetUrl = tweetId ? `https://twitter.com/i/web/status/${tweetId}` : '';
 
-      console.log('[Composio] Media uploaded successfully, media ID:', mediaId);
-      return mediaId;
+      return {
+        tweetUrl,
+        tweetId: tweetId || '',
+      };
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError;
@@ -185,35 +424,39 @@ export class ComposioClient {
   }
 
   /**
-   * Post content to Twitter via Composio API v2
+   * Post video to Twitter via Composio API v2
+   * Supports text-only and text with video
    *
-   * @param params - Post parameters including text, image URL, and user token
+   * @param params - Post parameters including text and optional video URL
    * @returns Promise resolving to tweet URL and ID
    * @throws Error if API request fails or returns an error
    */
-  async postToTwitter(params: PostToTwitterParams): Promise<PostToTwitterResponse> {
+  async postVideoToTwitter(params: PostVideoToTwitterParams): Promise<PostToTwitterResponse> {
     try {
       const connectedAccountId = params.connectedAccountId || this.defaultConnectedAccountId;
 
-      const input: any = {};
+      const input: any = {
+        text: params.text || 'Posted via VlowGen',
+      };
 
-      if (params.text) {
-        input.text = params.text;
+      // If video URL is provided, upload it first
+      if (params.videoUrl) {
+        try {
+          console.log('[Composio] Uploading video for tweet...');
+          const mediaId = await this.uploadMediaToTwitterV1(
+            params.videoUrl,
+            connectedAccountId,
+            'video'
+          );
+          input.media__media__ids = [mediaId];
+          console.log('[Composio] Will create tweet with video, media_id:', mediaId);
+        } catch (uploadError) {
+          console.warn('[Composio] Video upload failed, posting text-only:', uploadError);
+          // Continue with text-only if upload fails
+        }
       }
 
-      // If image URL is provided, upload it first and get media ID
-      if (params.imageUrl) {
-        console.log('[Composio] Uploading image to Twitter:', params.imageUrl);
-        const mediaId = await this.uploadMediaToTwitter(params.imageUrl);
-
-        // Add media ID to attachments
-        input.attachments = [
-          {
-            media_id: mediaId,
-          },
-        ];
-        console.log('[Composio] Image uploaded, media ID:', mediaId);
-      }
+      console.log('[Composio] Creating tweet with TWITTER_CREATION_OF_A_POST');
 
       const response = await this.client.post<ComposioApiResponse>(
         '/v2/actions/TWITTER_CREATION_OF_A_POST/execute',
@@ -223,11 +466,13 @@ export class ComposioClient {
         }
       );
 
+      console.log('[Composio] Twitter API response:', JSON.stringify(response.data, null, 2));
+
       if (!response.data.successful && !response.data.successfull) {
-        throw new Error(response.data.error || 'Failed to post to Twitter');
+        throw new Error(response.data.error || 'Failed to post video to Twitter');
       }
 
-      const tweetId = response.data.data?.id;
+      const tweetId = response.data.data?.data?.id || response.data.data?.id;
       const tweetUrl = tweetId ? `https://twitter.com/i/web/status/${tweetId}` : '';
 
       return {
@@ -422,6 +667,146 @@ export class ComposioClient {
         postUrl: publishResponse.data.data?.permalink,
         postId: publishResponse.data.data?.id,
       };
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError;
+
+        if (axiosError.code === 'ECONNABORTED') {
+          throw new Error('Composio API request timeout after 60 seconds');
+        }
+
+        if (axiosError.response) {
+          const status = axiosError.response.status;
+          const data = axiosError.response.data as any;
+
+          throw new Error(
+            `Composio API error (${status}): ${data?.error || data?.message || axiosError.message}`
+          );
+        }
+
+        throw new Error(`Composio API network error: ${axiosError.message}`);
+      }
+
+      throw error;
+    }
+  }
+
+  /**
+   * Post video (reel) to Instagram via Composio API v2
+   * Uses 2-step process: create video container, then publish
+   *
+   * @param params - Post parameters including video URL and caption
+   * @returns Promise resolving to post URL and ID
+   * @throws Error if API request fails or returns an error
+   */
+  async postVideoToInstagram(params: PostVideoToInstagramParams): Promise<PostToInstagramResponse> {
+    try {
+      const connectedAccountId = params.connectedAccountId || this.defaultConnectedAccountId;
+
+      // Get Instagram User ID if not provided
+      let igUserId = params.igUserId;
+      if (!igUserId) {
+        const userInfo = await this.client.post<ComposioApiResponse>(
+          '/v2/actions/INSTAGRAM_GET_USER_INFO/execute',
+          {
+            connectedAccountId,
+            input: {},
+          }
+        );
+        igUserId = userInfo.data.data?.id;
+        if (!igUserId) {
+          throw new Error('Failed to get Instagram User ID');
+        }
+      }
+
+      console.log('[Composio] Creating Instagram video container (reel)...');
+
+      // Step 1: Create video container (reel)
+      const containerResponse = await this.client.post<ComposioApiResponse>(
+        '/v2/actions/INSTAGRAM_CREATE_MEDIA_CONTAINER/execute',
+        {
+          connectedAccountId,
+          input: {
+            ig_user_id: igUserId,
+            video_url: params.videoUrl,
+            caption: params.caption || '',
+            media_type: 'REELS', // Instagram reels for video
+          },
+        }
+      );
+
+      if (!containerResponse.data.successful && !containerResponse.data.successfull) {
+        throw new Error(containerResponse.data.error || 'Failed to create video container');
+      }
+
+      const containerId = containerResponse.data.data?.id;
+      if (!containerId) {
+        throw new Error('Failed to get container ID from response');
+      }
+
+      console.log('[Composio] Video container created, waiting for processing...');
+
+      // Step 2: Wait longer for video processing (videos take more time than images)
+      // Instagram needs time to download and process the video
+      // Try multiple times with increasing wait time
+      console.log('[Composio] Waiting for Instagram to process video (this may take 30-60 seconds)...');
+      
+      let publishSuccess = false;
+      let lastError = null;
+      const maxAttempts = 6; // Try up to 6 times
+      
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        // Wait before attempting to publish (exponential backoff)
+        const waitTime = attempt * 10000; // 10s, 20s, 30s, 40s, 50s, 60s
+        console.log(`[Composio] Attempt ${attempt}/${maxAttempts}: Waiting ${waitTime/1000} seconds...`);
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
+
+        // Step 3: Try to publish the video container
+        console.log(`[Composio] Attempting to publish video (attempt ${attempt}/${maxAttempts})...`);
+        
+        try {
+          const publishResponse = await this.client.post<ComposioApiResponse>(
+            '/v2/actions/INSTAGRAM_CREATE_POST/execute',
+            {
+              connectedAccountId,
+              input: {
+                ig_user_id: igUserId,
+                creation_id: containerId,
+              },
+            }
+          );
+
+          if (publishResponse.data.successful || publishResponse.data.successfull) {
+            console.log('[Composio] Video published successfully to Instagram');
+            publishSuccess = true;
+            
+            return {
+              postUrl: publishResponse.data.data?.permalink,
+              postId: publishResponse.data.data?.id,
+            };
+          } else {
+            lastError = publishResponse.data.error || 'Failed to publish video';
+            console.log(`[Composio] Publish attempt ${attempt} failed: ${lastError}`);
+          }
+        } catch (attemptError) {
+          if (axios.isAxiosError(attemptError)) {
+            const axiosError = attemptError as AxiosError;
+            const errorData = axiosError.response?.data as any;
+            lastError = errorData?.error?.error_user_msg || errorData?.error?.message || 'Unknown error';
+            console.log(`[Composio] Publish attempt ${attempt} failed: ${lastError}`);
+            
+            // If error is not about media not ready, throw immediately
+            if (errorData?.error?.error_subcode !== 2207027) {
+              throw attemptError;
+            }
+          } else {
+            throw attemptError;
+          }
+        }
+      }
+
+      // If we get here, all attempts failed
+      throw new Error(`Failed to publish video after ${maxAttempts} attempts. Last error: ${lastError}`);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError;
@@ -658,62 +1043,229 @@ export class ComposioClient {
   }
 
   /**
-   * Upload video to YouTube via Composio API v2
-   *
-   * @param params - Upload parameters including video URL, title, and description
-   * @returns Promise resolving to video URL and ID
-   * @throws Error if API request fails or returns an error
+   * Download video from URL to temporary file
+   * 
+   * @param videoUrl - URL of the video to download
+   * @returns Promise resolving to local file path
    */
-  async uploadToYouTube(params: UploadToYouTubeParams): Promise<UploadToYouTubeResponse> {
-    try {
-      const connectedAccountId = params.connectedAccountId || this.defaultConnectedAccountId;
+  private async downloadVideo(videoUrl: string): Promise<string> {
+    const tempDir = path.join(process.cwd(), 'temp');
+    
+    // Create temp directory if it doesn't exist
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
 
-      const response = await this.client.post<ComposioApiResponse>(
-        '/v2/actions/YOUTUBE_UPLOAD_VIDEO/execute',
+    const fileName = `video-${Date.now()}.mp4`;
+    const filePath = path.join(tempDir, fileName);
+
+    console.log('[Composio] Downloading video from:', videoUrl);
+    console.log('[Composio] Saving to:', filePath);
+
+    try {
+      const response = await axios({
+        method: 'GET',
+        url: videoUrl,
+        responseType: 'stream',
+        timeout: 120000, // 2 minutes timeout for download
+      });
+
+      await streamPipeline(response.data, fs.createWriteStream(filePath));
+
+      console.log('[Composio] Video downloaded successfully');
+      return filePath;
+    } catch (error) {
+      // Clean up partial file if download failed
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+      throw new Error(`Failed to download video: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Delete temporary file
+   * 
+   * @param filePath - Path to file to delete
+   */
+  private deleteFile(filePath: string): void {
+    try {
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+        console.log('[Composio] Temporary file deleted:', filePath);
+      }
+    } catch (error) {
+      console.warn('[Composio] Failed to delete temporary file:', error);
+    }
+  }
+
+  /**
+   * Calculate MD5 hash of a file
+   * 
+   * @param filePath - Path to file
+   * @returns Promise resolving to MD5 hash string
+   */
+  private async calculateMD5(filePath: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const hash = createHash('md5');
+      const stream = fs.createReadStream(filePath);
+      
+      stream.on('data', (data) => hash.update(data));
+      stream.on('end', () => resolve(hash.digest('hex')));
+      stream.on('error', reject);
+    });
+  }
+
+  /**
+   * Request presigned URL for file upload to Composio S3
+   * 
+   * @param filename - Name of the file
+   * @param mimetype - MIME type of the file
+   * @param md5Hash - MD5 hash of the file
+   * @param toolkitSlug - Toolkit slug (e.g., 'youtube')
+   * @param toolSlug - Tool slug (e.g., 'YOUTUBE_UPLOAD_VIDEO')
+   * @returns Promise resolving to s3key and presigned URL
+   */
+  private async requestPresignedUrl(
+    filename: string,
+    mimetype: string,
+    md5Hash: string,
+    toolkitSlug: string,
+    toolSlug: string
+  ): Promise<{ s3key: string; presignedUrl: string }> {
+    try {
+      console.log('[Composio] Requesting presigned URL for file upload...');
+      console.log('[Composio] MD5:', md5Hash);
+      
+      const response = await this.client.post<any>(
+        '/v3/files/upload/request',
         {
-          connectedAccountId,
-          input: {
-            video_url: params.videoUrl,
-            title: params.title,
-            description: params.description || '',
-            privacy_status: 'public',
-            category_id: '22', // People & Blogs
-          },
+          toolkit_slug: toolkitSlug,
+          tool_slug: toolSlug,
+          filename: filename,
+          mimetype: mimetype,
+          md5: md5Hash,
         }
       );
 
-      if (!response.data.successful && !response.data.successfull) {
-        throw new Error(response.data.error || 'Failed to upload video to YouTube');
+      if (!response.data || !response.data.key || !response.data.new_presigned_url) {
+        console.error('[Composio] Presigned URL response:', JSON.stringify(response.data, null, 2));
+        throw new Error('Failed to get presigned URL from Composio');
       }
 
-      const videoId = response.data.data?.id;
-      const videoUrl = videoId ? `https://www.youtube.com/watch?v=${videoId}` : undefined;
-
+      console.log('[Composio] Presigned URL obtained, s3key:', response.data.key);
+      
       return {
-        videoUrl,
-        videoId,
+        s3key: response.data.key,
+        presignedUrl: response.data.new_presigned_url,
       };
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError;
-
-        if (axiosError.code === 'ECONNABORTED') {
-          throw new Error('Composio API request timeout after 60 seconds');
-        }
-
+        
         if (axiosError.response) {
           const status = axiosError.response.status;
           const data = axiosError.response.data as any;
-
+          console.error('[Composio] Presigned URL error response:', JSON.stringify(data, null, 2));
           throw new Error(
-            `Composio API error (${status}): ${data?.error || data?.message || axiosError.message}`
+            `Composio presigned URL request error (${status}): ${JSON.stringify(data?.error || data?.message || data)}`
           );
         }
-
-        throw new Error(`Composio API network error: ${axiosError.message}`);
       }
-
       throw error;
+    }
+  }
+
+  /**
+   * Upload file to presigned URL
+   * 
+   * @param filePath - Local file path to upload
+   * @param presignedUrl - Presigned URL from Composio
+   * @param mimetype - MIME type of the file
+   */
+  private async uploadToPresignedUrl(
+    filePath: string,
+    presignedUrl: string,
+    mimetype: string
+  ): Promise<void> {
+    try {
+      console.log('[Composio] Uploading file to presigned URL...');
+      console.log('[Composio] Presigned URL:', presignedUrl.substring(0, 100) + '...');
+      
+      const fileBuffer = fs.readFileSync(filePath);
+      const stats = fs.statSync(filePath);
+      
+      console.log('[Composio] File size:', stats.size, 'bytes');
+
+      // Upload directly to S3 presigned URL using PUT
+      const response = await axios.put(presignedUrl, fileBuffer, {
+        headers: {
+          'Content-Type': mimetype,
+          'Content-Length': stats.size,
+        },
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity,
+        timeout: 300000, // 5 minutes
+      });
+
+      console.log('[Composio] File uploaded successfully to S3, status:', response.status);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError;
+        console.error('[Composio] Upload to presigned URL failed');
+        console.error('[Composio] Status:', axiosError.response?.status);
+        console.error('[Composio] Response:', axiosError.response?.data);
+        throw new Error(
+          `Failed to upload file to presigned URL (${axiosError.response?.status}): ${axiosError.message}`
+        );
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Prepare YouTube upload metadata (manual upload flow)
+   * Since Composio YouTube API has limitations, we provide a manual upload helper
+   *
+   * @param params - Upload parameters including video URL, title, and description
+   * @returns Promise resolving to manual upload instructions
+   */
+  async uploadToYouTube(params: UploadToYouTubeParams): Promise<UploadToYouTubeResponse> {
+    try {
+      console.log('[Composio] Preparing YouTube manual upload...');
+      console.log('[Composio] Video URL:', params.videoUrl);
+
+      // Return manual upload instructions with metadata
+      const instructions = {
+        videoUrl: params.videoUrl,
+        uploadUrl: 'https://studio.youtube.com/channel/UC/videos/upload',
+        metadata: {
+          title: params.title,
+          description: params.description || '',
+          tags: ['VlowGen', 'AI Generated'],
+          category: 'People & Blogs',
+          privacy: 'Public',
+        },
+        instructions: [
+          '1. Download the video from the provided URL',
+          '2. Go to YouTube Studio upload page',
+          '3. Upload the video file',
+          '4. Copy the title, description, and tags provided below',
+          '5. Set category to "People & Blogs" and privacy to "Public"',
+          '6. Click "Publish" when ready',
+        ],
+      };
+
+      console.log('[Composio] Manual upload instructions prepared');
+
+      return {
+        videoUrl: undefined,
+        videoId: undefined,
+        manualUpload: true,
+        instructions: JSON.stringify(instructions, null, 2),
+      };
+    } catch (error) {
+      throw new Error(`Failed to prepare YouTube upload: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 }

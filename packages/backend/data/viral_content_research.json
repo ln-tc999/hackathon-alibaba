@@ -1,0 +1,337 @@
+{
+  "metadata": {
+    "description": "Viral content research data - Indonesia & Worldwide (Dec 2025 - Mar 2026)",
+    "version": "2.0",
+    "last_updated": "2026-03-06",
+    "coverage": "Last 3 months",
+    "regions": ["Indonesia", "Worldwide"],
+    "platforms": ["TikTok", "X/Twitter", "Instagram", "YouTube"]
+  },
+  "indonesia": {
+    "period": "December 2025 - March 2026",
+    "top_hashtags": [
+      { "tag": "fyp", "volume": "2.1B", "growth": "+15%" },
+      { "tag": "viral", "volume": "1.8B", "growth": "+22%" },
+      { "tag": "trending", "volume": "890M", "growth": "+18%" },
+      { "tag": "lucu", "volume": "456M", "growth": "+25%" },
+      { "tag": "dagelan", "volume": "234M", "growth": "+30%" },
+      { "tag": "ngakak", "volume": "198M", "growth": "+12%" },
+      { "tag": "kucinglucu", "volume": "167M", "growth": "+28%" },
+      { "tag": "foryou", "volume": "1.2B", "growth": "+10%" },
+      { "tag": "tiktok", "volume": "890M", "growth": "+8%" },
+      { "tag": "komedi", "volume": "145M", "growth": "+20%" }
+    ],
+    "trending_topics": [
+      {
+        "topic": "Cerita Personal / Testimoni",
+        "engagement_rate": 8.5,
+        "examples": ["transformasi 2025", "rahasia kesuksesan", "perjalanan hidup"]
+      },
+      {
+        "topic": "Kucing & Hewan Lucu",
+        "engagement_rate": 12.3,
+        "examples": ["kucing gemoy", "hewan imut", "pets tiktok"]
+      },
+      {
+        "topic": "Komedi / Dagelan",
+        "engagement_rate": 9.8,
+        "examples": ["satu дня dengan", "prank aneh", "fails indonesia"]
+      },
+      {
+        "topic": "Motivation / Hopecore",
+        "engagement_rate": 11.2,
+        "examples": ["semangat pagi", "motivasi harian", "quotes hidup"]
+      },
+      {
+        "topic": "News / Berita Viral",
+        "engagement_rate": 7.5,
+        "examples": ["berita terbaru", "viral politik", "istiwa unik"]
+      },
+      {
+        "topic": "Produk Digital / Gadget",
+        "engagement_rate": 6.8,
+        "examples": ["review hp", "gadget baru", "teknologi 2026"]
+      },
+      {
+        "topic": "Meme / Edit Viral",
+        "engagement_rate": 10.1,
+        "examples": ["meme indonesia", "edit lucu", "trending moment"]
+      },
+      {
+        "topic": "Dance / Challenge",
+        "engagement_rate": 8.9,
+        "examples": ["dance challenge", "viral dance", "tiktok dance"]
+      }
+    ],
+    "viral_content": [
+      {
+        "title": "Bocil Block Blast",
+        "type": "gaming",
+        "category": "viral moment",
+        "description": "Fenomena video viral Bocil Block Blast yang menghebohkan akhir 2025",
+        "engagement_rate": 15.2,
+        "hashtags": ["blockblast", "bocil", "viral", "gaming"]
+      },
+      {
+        "title": "Tiara Kartika Dance",
+        "type": "dance",
+        "category": "creator",
+        "description": "Konten dance challenge dari Tiara Kartika yang viral di TikTok",
+        "engagement_rate": 14.8,
+        "hashtags": ["tiaraartika", "dancechallenge", "viral"]
+      },
+      {
+        "title": "Gamis Bini Orang",
+        "type": "fashion",
+        "category": "trending",
+        "description": "Tren fashion gamis dari plesetan nama artis hingga fashion 2026",
+        "engagement_rate": 8.5,
+        "hashtags": ["gamis", "fashion", "viral", "style"]
+      },
+      {
+        "title": "Isu Viral Awal 2026",
+        "type": "news",
+        "category": "viral",
+        "description": "Dinamika awal tahun 2026 yang menguras emosi warganet",
+        "engagement_rate": 9.2,
+        "hashtags": ["berita", "viral", "2026", "trending"]
+      },
+      {
+        "title": "Videy.co Content",
+        "type": "entertainment",
+        "category": "platform",
+        "description": "Konten viral dari Videy.co yang populer di Indonesia",
+        "engagement_rate": 7.8,
+        "hashtags": ["videy", "viral", "konten", "lucu"]
+      },
+      {
+        "title": "Gold Medalist Video",
+        "type": "viral",
+        "category": "trending",
+        "description": "Video Gold Medalist yang trending di X dan TikTok",
+        "engagement_rate": 11.5,
+        "hashtags": ["goldmedalist", "viral", "trending", "video"]
+      }
+    ],
+    "recommended_titles": [
+      "kucing lucu gemoy imut banget 😍 #kucinglucu #fyp",
+      "transformasi 1 tahun kerja keras - motivasi #motivation #fyp",
+      "gamis bini orang terbaru 2026 #fashion #viral",
+      "prank gagal lucu banget #dagelan #ngakak",
+      "rahasia sukses yang jarang orang tau #viral #motivational",
+      "review iQOO 15 terbaru 2026 - super powerful! #gadget #tech"
+    ],
+    "trending_sounds": [
+      "suara asli - user viral",
+      "Chopin Nocturne No. 2 Piano Mono",
+      "original sound - trending audio",
+      "beat drop viral 2026",
+      "lagu trending TikTok Indonesia"
+    ]
+  },
+  "worldwide": {
+    "period": "December 2025 - March 2026",
+    "top_hashtags": [
+      { "tag": "fyp", "volume": "12.5B", "growth": "+20%" },
+      { "tag": "viral", "volume": "9.8B", "growth": "+25%" },
+      { "tag": "foryou", "volume": "8.2B", "growth": "+15%" },
+      { "tag": "trending", "volume": "5.4B", "growth": "+18%" },
+      { "tag": "tiktok", "volume": "4.9B", "growth": "+12%" },
+      { "tag": "love", "volume": "4.1B", "growth": "+8%" },
+      { "tag": "comedy", "volume": "3.2B", "growth": "+22%" },
+      { "tag": "dance", "volume": "2.8B", "growth": "+15%" },
+      { "tag": "fashion", "volume": "2.1B", "growth": "+30%" },
+      { "tag": "music", "volume": "1.9B", "growth": "+10%" }
+    ],
+    "trending_topics": [
+      {
+        "topic": "Emotional / Hopecore",
+        "engagement_rate": 14.5,
+        "examples": ["transformation", "personal story", "achievement"]
+      },
+      {
+        "topic": "Sports Edits",
+        "engagement_rate": 12.8,
+        "examples": ["football edit", "highlights", "athlete tribute"]
+      },
+      {
+        "topic": "AI / Gen-AI Content",
+        "engagement_rate": 11.5,
+        "examples": ["AI video", "AIgenerated", "GenAI"]
+      },
+      {
+        "topic": "Reality TV Edits",
+        "engagement_rate": 10.9,
+        "examples": ["Euphoria aesthetics", "reality show edit", "drama"]
+      },
+      {
+        "topic": "Music / Song Edits",
+        "engagement_rate": 13.2,
+        "examples": ["song edit", "lyrics video", "music trend"]
+      },
+      {
+        "topic": "Horror / Creepy",
+        "engagement_rate": 9.8,
+        "examples": ["Vecna Challenge", "horror trend", "creepypasta"]
+      },
+      {
+        "topic": "Beauty / Skincare",
+        "engagement_rate": 8.5,
+        "examples": ["skincare routine", "get ready with me", "beauty tips"]
+      },
+      {
+        "topic": "Food / ASMR",
+        "engagement_rate": 9.2,
+        "examples": ["food asmr", "cooking", "mukbang"]
+      }
+    ],
+    "viral_content": [
+      {
+        "title": "Grammys 2026 Content",
+        "type": "event",
+        "category": "music",
+        "description": "Grammys commentary and moments going viral on TikTok",
+        "engagement_rate": 16.5,
+        "hashtags": ["grammys2026", "music", "viral", "fyp"]
+      },
+      {
+        "title": "Vecna Challenge",
+        "type": "horror",
+        "category": "trend",
+        "description": "TikTok's creepiest new trend inspired by Stranger Things",
+        "engagement_rate": 13.8,
+        "hashtags": ["vecna", "strangerthings", "horror", "challenge"]
+      },
+      {
+        "title": "Bad Bunny Super Bowl",
+        "type": "music",
+        "category": "event",
+        "description": "Bad Bunny's Super Bowl half-time show viral moments",
+        "engagement_rate": 15.2,
+        "hashtags": ["badbunny", "superbowl", "viral", "music"]
+      },
+      {
+        "title": "Harry Styles New Album",
+        "type": "music",
+        "category": "artist",
+        "description": "Kiss All the Time + Disco, Occasionally album content",
+        "engagement_rate": 14.8,
+        "hashtags": ["harrystyles", "newalbum", "viral", "fyp"]
+      },
+      {
+        "title": "Megan Moroney - Cloud 9",
+        "type": "music",
+        "category": "song",
+        "description": "Cloud 9 and breakup content dominating TikTok",
+        "engagement_rate": 12.1,
+        "hashtags": ["meganmoroney", "cloud9", "country", "viral"]
+      },
+      {
+        "title": "Don Toliver - Octane",
+        "type": "music",
+        "category": "song",
+        "description": "Octane track powering friendship edits and choreography",
+        "engagement_rate": 11.5,
+        "hashtags": ["dontoliver", "octane", "hiphop", "viral"]
+      },
+      {
+        "title": "Euphoria Aesthetics",
+        "type": "entertainment",
+        "category": "show",
+        "description": "Euphoria-inspired content and visual aesthetics",
+        "engagement_rate": 10.8,
+        "hashtags": ["euphoria", "aesthetics", "hbo", "viral"]
+      },
+      {
+        "title": "Werner Herzog Penguin",
+        "type": "comedy",
+        "category": "meme",
+        "description": "Werner Herzog's nihilistic penguin editing trend",
+        "engagement_rate": 9.5,
+        "hashtags": ["herzog", "penguin", "meme", "comedy"]
+      }
+    ],
+    "recommended_titles": [
+      "the beauty of real love ♥️ #love #emotional #fyp",
+      "Heartbreaking transformation 🦺 #story #viral",
+      "Kevin de Bruyne edit - best skills ✨ #football #sports",
+      "Grammys 2026 best moments #grammys #viral",
+      "Vecna got me... 😱 #horror #strangerthings #viral",
+      "Harry Styles - Kiss All the Time ✨ #music #newmusic",
+      "Cloud 9 - 6 Months Later 💔 #country #viral",
+      "Euphoria but make it aesthetic 🎬 #euphoria #edit"
+    ],
+    "trending_sounds": [
+      "When I look at Grammy - vidz",
+      "Jacob and the Stone SLOWED - ssxmusic",
+      "What Was I Made For? - Mark Ronson",
+      "Cloud 9 - Megan Moroney",
+      "Octane - Don Toliver",
+      "Kiss All the Time - Harry Styles",
+      "Disco, Occasionally - Harry Styles"
+    ]
+  },
+  "engagement_tiers": {
+    "hot": {
+      "threshold": ">10% engagement",
+      "content_types": [
+        "Emotional/hopecore content",
+        "Personal transformation stories",
+        "Sports highlights/edits",
+        "Celebrity news",
+        "Breaking viral moments"
+      ],
+      "examples": [
+        "Grammys 2026 moments",
+        "Love/relationship stories",
+        "Sports player edits",
+        "Celebrity transformations"
+      ]
+    },
+    "most": {
+      "threshold": "5-10% engagement",
+      "content_types": [
+        "Comedy/funny content",
+        "Pet/animal content",
+        "Dance/challenge",
+        "Trending memes",
+        "Lifestyle content"
+      ],
+      "examples": [
+        "Cat videos (kucing lucu)",
+        "Comedy sketches",
+        "Dance challenges",
+        "Trending memes"
+      ]
+    },
+    "standard": {
+      "threshold": "<5% engagement",
+      "content_types": [
+        "Educational content",
+        "Product reviews",
+        "News updates",
+        "How-to tutorials",
+        "General content"
+      ],
+      "examples": ["Tech reviews", "Tutorial videos", "News commentary", "Educational content"]
+    }
+  },
+  "formula": {
+    "viral_success": {
+      "key_factors": [
+        "Use trending sounds/music",
+        "Post at prime times (7-9 AM, 5-8 PM local)",
+        "Mix universal emotions with local cultural elements",
+        "High engagement = high shares/saves",
+        "Use 3-5 relevant hashtags",
+        "Create curiosity gap in title"
+      ],
+      "posting_schedule": {
+        "optimal_times": {
+          "indonesia": ["07:00-09:00 WITA", "12:00-14:00 WITA", "18:00-21:00 WITA"],
+          "worldwide": ["06:00-09:00 EST", "12:00-14:00 EST", "18:00-21:00 EST"]
+        }
+      }
+    }
+  }
+}
