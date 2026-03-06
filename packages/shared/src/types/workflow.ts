@@ -69,6 +69,12 @@ export interface Wan2NodeData {
   size: '1024*1024' | '512*512' | '720*1280' | '1280*720';
   style?: string;
   negativePrompt?: string;
+  // Text rendering quality control for ads, copywriting, and typography
+  // 'precision' = Maximum text accuracy (ads, logos, signs) - adds strongest text quality boosters
+  // 'quality' = Good text rendering (general purpose) - balanced text quality boosters
+  // 'balanced' = Default - moderate text enhancement (recommended for most use cases)
+  // 'disabled' = No text enhancement (for images without text)
+  textRendering?: 'precision' | 'quality' | 'balanced' | 'disabled';
 }
 
 export interface Wan2VideoNodeData {
@@ -98,6 +104,8 @@ export interface PreviewNodeData {
   showMetadata?: boolean;
   previewUrl?: string;
   approved?: boolean;
+  imageUrl?: string;
+  videoUrl?: string;
 }
 
 export interface TwitterNodeData {

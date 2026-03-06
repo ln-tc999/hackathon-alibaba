@@ -24,10 +24,157 @@ export class Wan2NodeHandler implements NodeHandler {
   private wan2Client: Wan2Client | null = null;
 
   /**
+   * Pre-process prompt to optimize text rendering quality
+   * Detects text elements and enhances them for better AI rendering
+   */
+  private preprocessPrompt(prompt: string): { processedPrompt: string; enhancements: string[] } {
+    const enhancements: string[] = [];
+    
+    // Detect text patterns and suggest improvements
+    const textPatterns = [
+      { pattern: /\bwith\s+text\s+['"][^'"]+['"]/i, message: 'Text element detected' },
+      { pattern: /\bwritten\s+on\s+it/i, message: 'Text on object detected' },
+      { pattern: /\bsign\s+that\s+says/i, message: 'Sign text detected' },
+      { pattern: /\blogo\s+with/i, message: 'Logo text detected' },
+      { pattern: /\btitle\s*[:=]/i, message: 'Title specification detected' },
+      { pattern: /\blabelled?\s+as/i, message: 'Label text detected' },
+      { pattern: /\bnamed?\s+['"][^'"]+['"]/i, message: 'Named object detected' },
+      { pattern: /\b[A-Z]{2,}\b/g, message: 'ALL CAPS text detected' },
+    ];
+
+    for (const { pattern, message } of textPatterns) {
+      const matches = prompt.match(pattern);
+      if (matches) {
+        enhancements.push(`✓ ${message} - will be enhanced for better text rendering`);
+      }
+    }
+
+    // Add text quality boosters if text is detected
+    const hasText = textPatterns.some(({ pattern }) => pattern.test(prompt));
+    if (hasText) {
+      enhancements.push('✓ Adding text quality boosters: sharp text, crisp typography, high contrast');
+    }
+
+    return {
+      processedPrompt: prompt,
+      enhancements
+    };
+  }
+
+  /**
+   * Enhance prompt with text rendering optimizations
+   * Adds quality boosters and contrast specifications for better text clarity
+   */
+  private enhancePromptForTextRendering(prompt: string, textRendering: 'precision' | 'quality' | 'balanced' | 'disabled' = 'balanced'): string {
+    const textQualityBoosters = {
+      precision: [
+        'crisp sharp text rendering',
+        'professional typography',
+        'high contrast text',
+        'legible lettering',
+        'clean font rendering',
+        'no text distortion',
+        'accurate text spelling'
+      ],
+      quality: [
+        'sharp text',
+        'clear typography',
+        'professional text rendering',
+        'high quality lettering',
+        'readable text'
+      ],
+      balanced: [
+        'sharp text rendering',
+        'clear typography',
+        'professional quality'
+      ],
+      disabled: []  // No text boosters when disabled
+    };
+
+    const boosters = textQualityBoosters[textRendering];
+    
+    // If disabled or no boosters, return original prompt
+    if (!boosters || boosters.length === 0) {
+      return prompt;
+    }
+    
+    // Check if prompt already contains text quality keywords
+    const lowerPrompt = prompt.toLowerCase();
+    const hasTextKeywords = ['sharp text', 'typography', 'clear text', 'crisp text', 'legible', 'readable'].some(
+      keyword => lowerPrompt.includes(keyword)
+    );
+
+    if (!hasTextKeywords) {
+      return `${prompt}, ${boosters.join(', ')}`;
+    }
+
+    return prompt;
+  }
+
+  /**
+   * Analyze prompt for text contrast and suggest optimizations
+   * High contrast is critical for legible text rendering
+   */
+  private optimizeTextContrast(prompt: string): string {
+    const lowerPrompt = prompt.toLowerCase();
+    
+    // Check if prompt already has contrast specifications
+    const hasContrast = ['high contrast', 'white text', 'black text', 'dark background', 'light background', 'contrasting'].some(
+      keyword => lowerPrompt.includes(keyword)
+    );
+
+    if (hasContrast) {
+      return prompt; // Already has contrast specification
+    }
+
+    // Detect if text is mentioned but no contrast specified
+    const hasText = ['text', 'lettering', 'typography', 'written', 'label', 'sign', 'logo'].some(
+      keyword => lowerPrompt.includes(keyword)
+    );
+
+    if (hasText) {
+      // Add default high-contrast recommendation
+      return `${prompt}, high contrast between text and background for clear readability`;
+    }
+
+    return prompt;
+  }
+
+  /**
+   * Add font style specifications for better text rendering
+   * Specific font descriptions help AI render text more accurately
+   */
+  private specifyFontStyle(prompt: string): string {
+    const lowerPrompt = prompt.toLowerCase();
+    
+    // Check if font style already specified
+    const hasFontStyle = ['font', 'serif', 'sans-serif', 'script', 'bold', 'italic', 'handwritten', 'calligraphy'].some(
+      keyword => lowerPrompt.includes(keyword)
+    );
+
+    if (hasFontStyle) {
+      return prompt; // Already has font specification
+    }
+
+    // Detect text without font style
+    const hasText = ['text', 'lettering', 'typography', 'written', 'label', 'sign', 'logo'].some(
+      keyword => lowerPrompt.includes(keyword)
+    );
+
+    if (hasText) {
+      // Add default professional font style
+      return `${prompt}, clean professional sans-serif font style`;
+    }
+
+    return prompt;
+  }
+
+  /**
    * Generate smart negative prompt based on positive prompt context
    * Uses AI-powered analysis to determine what to avoid
+   * For text rendering: uses POSITIVE prompting approach instead of negative
    */
-  private generateSmartNegativePrompt(prompt: string, style?: string): string {
+  private generateSmartNegativePrompt(prompt: string, style?: string, textRendering: 'precision' | 'quality' | 'balanced' | 'disabled' = 'balanced'): string {
     const baseNegatives = [
       'blurry',
       'low quality',
@@ -35,12 +182,24 @@ export class Wan2NodeHandler implements NodeHandler {
       'ugly',
       'bad anatomy',
       'watermark',
-      'text',
       'signature',
       'low resolution',
       'pixelated',
       'jpeg artifacts'
     ];
+
+    // For text rendering, we use POSITIVE prompting instead of negative
+    // Modern AI models respond better to "what you want" than "what you don't want"
+    // Only add minimal text-related negatives to avoid over-constraining
+    if (textRendering !== 'disabled') {
+      // Minimal negatives - only prevent obvious artifacts
+      baseNegatives.push(
+        'misspelled text',  // Prevent misspellings
+        'garbled text'      // Prevent garbled letters
+      );
+      // Note: We DON'T add 'text', 'typography', etc. to negatives
+      // because we WANT text to appear, just rendered correctly
+    }
 
     const contextualNegatives: string[] = [];
 
@@ -190,6 +349,14 @@ export class Wan2NodeHandler implements NodeHandler {
         };
       }
 
+      // Pre-process prompt to detect and enhance text elements
+      const promptAnalysis = this.preprocessPrompt(prompt);
+
+      // Log enhancements if text patterns detected
+      if (promptAnalysis.enhancements.length > 0) {
+        console.log('[Wan2Handler] Text rendering enhancements:', promptAnalysis.enhancements);
+      }
+
       // Get DashScope API key from environment (same key used for Qwen and Wan2)
       const dashscopeApiKey = process.env.DASHSCOPE_API_KEY || context.credentials.wan2ApiKey;
 
@@ -219,14 +386,35 @@ export class Wan2NodeHandler implements NodeHandler {
       // Extract node configuration
       const nodeData = node.data as Wan2NodeData;
 
-      // Auto-generate smart negative prompt based on positive prompt
-      const smartNegativePrompt = this.generateSmartNegativePrompt(prompt, nodeData.style);
+      // Use textRendering setting from node data (default to 'balanced' for good text quality)
+      const textRendering = nodeData.textRendering || 'balanced';
 
+      // Apply text enhancement pipeline for better text rendering
+      let enhancedPrompt = prompt;
+      
+      // Step 1: Add text quality boosters based on rendering mode
+      enhancedPrompt = this.enhancePromptForTextRendering(enhancedPrompt, textRendering);
+      
+      // Step 2: Optimize text contrast for better readability
+      if (textRendering === 'precision' || textRendering === 'quality') {
+        enhancedPrompt = this.optimizeTextContrast(enhancedPrompt);
+      }
+      
+      // Step 3: Add font style specifications for accurate rendering
+      if (textRendering === 'precision') {
+        enhancedPrompt = this.specifyFontStyle(enhancedPrompt);
+      }
+
+      // Generate smart negative prompt with minimal text constraints
+      const smartNegativePrompt = this.generateSmartNegativePrompt(enhancedPrompt, nodeData.style, textRendering);
+
+      console.log('[Wan2Handler] Enhanced prompt:', enhancedPrompt);
       console.log('[Wan2Handler] Auto-generated negative prompt:', smartNegativePrompt);
+      console.log('[Wan2Handler] Text rendering mode:', textRendering);
 
-      // Call Wan2Client with prompt and node configuration (Requirement 9.1)
+      // Call Wan2Client with enhanced prompt and node configuration (Requirement 9.1)
       const result = await this.wan2Client.generateImage({
-        prompt,
+        prompt: enhancedPrompt,
         negativePrompt: smartNegativePrompt,
         model: nodeData.model,
         size: nodeData.size,
