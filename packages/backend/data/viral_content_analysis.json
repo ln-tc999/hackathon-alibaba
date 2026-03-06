@@ -1,0 +1,336 @@
+{
+  "metadata": {
+    "description": "Viral Content Analysis - Topics, Titles, References with HOT/MOST/STANDARD categorization",
+    "version": "1.0",
+    "date_range": "Oct 2025 - Mar 2026"
+  },
+
+  "topics_analysis": {
+    "hot_topics": {
+      "description": "Topic yang paling banyak trending & viral (engagement >20%)",
+      "items": [
+        {
+          "topic": "Love & Emotional Content",
+          "title": "the beauty of real love",
+          "reference": "When I look at Grammy - vidz",
+          "hashtags": ["Love", "affection", "hopecore", "foryou"],
+          "engagement_rate": 0.2622,
+          "plays": 68782066,
+          "region": "US"
+        },
+        {
+          "topic": "Personal Story",
+          "title": "GoFundMe in my bio - My 2025 Accomplishments Cake",
+          "reference": "What Was I Made For? - Mark Ronson",
+          "hashtags": ["trending", "viral", "fyp", "foryoupage", "cancer"],
+          "engagement_rate": 0.2913,
+          "plays": 31834401,
+          "region": "US"
+        },
+        {
+          "topic": "Sports Edit",
+          "title": "Kevin de Bruyne edit",
+          "reference": "original sound - meezyworks",
+          "hashtags": ["fyp", "edit", "kevindebruyne", "assist", "viral"],
+          "engagement_rate": 0.1452,
+          "plays": 55670382,
+          "region": "US"
+        },
+        {
+          "topic": "Heartbreaking Emotional",
+          "title": "Heartbreaking",
+          "reference": "Jacob and the Stone SLOWED - ssxmusic",
+          "hashtags": ["fyp", "foru", "foryoupage", "viral_video_tiktok"],
+          "engagement_rate": 0.1464,
+          "plays": 69787772,
+          "region": "GR"
+        },
+        {
+          "topic": "Celebrity/Influencer",
+          "title": "@HALEYYBAYLEE the woman u are",
+          "reference": "suara asli - demko",
+          "hashtags": ["videoviral", "glambot", "haleybayle", "fyp"],
+          "engagement_rate": 0.1044,
+          "plays": 4642403,
+          "region": "US"
+        }
+      ]
+    },
+
+    "most_topics": {
+      "description": "Topic yang sering muncul & konsisten tinggi (engagement 5-20%)",
+      "items": [
+        {
+          "topic": "Comedy/Funny",
+          "title": "eh seronok betul😅 #Videolucu #lawaktiktok",
+          "reference": "Chopin Nocturne No. 2 Piano Mono - moshimo sound design",
+          "hashtags": ["videolucu", "lawaktiktok", "Viraal", "foryou", "Fypfyp"],
+          "engagement_rate": 0.1418,
+          "plays": 9255502,
+          "region": "MY"
+        },
+        {
+          "topic": "Memes",
+          "title": "More???🤣😂 #josheditss #funnyvideos #memesdaily",
+          "reference": "suara asli - 𝙉𝙚𝙖𝙡 // 𝙀𝘿𝙄𝙏𝙕",
+          "hashtags": ["josheditss", "funnyvideos", "memesdaily", "alightmotion", "viral", "memes"],
+          "engagement_rate": 0.0352,
+          "plays": 9243347,
+          "region": "PH"
+        },
+        {
+          "topic": "Pets - Kucing Lucu",
+          "title": "kucing lucu gemoy imut cute gemesin banget",
+          "reference": "suara asli - tintintintin",
+          "hashtags": ["viraltiktok", "viralvideo", "viral", "kucinglucu", "kucing"],
+          "engagement_rate": 0.0215,
+          "plays": 8041776,
+          "region": "ID"
+        },
+        {
+          "topic": "Viral Celebrity",
+          "title": "#viral ТГК: lilmoon меня там больше",
+          "reference": "original sound - escuiro",
+          "hashtags": ["Viral"],
+          "engagement_rate": 0.1155,
+          "plays": 81984421,
+          "region": "DE"
+        },
+        {
+          "topic": "Entertainment",
+          "title": "lucyuuuu😄#tiktokviral #trendingvideo",
+          "reference": "suara asli - yasmin",
+          "hashtags": ["tiktokviral", "trendingvideo", "bayitrending"],
+          "engagement_rate": 0.0236,
+          "plays": 17420460,
+          "region": "ID"
+        }
+      ]
+    },
+
+    "standard_topics": {
+      "description": "Topic umum yang tetap stabil (engagement <5%)",
+      "items": [
+        {
+          "topic": "Animals - Lions",
+          "title": "#foru #trend #viral_video #lions",
+          "reference": "suara asli - Ai World",
+          "hashtags": ["foru", "trend", "viral_video", "lions", "trendingvideo"],
+          "engagement_rate": 0.0039,
+          "plays": 41360835,
+          "region": "PK"
+        },
+        {
+          "topic": "Government/Politics",
+          "title": "Wakil Menteri ATR/Waka BPN Ossy Dermawan - Webinar Nasional MAPPI",
+          "reference": "KementerianATRBPN",
+          "hashtags": ["KementerianATRBPN"],
+          "engagement_rate": 0,
+          "region": "ID"
+        },
+        {
+          "topic": "Environment",
+          "title": "Indonesia terancam krisis air - AHY",
+          "reference": "HardNews_Tragedi, KrisisAir, LingkunganHidup",
+          "hashtags": ["KrisisAir", "LingkunganHidup", "AHY"],
+          "engagement_rate": 0,
+          "region": "ID"
+        },
+        {
+          "topic": "Technology",
+          "title": "Prabowo - Transformasi Ekonomi Inovasi - Chip Nasional",
+          "reference": "PrabowoPerkuatTeknologiRI - Danantara + Arm Limited",
+          "hashtags": ["PrabowoPerkuatTeknologiRI"],
+          "engagement_rate": 0,
+          "region": "ID"
+        },
+        {
+          "topic": "Crime News",
+          "title": "Polis Indonesia bongkar sindiket jual bayi",
+          "reference": "BHNasional",
+          "hashtags": ["BHNasional"],
+          "engagement_rate": 0,
+          "region": "ID"
+        },
+        {
+          "topic": "Economy/Labor",
+          "title": "Impor pikap dari India - KSPI sebut PHK",
+          "reference": "otomotif Indonesia",
+          "hashtags": [],
+          "engagement_rate": 0,
+          "region": "ID"
+        }
+      ]
+    }
+  },
+
+  "title_analysis": {
+    "hot_titles": {
+      "description": "Title yang paling banyak di-download/share (>100K engagement)",
+      "items": [
+        {
+          "title": "the beauty of real love",
+          "plays": 68782066,
+          "engagement": "15.3M likes, 1.36M saves"
+        },
+        {
+          "title": "Heartbreaking 🦺",
+          "plays": 69787772,
+          "engagement": "8.7M likes, 407K saves"
+        },
+        {
+          "title": "Kevin de Bruyne edit",
+          "plays": 55670382,
+          "engagement": "7M likes, 676K saves"
+        },
+        {
+          "title": "GoFundMe in my bio - My 2025 Accomplishments Cake",
+          "plays": 31834401,
+          "engagement": "8.5M likes, 330K saves"
+        }
+      ]
+    },
+
+    "most_titles": {
+      "description": "Title yang sering muncul di berbagai konten",
+      "items": [
+        {
+          "title_patterns": [
+            "#viral #fyp #foryou",
+            "#trending #viralvideo",
+            "#tiktokviral #trendingvideo",
+            "lucu/gemesin/cute",
+            "memes #funnyvideos"
+          ],
+          "frequency": "High"
+        },
+        {
+          "title_patterns": [
+            "Heartbreaking emotional story",
+            "Transformation/glow up",
+            "Dance/tutorial",
+            "Pet videos (kucing lucu)"
+          ],
+          "frequency": "Medium-High"
+        }
+      ]
+    },
+
+    "standard_titles": {
+      "description": "Title standar yang masih work",
+      "items": [
+        {
+          "title_patterns": [
+            "Tutorial/how-to",
+            "Review produk",
+            "News/berita nasional",
+            "Fakta unik",
+            "Life hacks"
+          ],
+          "frequency": "Medium"
+        }
+      ]
+    }
+  },
+
+  "reference_analysis": {
+    "hot_references": {
+      "description": "Reference music/sound yang paling sering trending",
+      "items": [
+        {
+          "music_title": "When I look at Grammy",
+          "artist": "vidz",
+          "usage_count": "1 viral hit",
+          "engagement": "Very High",
+          "mood": "Emotional, Hopecore"
+        },
+        {
+          "music_title": "Jacob and the Stone SLOWED",
+          "artist": "ssxmusic",
+          "usage_count": "1 viral hit",
+          "engagement": "Very High",
+          "mood": "Emotional"
+        },
+        {
+          "music_title": "original sound - meezyworks",
+          "artist": "MEЕZY",
+          "usage_count": "1 viral hit",
+          "engagement": "Very High",
+          "mood": "Sports edit"
+        },
+        {
+          "music_title": "What Was I Made For? (Epilogue)",
+          "artist": "Mark Ronson & Andrew Wyatt",
+          "usage_count": "1 viral hit",
+          "engagement": "Very High",
+          "mood": "Personal story"
+        },
+        {
+          "music_title": "Chopin Nocturne No. 2 Piano Mono",
+          "artist": "moshimo sound design",
+          "usage_count": "1 viral hit",
+          "engagement": "High",
+          "mood": "Comedy, trending"
+        }
+      ]
+    },
+
+    "most_references": {
+      "description": "Reference yang sering digunakan",
+      "items": [
+        {
+          "music_title": "suara asli (original sound)",
+          "pattern": "User-generated audio dari kreator TikTok",
+          "usage": "Very Common - semua region"
+        },
+        {
+          "music_title": "Trending songs from artists",
+          "pattern": "Lagu populer yang lagi hype",
+          "usage": "Common di konten dance/entertainment"
+        },
+        {
+          "music_title": "Classical/Instrumental",
+          "pattern": "Chopin, piano covers",
+          "usage": "Common di konten comedy/transition"
+        }
+      ]
+    },
+
+    "standard_references": {
+      "description": "Reference yang masih work untuk konten standar",
+      "items": [
+        {
+          "music_title": "BGM untuk news/educational",
+          "pattern": "Instrumental, no lyrics",
+          "usage": "News, tutorial, explainer"
+        },
+        {
+          "music_title": "Suara lucu/sound effects",
+          "pattern": "Comedy sounds",
+          "usage": "Memes, funny videos"
+        }
+      ]
+    }
+  },
+
+  "summary": {
+    "total_unique_topics": 18,
+    "total_unique_titles": 33,
+    "total_unique_references": 15,
+    "hot_criteria": {
+      "engagement_rate": ">10%",
+      "plays": ">10M",
+      "shares": ">100K"
+    },
+    "most_criteria": {
+      "engagement_rate": "5-10%",
+      "plays": "1-10M",
+      "shares": "10K-100K"
+    },
+    "standard_criteria": {
+      "engagement_rate": "<5%",
+      "plays": "<1M",
+      "shares": "<10K"
+    }
+  }
+}

@@ -1,7 +1,7 @@
 
 import { useCallback } from 'react';
-import { NodeProps } from 'reactflow';
-import { Palette } from 'lucide-react';
+import { NodeProps, useReactFlow } from 'reactflow';
+import { Palette, Zap, Sparkles, Target, Star, Scale, X } from 'lucide-react';
 import type { Wan2NodeData } from '@vlowgen/shared';
 import BaseNode from './BaseNode';
 
@@ -9,32 +9,131 @@ import BaseNode from './BaseNode';
  * Wan2.1 Node component for AI image generation
  * Requirements: 5.2, 5.5, 15.1, 15.2
  */
-export default function Wan2Node({ data, selected }: NodeProps<Wan2NodeData & { error?: string }>) {
+export default function Wan2Node({ data, selected, id }: NodeProps<Wan2NodeData & { error?: string }>) {
+  const { setNodes } = useReactFlow();
+
   const handleModelChange = useCallback(
-    (_event: React.ChangeEvent<HTMLSelectElement>) => {
-      // Note: Node data updates will be handled by React Flow's internal state management
-      // TODO: Implement proper data flow when integrating with workflow execution
+    (event: React.ChangeEvent<HTMLSelectElement>) => {
+      const newModel = event.target.value as Wan2NodeData['model'];
+      setNodes((nodes) =>
+        nodes.map((node) => {
+          if (node.id === id) {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                model: newModel,
+              },
+            };
+          }
+          return node;
+        })
+      );
     },
-    []
+    [id, setNodes]
   );
 
   const handleSizeChange = useCallback(
-    (_event: React.ChangeEvent<HTMLSelectElement>) => {
-      // Note: Node data updates will be handled by React Flow's internal state management
-      // TODO: Implement proper data flow when integrating with workflow execution
+    (event: React.ChangeEvent<HTMLSelectElement>) => {
+      const newSize = event.target.value as Wan2NodeData['size'];
+      setNodes((nodes) =>
+        nodes.map((node) => {
+          if (node.id === id) {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                size: newSize,
+              },
+            };
+          }
+          return node;
+        })
+      );
     },
-    []
+    [id, setNodes]
   );
 
   const handleStyleChange = useCallback(
-    (_event: React.ChangeEvent<HTMLInputElement>) => {
-      // Note: Node data updates will be handled by React Flow's internal state management
-      // TODO: Implement proper data flow when integrating with workflow execution
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const newStyle = event.target.value;
+      setNodes((nodes) =>
+        nodes.map((node) => {
+          if (node.id === id) {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                style: newStyle,
+              },
+            };
+          }
+          return node;
+        })
+      );
     },
-    []
+    [id, setNodes]
+  );
+
+  const handleTextRenderingChange = useCallback(
+    (event: React.ChangeEvent<HTMLSelectElement>) => {
+      const newTextRendering = event.target.value as Wan2NodeData['textRendering'];
+      setNodes((nodes) =>
+        nodes.map((node) => {
+          if (node.id === id) {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                textRendering: newTextRendering,
+              },
+            };
+          }
+          return node;
+        })
+      );
+    },
+    [id, setNodes]
   );
 
   const executionError = (data as any).error;
+
+  const getModelInfo = (model: string) => {
+    if (model.includes('turbo')) {
+      return { icon: Zap, text: 'Fast generation (~10s)', color: 'text-yellow-600' };
+    }
+    if (model.includes('plus')) {
+      return { icon: Zap, text: 'Balanced speed & quality (~15s)', color: 'text-blue-600' };
+    }
+    if (model.includes('2.6')) {
+      return { icon: Star, text: 'Best quality for text rendering (~45s)', color: 'text-purple-600' };
+    }
+    if (model.includes('preview')) {
+      return { icon: Sparkles, text: 'Preview model', color: 'text-gray-600' };
+    }
+    if (model.includes('qwen')) {
+      return { icon: Palette, text: 'Qwen image model', color: 'text-pink-600' };
+    }
+    return { icon: Zap, text: '', color: 'text-gray-600' };
+  };
+
+  const getTextRenderingInfo = (mode: string) => {
+    if (mode === 'precision') {
+      return { icon: Target, text: 'Maximum text accuracy with character-level enhancement' };
+    }
+    if (mode === 'quality') {
+      return { icon: Star, text: 'Good text rendering with contrast optimization' };
+    }
+    if (mode === 'disabled') {
+      return { icon: X, text: 'No text enhancement applied' };
+    }
+    return { icon: Scale, text: 'Moderate text enhancement (recommended)' };
+  };
+
+  const modelInfo = getModelInfo(data.model);
+  const ModelIcon = modelInfo.icon;
+  const textRenderingInfo = getTextRenderingInfo(data.textRendering || 'balanced');
+  const TextRenderingIcon = textRenderingInfo.icon;
 
   return (
     <BaseNode
@@ -53,7 +152,7 @@ export default function Wan2Node({ data, selected }: NodeProps<Wan2NodeData & { 
           <select
             value={data.model}
             onChange={handleModelChange}
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
           >
             <optgroup label="Turbo (Fastest & Cheapest)">
               <option value="wan2.1-t2i-turbo">Wan2.1 Turbo - $0.025</option>
@@ -70,6 +169,12 @@ export default function Wan2Node({ data, selected }: NodeProps<Wan2NodeData & { 
               <option value="qwen-image-plus">Qwen Image Plus</option>
             </optgroup>
           </select>
+          {modelInfo.text && (
+            <div className={`flex items-center gap-1.5 mt-1.5 text-xs ${modelInfo.color}`}>
+              <ModelIcon className="w-3 h-3" />
+              <span>{modelInfo.text}</span>
+            </div>
+          )}
         </div>
 
         {/* Size selection */}
@@ -80,11 +185,34 @@ export default function Wan2Node({ data, selected }: NodeProps<Wan2NodeData & { 
           <select
             value={data.size}
             onChange={handleSizeChange}
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
           >
-            <option value="1024*1024">1024x1024</option>
-            <option value="512*512">512x512</option>
+            <option value="1024*1024">1024×1024 (Square)</option>
+            <option value="512*512">512×512 (Small)</option>
+            <option value="720*1280">720×1280 (Portrait)</option>
+            <option value="1280*720">1280×720 (Landscape)</option>
           </select>
+        </div>
+
+        {/* Text Rendering Mode (for better text accuracy) */}
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">
+            Text Rendering
+          </label>
+          <select
+            value={data.textRendering || 'balanced'}
+            onChange={handleTextRenderingChange}
+            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+          >
+            <option value="precision">Precision (Best for ads/logos)</option>
+            <option value="quality">Quality (Good for text)</option>
+            <option value="balanced">Balanced (Default)</option>
+            <option value="disabled">Disabled (No text)</option>
+          </select>
+          <div className="flex items-center gap-1.5 mt-1.5 text-xs text-gray-600">
+            <TextRenderingIcon className="w-3 h-3" />
+            <span>{textRenderingInfo.text}</span>
+          </div>
         </div>
 
         {/* Optional style input */}
@@ -97,7 +225,7 @@ export default function Wan2Node({ data, selected }: NodeProps<Wan2NodeData & { 
             value={data.style || ''}
             onChange={handleStyleChange}
             placeholder="e.g., photorealistic, anime, watercolor"
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
         </div>
       </div>

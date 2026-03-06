@@ -1,6 +1,7 @@
 
 import { X, CheckCircle, XCircle, Loader2, ExternalLink, Download, Image as ImageIcon, Video } from 'lucide-react';
 import type { ExecutionResult, NodeExecutionResult } from '@vlowgen/shared';
+import { YouTubeManualUpload } from '../youtube/YouTubeManualUpload';
 
 interface ExecutionPanelProps {
   execution?: ExecutionResult;
@@ -31,6 +32,23 @@ export default function ExecutionPanel({ execution, onClose }: ExecutionPanelPro
     (result) => result.nodeId.includes('instagram') && result.output?.postUrl
   )?.output?.postUrl;
 
+  // Check for YouTube manual upload
+  const youtubeResult = Object.values(nodeResults).find(
+    (result) => result.nodeId.includes('youtube') && result.status === 'success'
+  );
+  
+  let youtubeManualUpload: any = null;
+  if (youtubeResult?.output && typeof youtubeResult.output === 'string') {
+    try {
+      const parsed = JSON.parse(youtubeResult.output);
+      if (parsed.videoUrl && parsed.uploadUrl && parsed.metadata) {
+        youtubeManualUpload = parsed;
+      }
+    } catch (e) {
+      // Not a JSON string, ignore
+    }
+  }
+
   // Get media preview from Wan2 or Preview node
   const mediaResult = Object.values(nodeResults).find(
     (result) => (result.nodeId.includes('wan2') || result.nodeId.includes('preview')) && 
@@ -60,7 +78,7 @@ export default function ExecutionPanel({ execution, onClose }: ExecutionPanelPro
   const progressPercentage = totalNodes > 0 ? (completedNodes / totalNodes) * 100 : 0;
 
   return (
-    <div className="fixed bottom-4 right-4 w-[480px] bg-white rounded-xl shadow-2xl border border-gray-200 z-50 max-h-[80vh] flex flex-col">
+    <div className={`fixed bottom-4 right-4 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 max-h-[80vh] flex flex-col ${youtubeManualUpload ? 'w-[600px]' : 'w-[480px]'}`}>
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center gap-2">
@@ -186,7 +204,7 @@ export default function ExecutionPanel({ execution, onClose }: ExecutionPanelPro
         </div>
 
         {/* Social Media URLs */}
-        {status === 'success' && (twitterUrl || instagramUrl) && (
+        {status === 'success' && (twitterUrl || instagramUrl || youtubeManualUpload) && (
           <div className="mt-4 space-y-2">
             {twitterUrl && (
               <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
@@ -220,6 +238,10 @@ export default function ExecutionPanel({ execution, onClose }: ExecutionPanelPro
                   <ExternalLink className="w-4 h-4" />
                 </a>
               </div>
+            )}
+
+            {youtubeManualUpload && (
+              <YouTubeManualUpload data={youtubeManualUpload} />
             )}
           </div>
         )}

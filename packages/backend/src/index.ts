@@ -9,6 +9,7 @@ import workflowRouter from './api/workflows';
 import imageHistoryRouter from './api/image-history';
 import schedulerRouter from './api/scheduler';
 import uploadRouter from './api/upload';
+import viralResearchRouter from './api/viral-research';
 import { schedulerService } from './services/scheduler.service';
 import { logger } from './utils/logger';
 import {
@@ -59,6 +60,7 @@ app.use('/api/workflows', workflowRouter);
 app.use('/api/image-history', imageHistoryRouter);
 app.use('/api/scheduler', schedulerRouter);
 app.use('/api/upload', uploadRouter);
+app.use('/api/nodes/viral-research', viralResearchRouter);
 // OAuth routes are also in the workflow router, mounted at /api
 app.use('/api', workflowRouter);
 

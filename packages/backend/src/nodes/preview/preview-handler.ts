@@ -30,6 +30,51 @@ export class PreviewNodeHandler implements NodeHandler {
     const startTime = new Date().toISOString();
 
     try {
+      const nodeData = node.data as PreviewNodeData;
+      
+      // Check if imageUrl or videoUrl is provided directly in node data (for testing)
+      if (nodeData.imageUrl) {
+        console.log('[PreviewHandler] Using image URL from node data:', nodeData.imageUrl);
+        
+        const output = {
+          mediaUrl: nodeData.imageUrl,
+          mediaType: 'image' as const,
+          previewUrl: nodeData.imageUrl,
+          imageUrl: nodeData.imageUrl,
+        };
+
+        const endTime = new Date().toISOString();
+        return {
+          nodeId: node.id,
+          status: 'success',
+          output,
+          startTime,
+          endTime,
+          duration: new Date(endTime).getTime() - new Date(startTime).getTime()
+        };
+      }
+      
+      if (nodeData.videoUrl) {
+        console.log('[PreviewHandler] Using video URL from node data:', nodeData.videoUrl);
+        
+        const output = {
+          mediaUrl: nodeData.videoUrl,
+          mediaType: 'video' as const,
+          previewUrl: nodeData.videoUrl,
+          videoUrl: nodeData.videoUrl,
+        };
+
+        const endTime = new Date().toISOString();
+        return {
+          nodeId: node.id,
+          status: 'success',
+          output,
+          startTime,
+          endTime,
+          duration: new Date(endTime).getTime() - new Date(startTime).getTime()
+        };
+      }
+
       // Get media URL from input
       const inputValues = Object.values(inputs);
       

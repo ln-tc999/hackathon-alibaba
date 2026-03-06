@@ -1,0 +1,723 @@
+{
+  "metadata": {
+    "description": "Combined viral content dataset for AI model training - TikTok and X (Twitter) Indonesia",
+    "version": "1.0",
+    "sources": [
+      "tiktok_search",
+      "tiktok_trending",
+      "x_berita_nasional",
+      "x_meme_viral",
+      "x_product_digital"
+    ],
+    "date_range": "Oct 2025 - Mar 2026",
+    "language": "Indonesian (id) + English (en)",
+    "total_records": 185
+  },
+  "tiktok_viral": [
+    {
+      "id": "7583061668272311582",
+      "platform": "tiktok",
+      "description": "#foru #trend #viral_video #lions #trendingvideo",
+      "hashtags": ["foru", "trend", "viral_video", "lions", "trendingvideo"],
+      "upload_date": "2025-12-12",
+      "engagement": {
+        "play_count": 41360835,
+        "like_count": 145089,
+        "comment_count": 879,
+        "share_count": 5585,
+        "save_count": 8829,
+        "engagement_rate": 0.0039
+      },
+      "music": {
+        "title": "suara asli - Ai World",
+        "author": "Ai World"
+      },
+      "region": "PK",
+      "category": "animals"
+    },
+    {
+      "id": "7592888563205754132",
+      "platform": "tiktok",
+      "description": "lucyuuuu😄#tiktokviral #trendingvideo #bayitrending",
+      "hashtags": ["tiktokviral", "trendingvideo", "bayitrending"],
+      "upload_date": "2026-01-08",
+      "engagement": {
+        "play_count": 17420460,
+        "like_count": 313449,
+        "comment_count": 4384,
+        "share_count": 64291,
+        "save_count": 29788,
+        "engagement_rate": 0.0236
+      },
+      "music": {
+        "title": "suara asli - yasmin",
+        "author": "yasmin"
+      },
+      "region": "ID",
+      "category": "entertainment"
+    },
+    {
+      "id": "7590929764777577748",
+      "platform": "tiktok",
+      "description": "eh seronok betul😅 #Videolucu #lawaktiktok #Viraal #foryou #Fypfyp",
+      "hashtags": ["videolucu", "lawaktiktok", "viraal", "foryou", "fypfyp"],
+      "upload_date": "2026-01-03",
+      "engagement": {
+        "play_count": 9255502,
+        "like_count": 366870,
+        "comment_count": 5683,
+        "share_count": 915862,
+        "save_count": 23664,
+        "engagement_rate": 0.1418
+      },
+      "music": {
+        "title": "Chopin Nocturne No. 2 Piano Mono",
+        "author": "moshimo sound design"
+      },
+      "region": "MY",
+      "category": "comedy"
+    },
+    {
+      "id": "7576262191683226900",
+      "platform": "tiktok",
+      "description": "More???🤣😂 #josheditss #funnyvideos #memesdaily #alightmotion #edit #fypツ #viral #memes #foryou #xyzbca #fyp #fyppppp #foryoupage #fypppp #fypspotted",
+      "hashtags": [
+        "josheditss",
+        "funnyvideos",
+        "memesdaily",
+        "alightmotion",
+        "edit",
+        "fypツ",
+        "viral",
+        "memes",
+        "foryou",
+        "xyzbca",
+        "fyp",
+        "fyppppp",
+        "foryoupage",
+        "fypppp",
+        "fypspotted"
+      ],
+      "upload_date": "2025-11-24",
+      "engagement": {
+        "play_count": 9243347,
+        "like_count": 278936,
+        "comment_count": 2608,
+        "share_count": 31468,
+        "save_count": 12803,
+        "engagement_rate": 0.0352
+      },
+      "music": {
+        "title": "suara asli - 𝙉𝙚𝙖𝙡 // 𝙀𝘿𝙄𝙏𝙕🎟️🍭",
+        "author": "𝙉𝙚𝙖𝙡 // 𝙀𝘿𝙄𝙏𝙕🎟️🍭"
+      },
+      "region": "PH",
+      "category": "memes"
+    },
+    {
+      "id": "7585907830742437141",
+      "platform": "tiktok",
+      "description": "kucing lucu gemoy imut cute gemesin bangettt waw waw 😻😻🥰🥰🥰🐈🐈🐈❤️❤️❤️ #viraltiktok #viralvideo #viral #kucinglucu #kucing",
+      "hashtags": ["viraltiktok", "viralvideo", "viral", "kucinglucu", "kucing"],
+      "upload_date": "2025-12-20",
+      "engagement": {
+        "play_count": 8041776,
+        "like_count": 123478,
+        "comment_count": 16184,
+        "share_count": 12695,
+        "save_count": 20451,
+        "engagement_rate": 0.0215
+      },
+      "music": {
+        "title": "suara asli - tintintintin",
+        "author": "tintintintin"
+      },
+      "region": "ID",
+      "category": "pets"
+    },
+    {
+      "id": "7612459478033632530",
+      "platform": "tiktok",
+      "description": "@HALEYYBAYLEE the woman u are #videoviral #glambot #haleybayle #fyp #actorawards",
+      "hashtags": ["videoviral", "glambot", "haleybayle", "fyp", "actorawards"],
+      "upload_date": "2026-03-02",
+      "engagement": {
+        "play_count": 4642403,
+        "like_count": 464729,
+        "comment_count": 419,
+        "share_count": 4120,
+        "save_count": 15500,
+        "engagement_rate": 0.1044
+      },
+      "music": {
+        "title": "suara asli - demko",
+        "author": "demko"
+      },
+      "region": "US",
+      "category": "entertainment"
+    },
+    {
+      "id": "7571498927946747154",
+      "platform": "tiktok",
+      "description": "#viral ТГК: lilmoon меня там больше @SHEGLITTARY",
+      "hashtags": ["Viral"],
+      "upload_date": "2025-11-11",
+      "engagement": {
+        "play_count": 81984421,
+        "like_count": 8619876,
+        "comment_count": 34876,
+        "share_count": 349659,
+        "save_count": 464021,
+        "engagement_rate": 0.1155
+      },
+      "music": {
+        "title": "original sound - escuiro",
+        "author": "xavier"
+      },
+      "region": "DE",
+      "category": "entertainment"
+    },
+    {
+      "id": "7505322109875293462",
+      "platform": "tiktok",
+      "description": "Heartbreaking 🦺 #fyp #foru #foryoupage♥️♥️ #viral_video_tiktok #followback",
+      "hashtags": ["fyp", "foru", "foryoupage", "viral_video_tiktok", "followback"],
+      "upload_date": "2025-05-17",
+      "engagement": {
+        "play_count": 69787772,
+        "like_count": 8727966,
+        "comment_count": 104754,
+        "share_count": 977493,
+        "save_count": 407694,
+        "engagement_rate": 0.1464
+      },
+      "music": {
+        "title": "Jacob and the Stone SLOWED",
+        "author": "ssxmusic"
+      },
+      "region": "GR",
+      "category": "emotional"
+    },
+    {
+      "id": "7553512161444629815",
+      "platform": "tiktok",
+      "description": "the beauty of real love ♥️ #Love #affection #hopecore #foryou #viralvideo",
+      "hashtags": ["Love", "affection", "hopecore", "foryou", "viralvideo"],
+      "upload_date": "2025-09-24",
+      "engagement": {
+        "play_count": 68782066,
+        "like_count": 15290467,
+        "comment_count": 23402,
+        "share_count": 1362485,
+        "save_count": 1356718,
+        "engagement_rate": 0.2622
+      },
+      "music": {
+        "title": "When I look at Grammy",
+        "author": "vidz"
+      },
+      "region": "US",
+      "category": "love"
+    },
+    {
+      "id": "7607179670416526623",
+      "platform": "tiktok",
+      "description": "Kevin de Bruyne edit || Forgot watermark😪 #fyp #edit #kevindebruyne #assist #viral",
+      "hashtags": ["fyp", "edit", "kevindebruyne", "assist", "viral"],
+      "upload_date": "2026-02-15",
+      "engagement": {
+        "play_count": 55670382,
+        "like_count": 7049555,
+        "comment_count": 25046,
+        "share_count": 332443,
+        "save_count": 676589,
+        "engagement_rate": 0.1452
+      },
+      "music": {
+        "title": "original sound - meezyworks",
+        "author": "MEЕZY"
+      },
+      "region": "US",
+      "category": "sports"
+    },
+    {
+      "id": "7587919771820150029",
+      "platform": "tiktok",
+      "description": "GoFundMe in my bio if you'd like to help🙌🏾🤭 My 2025 Accomplishments Cake #trending #viral #fyp #foryoupage #cancer",
+      "hashtags": ["Trending", "viral", "fyp", "foryoupage", "cancer"],
+      "upload_date": "2025-12-25",
+      "engagement": {
+        "play_count": 31834401,
+        "like_count": 8509221,
+        "comment_count": 199180,
+        "share_count": 233989,
+        "save_count": 330247,
+        "engagement_rate": 0.2913
+      },
+      "music": {
+        "title": "What Was I Made For? (Epilogue) [Instrumental Version]",
+        "author": "Mark Ronson & Andrew Wyatt"
+      },
+      "region": "US",
+      "category": "personal"
+    }
+  ],
+  "x_berita_nasional": [
+    {
+      "id": "2026657782498574779",
+      "platform": "x",
+      "type": "berita_nasional",
+      "full_text": "Wakil Menteri Agraria dan Tata Ruang/Wakil Kepala Badan Pertanahan Nasional Ossy Dermawan menjadi narasumber dalam Webinar Nasional Masyarakat Profesi Penilai Indonesia (MAPPI).",
+      "hashtags": ["KementerianATRBPN"],
+      "created_at": "2026-02-25T13:57:23Z",
+      "engagement": {
+        "favorite_count": 0,
+        "retweet_count": 0,
+        "reply_count": 0,
+        "quote_count": 0
+      },
+      "language": "in",
+      "has_media": true,
+      "category": "government"
+    },
+    {
+      "id": "2026595076017893636",
+      "platform": "x",
+      "type": "berita_nasional",
+      "full_text": "Cape ya di Indonesia tiap hari selalu ada berita buruk skala nasional",
+      "hashtags": [],
+      "created_at": "2026-02-25T09:48:13Z",
+      "engagement": {
+        "favorite_count": 0,
+        "retweet_count": 0,
+        "reply_count": 0,
+        "quote_count": 0
+      },
+      "language": "in",
+      "has_media": false,
+      "category": "opinion"
+    },
+    {
+      "id": "2026592309786132758",
+      "platform": "x",
+      "type": "berita_nasional",
+      "full_text": "Polis Indonesia bongkar sindiket jual bayi 8 broker antara 12 ditahan #BHNasional",
+      "hashtags": ["BHNasional"],
+      "created_at": "2026-02-25T09:37:13Z",
+      "engagement": {
+        "favorite_count": 1,
+        "retweet_count": 0,
+        "reply_count": 0,
+        "quote_count": 0
+      },
+      "language": "in",
+      "has_media": false,
+      "category": "crime"
+    },
+    {
+      "id": "2026568758299378040",
+      "platform": "x",
+      "type": "berita_nasional",
+      "full_text": "Ditjen Pesantren Bakal Urus 42 Ribu Pesantren se-Indonesia",
+      "hashtags": [],
+      "created_at": "2026-02-25T08:03:38Z",
+      "engagement": {
+        "favorite_count": 2,
+        "retweet_count": 2,
+        "reply_count": 0,
+        "quote_count": 0
+      },
+      "language": "in",
+      "has_media": false,
+      "category": "religion"
+    },
+    {
+      "id": "2026512227432530187",
+      "platform": "x",
+      "type": "berita_nasional",
+      "full_text": "Indonesia terancam krisis air. Agus Harimurti Yudhoyono (AHY) mengungkap 70 persen sungai nasional tercemar.",
+      "hashtags": [
+        "HardNews_Tragedi",
+        "NewsOne",
+        "CariBeritaditvOne",
+        "KrisisAir",
+        "LingkunganHidup",
+        "AHY",
+        "NO02"
+      ],
+      "created_at": "2026-02-25T04:19:00Z",
+      "engagement": {
+        "favorite_count": 3,
+        "retweet_count": 0,
+        "reply_count": 3,
+        "quote_count": 1
+      },
+      "language": "in",
+      "has_media": true,
+      "category": "environment"
+    },
+    {
+      "id": "2026507799350710690",
+      "platform": "x",
+      "type": "berita_nasional",
+      "full_text": "Presiden Prabowo Subianto menegaskan komitmen saat menyaksikan kolaborasi Badan Pengelola Investasi Danantara Indonesia dan Arm Limited di London sebagai pijakan kuat Transformasi Ekonomi Inovasi menuju kemandirian chip nasional #PrabowoPerkuatTeknologiRI",
+      "hashtags": ["PrabowoPerkuatTeknologiRI"],
+      "created_at": "2026-02-25T04:01:24Z",
+      "engagement": {
+        "favorite_count": 0,
+        "retweet_count": 0,
+        "reply_count": 1,
+        "quote_count": 0
+      },
+      "language": "in",
+      "has_media": false,
+      "category": "technology"
+    },
+    {
+      "id": "2026496070600007926",
+      "platform": "x",
+      "type": "berita_nasional",
+      "full_text": "Indonesia cadang 'eksport' jururawat ke Malaysia #BHNasional",
+      "hashtags": ["BHNasional"],
+      "created_at": "2026-02-25T03:14:48Z",
+      "engagement": {
+        "favorite_count": 0,
+        "retweet_count": 0,
+        "reply_count": 1,
+        "quote_count": 0
+      },
+      "language": "in",
+      "has_media": false,
+      "category": "labor"
+    },
+    {
+      "id": "2026474183698559343",
+      "platform": "x",
+      "type": "berita_nasional",
+      "full_text": "Konfederasi Serikat Pekerja Indonesia (KSPI) menilai rencana impor 105 ribu unit kendaraan bak terbuka atau pikap dari India berpotensi mengancam industri otomotif nasional dan memicu pemutusan hubungan kerja (PHK).",
+      "hashtags": [],
+      "created_at": "2026-02-25T01:47:50Z",
+      "engagement": {
+        "favorite_count": 1,
+        "retweet_count": 1,
+        "reply_count": 0,
+        "quote_count": 0
+      },
+      "language": "in",
+      "has_media": false,
+      "category": "economy"
+    }
+  ],
+  "x_meme_viral": [
+    {
+      "id": "2026650536682926186",
+      "platform": "x",
+      "type": "meme_viral",
+      "full_text": "Yeh quote PM Modi ka nahi hai official speech transcript aur video mein aisa kuch nahi mila. Sirf social media pe viral meme hai",
+      "hashtags": [],
+      "created_at": "2026-02-25T13:28:35Z",
+      "engagement": {
+        "favorite_count": 0,
+        "retweet_count": 0,
+        "reply_count": 0,
+        "quote_count": 0
+      },
+      "language": "in",
+      "category": "meme_explanation",
+      "context": "reply - explaining viral meme is fake"
+    },
+    {
+      "id": "2026647641518473485",
+      "platform": "x",
+      "type": "meme_viral",
+      "full_text": "Mbak Cinina cuma editan meme lucu doang bro. Nggak ada nama asli yang viral pure caption ketemu di jalan buat seru-seruan Ramadhan.",
+      "hashtags": [],
+      "created_at": "2026-02-25T13:17:05Z",
+      "engagement": {
+        "favorite_count": 0,
+        "retweet_count": 0,
+        "reply_count": 0,
+        "quote_count": 0
+      },
+      "language": "in",
+      "category": "meme_explanation",
+      "context": "reply - explaining viral meme character"
+    },
+    {
+      "id": "2026608845339165058",
+      "platform": "x",
+      "type": "meme_viral",
+      "full_text": "Kejadian nya begitu cepat #videolucu #dagelan #ngakak #ngakakkocak #lucu #viral #videoviral #kocak #tiktok #videokocak #lucubanget #lucuabis #ngakaksehat #meme #indovidgram #videongakak #video #humor #Bodo #rabu #iPhoneRp1 #4miliar #iPhone1 #kejarketupat #LPDP",
+      "hashtags": [
+        "videolucu",
+        "dagelan",
+        "ngakak",
+        "ngakakkocak",
+        "lucu",
+        "viral",
+        "videoviral",
+        "kocak",
+        "tiktok",
+        "videokocak",
+        "lucubanget",
+        "lucuabis",
+        "ngakaksehat",
+        "meme",
+        "indovidgram",
+        "videongakak",
+        "video",
+        "humor",
+        "Bodo",
+        "rabu",
+        "iPhoneRp1",
+        "4miliar",
+        "iPhone1",
+        "kejarketupat",
+        "LPDP"
+      ],
+      "created_at": "2026-02-25T10:42:55Z",
+      "engagement": {
+        "favorite_count": 0,
+        "retweet_count": 0,
+        "reply_count": 0,
+        "quote_count": 0
+      },
+      "language": "in",
+      "has_media": true,
+      "category": "comedy"
+    },
+    {
+      "id": "2026610715348377787",
+      "platform": "x",
+      "type": "meme_viral",
+      "full_text": "Cara dapat 5M interaksi: bikin konten super engaging (meme lucu poll pertanyaan kontroversial atau video pendek yang relatable). Post pas jam ramai (malam hari) ikut trend tag influencer dan konsisten tiap hari.",
+      "hashtags": [],
+      "created_at": "2026-02-25T10:50:21Z",
+      "engagement": {
+        "favorite_count": 0,
+        "retweet_count": 0,
+        "reply_count": 0,
+        "quote_count": 0
+      },
+      "language": "in",
+      "category": "viral_tips",
+      "context": "advice on going viral"
+    },
+    {
+      "id": "2026583026679906320",
+      "platform": "x",
+      "type": "meme_viral",
+      "full_text": "Itu Guru Walid bin Kamiludin meme viral puasa 2026 soal MBG (Makan Bergizi Gratis). Katanya Setiap yang bernyawa pasti akan merasakan MBG CEO MBG abis ini!",
+      "hashtags": [],
+      "created_at": "2026-02-25T08:57:34Z",
+      "engagement": {
+        "favorite_count": 0,
+        "retweet_count": 0,
+        "reply_count": 1,
+        "quote_count": 0
+      },
+      "language": "in",
+      "category": "meme_explanation",
+      "context": "reply - explaining MBG meme"
+    },
+    {
+      "id": "2026549298603692103",
+      "platform": "x",
+      "type": "meme_viral",
+      "full_text": "Cara cepat impressions 5M: 1. Konten viral (meme/fakta unik/thread berguna) 2. Post jam prime (pagi 7-9 atau sore 5-8 WIB) 3. Reply/retweet post besar & engage komentar 4. Visual eye-catch + hashtag trending Konsisten 3-5 post/hari. Algo suka interaksi tinggi!",
+      "hashtags": [],
+      "created_at": "2026-02-25T06:46:18Z",
+      "engagement": {
+        "favorite_count": 0,
+        "retweet_count": 0,
+        "reply_count": 0,
+        "quote_count": 0
+      },
+      "language": "in",
+      "category": "viral_tips",
+      "context": "tips for viral content"
+    },
+    {
+      "id": "2026512304074805422",
+      "platform": "x",
+      "type": "meme_viral",
+      "full_text": "Api Tiktok di meme itu bukan API programming tapi api artinya api/flame asli. Menjaga api tiktok = jaga nyala/hype TikToknya alias rajin scroll post atau bikin konten biar aplikasi tetep hidup & viral.",
+      "hashtags": [],
+      "created_at": "2026-02-25T04:19:18Z",
+      "engagement": {
+        "favorite_count": 0,
+        "retweet_count": 0,
+        "reply_count": 0,
+        "quote_count": 0
+      },
+      "language": "in",
+      "category": "meme_explanation",
+      "context": "explaining viral meme term"
+    }
+  ],
+  "x_product_digital": [
+    {
+      "id": "2026630155742097563",
+      "platform": "x",
+      "type": "product_digital",
+      "full_text": "All New Origin OS 6.0 + AI Magic Move tuh kayak punya asisten digital yang gesit banget. Navigasi lebih smooth multitasking enak. #iQOO15R udah bisa preorder",
+      "hashtags": ["iQOO15R"],
+      "created_at": "2026-02-25T12:07:36Z",
+      "engagement": {
+        "favorite_count": 0,
+        "retweet_count": 0,
+        "reply_count": 0,
+        "quote_count": 0
+      },
+      "language": "in",
+      "category": "tech_gadget",
+      "brand": "iQOO",
+      "product": "iQOO 15R",
+      "context": "product_promo"
+    },
+    {
+      "id": "2026607122327417188",
+      "platform": "x",
+      "type": "product_digital",
+      "full_text": "Insight for Impact The Executive Pass Kini Rp 97.000 per bulan! The Executive Pass menghadirkan dua sumber insight tepercaya dalam satu paket digital: Kontan Digital + The Jakarta Post",
+      "hashtags": [],
+      "created_at": "2026-02-25T10:36:05Z",
+      "engagement": {
+        "favorite_count": 0,
+        "retweet_count": 0,
+        "reply_count": 0,
+        "quote_count": 0
+      },
+      "language": "in",
+      "has_media": true,
+      "category": "digital_subscription",
+      "product": "The Executive Pass",
+      "price": "Rp 97.000/bulan",
+      "context": "product_promo"
+    },
+    {
+      "id": "2026561185261433258",
+      "platform": "x",
+      "type": "product_digital",
+      "full_text": "JAM TANGAN ANAK LAKI LAKI SUPER-HERO LED DIGITAL BANYAK KARAKTER SONIK",
+      "hashtags": [],
+      "created_at": "2026-02-25T07:33:32Z",
+      "engagement": {
+        "favorite_count": 0,
+        "retweet_count": 0,
+        "reply_count": 0,
+        "quote_count": 0
+      },
+      "language": "in",
+      "category": "ecommerce",
+      "product": "Jam Tangan Anak LED Digital Super Hero",
+      "context": "affiliate"
+    },
+    {
+      "id": "2026536232088646000",
+      "platform": "x",
+      "type": "product_digital",
+      "full_text": "Masih scroll? Itu alasan kamu belum dibayar dunia digital. Sementara yang lain sudah belajar Meta Ads digital product dan AI lalu cuan. Di sini sudah ada blueprint + course + strategi siap pakai.",
+      "hashtags": [],
+      "created_at": "2026-02-25T05:54:23Z",
+      "engagement": {
+        "favorite_count": 1,
+        "retweet_count": 0,
+        "reply_count": 0,
+        "quote_count": 0
+      },
+      "language": "in",
+      "category": "digital_course",
+      "product": "Meta Ads + Digital Product Course",
+      "context": "affiliate_marketing"
+    },
+    {
+      "id": "2026221440287305804",
+      "platform": "x",
+      "type": "product_digital",
+      "full_text": "KY X55 Earphone Tidur Suara Stereo Level HiFi Tahan Air iPX5 Mikrofon Internal ENC Noise Reduction Layar Digital Cerdas Kontrol Sentuh untuk iPhone dan Android",
+      "hashtags": ["affiliate", "tiktok", "ramadhan2026", "mutualan"],
+      "created_at": "2026-02-24T09:03:31Z",
+      "engagement": {
+        "favorite_count": 0,
+        "retweet_count": 0,
+        "reply_count": 0,
+        "quote_count": 0
+      },
+      "language": "in",
+      "category": "ecommerce",
+      "product": "KY X55 Earphone",
+      "features": ["HiFi", "ENC Noise Reduction", "Digital Display", "Touch Control"],
+      "context": "affiliate"
+    },
+    {
+      "id": "2026104722420305948",
+      "platform": "x",
+      "type": "product_digital",
+      "full_text": "Jaynehara | Digital Product Publishing: Cara Beli Emas: Panduan Investasi Jangka Panjang",
+      "hashtags": [
+        "jayneharaa",
+        "artikel",
+        "emas",
+        "investasiemas",
+        "emaskarat",
+        "produkmasadepan",
+        "jayneconomic",
+        "wetheworst"
+      ],
+      "created_at": "2026-02-24T01:19:43Z",
+      "engagement": {
+        "favorite_count": 1,
+        "retweet_count": 0,
+        "reply_count": 0,
+        "quote_count": 0
+      },
+      "language": "in",
+      "has_media": true,
+      "category": "digital_product",
+      "product": "Panduan Investasi Emas",
+      "context": "digital_product_publishing"
+    }
+  ],
+  "viral_patterns": {
+    "top_hashtags": [
+      "viral",
+      "fyp",
+      "trending",
+      "foryou",
+      "viralvideo",
+      "tiktokviral",
+      "trendingvideo",
+      "funny",
+      "comedy",
+      "love"
+    ],
+    "engagement_categories": {
+      "very_high": ">10M plays, >10% engagement",
+      "high": "1-10M plays, 5-10% engagement",
+      "medium": "500K-1M plays, 2-5% engagement",
+      "low": "<500K plays, <2% engagement"
+    },
+    "content_categories": [
+      "comedy/funny",
+      "pets/animals",
+      "dance",
+      "love/romance",
+      "news/breaking",
+      "sports",
+      "beauty/fashion",
+      "food",
+      "travel",
+      "education",
+      "technology",
+      "gaming"
+    ],
+    "regional_trends": {
+      "ID": ["kucinglucu", "dagelan", "ngakak", "memes", "fyp"],
+      "MY": ["trending", "viral", "comedy"],
+      "PH": ["fyp", "viral", "trending"],
+      "US": ["fyp", "viral", "trending", "dance"],
+      "IN": ["fyp", "viral", "trending"]
+    }
+  }
+}

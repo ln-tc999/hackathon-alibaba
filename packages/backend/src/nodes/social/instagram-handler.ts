@@ -7,32 +7,25 @@ export class InstagramNodeHandler extends BaseSocialMediaHandler {
   }
 
   get requiresMedia(): 'image' | 'video' | 'any' | 'none' {
-    return 'image';
+    return 'any'; // Instagram supports both images and videos (reels)
   }
 
   protected async postToSocialMedia(
     text: string,
     imageUrl: string,
-    _videoUrl: string
+    videoUrl: string
   ): Promise<string> {
     if (!this.composioClient) {
       throw new Error('Composio client not initialized');
     }
 
-    // Validate image URL
-    if (!imageUrl || imageUrl.trim() === '') {
-      throw new Error(
-        'Instagram requires a valid image URL. Please ensure the image generation node is connected.'
-      );
-    }
+    // Check if we have video or image
+    const hasVideo = videoUrl && videoUrl.trim() !== '';
+    const hasImage = imageUrl && imageUrl.trim() !== '';
 
-    // Validate URL format
-    try {
-      new URL(imageUrl);
-    } catch (error) {
+    if (!hasVideo && !hasImage) {
       throw new Error(
-        `Invalid image URL format: "${imageUrl}". ` +
-        `Please check that the image generation node output is correct.`
+        'Instagram requires either an image or video URL. Please ensure the media generation node is connected.'
       );
     }
 
@@ -40,20 +33,56 @@ export class InstagramNodeHandler extends BaseSocialMediaHandler {
     const connectedAccountId = await this.composioClient.getConnectedAccountId('INSTAGRAM');
 
     try {
-      const result = await this.composioClient.postToInstagram({
-        imageUrl,
-        caption: text || 'Posted via VlowGen',
-        connectedAccountId,
-      });
+      // Post video (reel) if available, otherwise post image
+      if (hasVideo) {
+        console.log('[Instagram Handler] Posting video (reel) to Instagram');
+        
+        // Validate video URL format
+        try {
+          new URL(videoUrl);
+        } catch (error) {
+          throw new Error(
+            `Invalid video URL format: "${videoUrl}". ` +
+            `Please check that the video generation node output is correct.`
+          );
+        }
 
-      return result.postUrl || 'Posted successfully to Instagram';
+        const result = await this.composioClient.postVideoToInstagram({
+          videoUrl,
+          caption: text || 'Posted via VlowGen',
+          connectedAccountId,
+        });
+
+        return result.postUrl || 'Posted video successfully to Instagram';
+      } else {
+        console.log('[Instagram Handler] Posting image to Instagram');
+        
+        // Validate image URL format
+        try {
+          new URL(imageUrl);
+        } catch (error) {
+          throw new Error(
+            `Invalid image URL format: "${imageUrl}". ` +
+            `Please check that the image generation node output is correct.`
+          );
+        }
+
+        const result = await this.composioClient.postToInstagram({
+          imageUrl,
+          caption: text || 'Posted via VlowGen',
+          connectedAccountId,
+        });
+
+        return result.postUrl || 'Posted successfully to Instagram';
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
+      const mediaType = hasVideo ? 'video' : 'image';
       throw new Error(
-        `Failed to post to Instagram: ${errorMessage}\n` +
+        `Failed to post ${mediaType} to Instagram: ${errorMessage}\n` +
         `Please verify:\n` +
-        `1. The image URL is publicly accessible\n` +
-        `2. The image meets Instagram requirements (JPEG/PNG, max 8MB)\n` +
+        `1. The ${mediaType} URL is publicly accessible\n` +
+        `2. The ${mediaType} meets Instagram requirements\n` +
         `3. Your Instagram account is properly connected`
       );
     }

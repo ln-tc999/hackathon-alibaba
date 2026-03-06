@@ -27,7 +27,7 @@ export const CONNECTION_RULES: ConnectionRule[] = [
   // Prompt connections
   { sourceType: 'prompt-text', targetType: 'wan2', allowed: true },
   { sourceType: 'prompt-text', targetType: 'wan2-video', allowed: true },
-  { sourceType: 'prompt-text', targetType: 'twitter', allowed: false },
+  { sourceType: 'prompt-text', targetType: 'twitter', allowed: true }, // Twitter supports text-only posts
   { sourceType: 'prompt-text', targetType: 'prompt-text', allowed: false },
   { sourceType: 'prompt-text', targetType: 'preview', allowed: false },
   
