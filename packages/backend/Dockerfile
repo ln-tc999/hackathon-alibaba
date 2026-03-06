@@ -61,6 +61,9 @@ RUN pnpm install --frozen-lockfile --prod
 # Copy built files from builder stage
 COPY --from=builder /app/packages/backend/dist ./packages/backend/dist
 
+# Copy data folder (viral research JSON files)
+COPY packages/backend/data ./packages/backend/data
+
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S backend -u 1001
