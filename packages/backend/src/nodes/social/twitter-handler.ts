@@ -17,119 +17,64 @@ export class TwitterNodeHandler extends BaseSocialMediaHandler {
     imageUrl: string,
     videoUrl: string
   ): Promise<string> {
-    console.log('[Twitter Handler] postToSocialMedia called with:', { text: text?.substring(0, 50), imageUrl: imageUrl?.substring(0, 50), videoUrl: videoUrl?.substring(0, 50) });
-    
     // Check if we have Twitter OAuth 1.0a credentials for direct API
-    const hasDirectCredentials = 
+    const hasDirectCredentials =
       process.env.TWITTER_CONSUMER_KEY &&
       process.env.TWITTER_CONSUMER_SECRET &&
       process.env.TWITTER_ACCESS_TOKEN &&
       process.env.TWITTER_ACCESS_TOKEN_SECRET;
 
-    console.log('[Twitter Handler] Direct credentials check:', {
-      hasConsumerKey: !!process.env.TWITTER_CONSUMER_KEY,
-      hasConsumerSecret: !!process.env.TWITTER_CONSUMER_SECRET,
-      hasAccessToken: !!process.env.TWITTER_ACCESS_TOKEN,
-      hasAccessTokenSecret: !!process.env.TWITTER_ACCESS_TOKEN_SECRET,
-      hasDirectCredentials,
-    });
+    if (!hasDirectCredentials) {
+      throw new Error(
+        'Twitter Direct API credentials not configured. Please add TWITTER_CONSUMER_KEY, TWITTER_CONSUMER_SECRET, TWITTER_ACCESS_TOKEN, and TWITTER_ACCESS_TOKEN_SECRET to your .env file. ' +
+        'Note: Composio is no longer supported for Twitter media uploads. Use Twitter Developer API directly.'
+      );
+    }
 
     const hasVideo = videoUrl && videoUrl.trim() !== '';
     const hasImage = imageUrl && imageUrl.trim() !== '';
     const hasMedia = hasVideo || hasImage;
 
-    console.log('[Twitter Handler] Media check:', { hasVideo, hasImage, hasMedia });
+    // Use Direct Twitter API (Composio does NOT support media uploads)
+    try {
+      const twitterClient = new TwitterDirectClient({
+        consumerKey: process.env.TWITTER_CONSUMER_KEY!,
+        consumerSecret: process.env.TWITTER_CONSUMER_SECRET!,
+        accessToken: process.env.TWITTER_ACCESS_TOKEN!,
+        accessTokenSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET!,
+      });
 
-    // Use direct Twitter API if credentials are available AND we have media
-    if (hasDirectCredentials && hasMedia) {
-      console.log('[Twitter Handler] Using direct Twitter API with OAuth 1.0a');
-      
-      try {
-        const twitterClient = new TwitterDirectClient({
-          consumerKey: process.env.TWITTER_CONSUMER_KEY!,
-          consumerSecret: process.env.TWITTER_CONSUMER_SECRET!,
-          accessToken: process.env.TWITTER_ACCESS_TOKEN!,
-          accessTokenSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET!,
-        });
-
-        // Download media and upload to Twitter
+      // If has media, download and upload
+      if (hasMedia) {
         const mediaUrl = hasVideo ? videoUrl : imageUrl;
-        console.log('[Twitter Handler] Downloading media from:', mediaUrl);
-        
         const filePath = await twitterClient.downloadMedia(mediaUrl);
-        
+
         try {
-          console.log('[Twitter Handler] Uploading media to Twitter...');
           const mediaId = await twitterClient.uploadMedia(filePath);
-          
-          console.log('[Twitter Handler] Creating tweet with media...');
           const result = await twitterClient.createTweet(
             text || 'Posted via VlowGen',
             [mediaId]
           );
 
-          const tweetUrl = `https://twitter.com/i/web/status/${result.data.id}`;
-          console.log('[Twitter Handler] Tweet posted successfully:', tweetUrl);
-          
-          return tweetUrl;
+          return `https://twitter.com/i/web/status/${result.data.id}`;
         } finally {
           // Clean up downloaded file
           twitterClient.deleteFile(filePath);
         }
-      } catch (error) {
-        console.error('[Twitter Handler] Direct API failed, falling back to Composio:', error);
-        // Fall through to Composio fallback
+      } else {
+        // Text-only tweet
+        const result = await twitterClient.createTweet(
+          text || 'Posted via VlowGen',
+          []
+        );
+
+        return `https://twitter.com/i/web/status/${result.data.id}`;
       }
-    }
-
-    // Fallback to Composio API (works for text-only or if direct API fails)
-    console.log('[Twitter Handler] Using Composio API');
-    
-    if (!this.composioClient) {
-      throw new Error('Composio client not initialized');
-    }
-
-    // Get connected Twitter account ID from environment or fetch
-    const connectedAccountId = process.env.TWITTER_CONNECTED_ACCOUNT_ID || 
-      await this.composioClient.getConnectedAccountId('TWITTER');
-    
-    this.composioClient.setDefaultConnectedAccountId(connectedAccountId);
-
-    console.log('[Twitter Handler] Using connected account:', connectedAccountId);
-
-    if (hasVideo) {
-      console.log('[Twitter Handler] Posting video to Twitter via Composio');
-      
-      const result = await this.composioClient.postVideoToTwitter({
-        connectedAccountId,
-        text: text || undefined,
-        videoUrl: videoUrl,
-        token: '',
-      });
-
-      return result.tweetUrl || 'Posted video successfully to Twitter';
-    } else if (hasImage) {
-      console.log('[Twitter Handler] Posting image to Twitter via Composio');
-      
-      const result = await this.composioClient.postToTwitter({
-        connectedAccountId,
-        text: text || undefined,
-        imageUrl: imageUrl,
-        token: '',
-      });
-
-      return result.tweetUrl || 'Posted successfully to Twitter';
-    } else {
-      // Post text-only tweet
-      console.log('[Twitter Handler] Posting text-only tweet via Composio');
-      
-      const result = await this.composioClient.postToTwitter({
-        connectedAccountId,
-        text: text || 'Posted via VlowGen',
-        token: '',
-      });
-
-      return result.tweetUrl || 'Posted successfully to Twitter';
+    } catch (error) {
+      throw new Error(
+        `Failed to post to Twitter: ${error instanceof Error ? error.message : 'Unknown error'}. ` +
+        'Please check your Twitter API credentials and try again.'
+      );
     }
   }
 }
