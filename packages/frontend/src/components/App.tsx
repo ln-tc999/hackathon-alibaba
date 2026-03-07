@@ -50,6 +50,15 @@ export default function App() {
     setWorkflow,
   } = useWorkflowExecution();
 
+  // Create new session when switching from landing to chat/workflow
+  const handleViewChange = useCallback((newView: AppView) => {
+    if (view === 'landing' && (newView === 'chat' || newView === 'workflow')) {
+      // Coming from landing, create new session
+      createNewSession();
+    }
+    setView(newView);
+  }, [view, setView, createNewSession]);
+
   // Session handlers
   const {
     handleContinueToWorkflow,
@@ -70,15 +79,6 @@ export default function App() {
       createNewSession();
     }
   }, [sessionId, createNewSession]);
-
-  // Create new session when switching from landing to chat/workflow
-  const handleViewChange = useCallback((newView: AppView) => {
-    if (view === 'landing' && (newView === 'chat' || newView === 'workflow')) {
-      // Coming from landing, create new session
-      createNewSession();
-    }
-    setView(newView);
-  }, [view, setView, createNewSession]);
 
   // Sidebar handlers
   const {
