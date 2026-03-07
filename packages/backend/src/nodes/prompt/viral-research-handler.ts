@@ -57,14 +57,15 @@ export class ViralResearchHandler implements NodeHandler {
     query: string,
     apiKey: string
   ): Promise<string | null> {
-    const systemPrompt = `You are an expert viral content strategist. Based on the research data provided, create an optimized prompt for AI image/video generation.
+    const systemPrompt = `You are an AI image generation prompt generator. 
 
-The prompt should:
-1. Be concise but compelling (max 100 words)
-2. Include trending elements from the research
-3. Use viral title formulas
-4. Include relevant hashtags
-5. Be ready for AI image generation`;
+OUTPUT ONLY the prompt. No explanations. No markdown. No bullet points.
+Just a single line of prompt text ready for AI image generation.
+
+Example output:
+"Cute fluffy cat with big eyes, pastel colors, kawaii style, soft lighting, #kucinglucu #viral #fyp"
+
+Make it visual, descriptive, and viral-worthy.`;
 
     try {
       const response = await fetch(
@@ -81,11 +82,11 @@ The prompt should:
               { role: 'system', content: systemPrompt },
               {
                 role: 'user',
-                content: `${context}\n\nCreate an AI image/video prompt for: ${query}`,
+                content: `Context: ${context}\n\nCreate a simple image generation prompt for: ${query}`,
               },
             ],
-            temperature: 0.8,
-            max_tokens: 300,
+            temperature: 0.9,
+            max_tokens: 150,
           }),
         }
       );

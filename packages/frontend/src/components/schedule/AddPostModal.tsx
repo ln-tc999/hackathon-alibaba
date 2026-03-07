@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   X,
   Calendar,
@@ -16,15 +16,37 @@ interface AddPostModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAdd: (post: Omit<ScheduledPost, 'id'>) => void;
+  initialData?: ScheduledPost;
 }
 
-export default function AddPostModal({ isOpen, onClose, onAdd }: AddPostModalProps) {
+export default function AddPostModal({ isOpen, onClose, onAdd, initialData }: AddPostModalProps) {
   const [content, setContent] = useState('');
   const [platform, setPlatform] = useState<ScheduledPost['platform']>('twitter');
   const [scheduledDate, setScheduledDate] = useState('');
   const [scheduledTime, setScheduledTime] = useState('');
   const [mediaUrl, setMediaUrl] = useState('');
   const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
+
+  // Pre-fill form when editing
+  useEffect(() => {
+    if (initialData && isOpen) {
+      setContent(initialData.content);
+      setPlatform(initialData.platform);
+      const scheduledDateObj = new Date(initialData.scheduledTime);
+      setScheduledDate(scheduledDateObj.toISOString().split('T')[0]);
+      setScheduledTime(scheduledDateObj.toTimeString().slice(0, 5));
+      setMediaUrl(initialData.mediaUrl || '');
+      setMediaType(initialData.mediaType || 'image');
+    } else if (isOpen) {
+      // Reset form for new post
+      setContent('');
+      setPlatform('twitter');
+      setScheduledDate('');
+      setScheduledTime('');
+      setMediaUrl('');
+      setMediaType('image');
+    }
+  }, [initialData, isOpen]);
 
   if (!isOpen) return null;
 
