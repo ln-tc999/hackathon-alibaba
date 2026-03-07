@@ -148,7 +148,6 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
       },
     });
 
-    console.log('[API Client] Response status:', response.status);
 
     const data = await response.json();
 
@@ -206,9 +205,6 @@ export async function executeWorkflow(
     credentials,
   };
 
-  console.log('[API Client] executeWorkflow called');
-  console.log('[API Client] API URL:', API_URL);
-  console.log('[API Client] Workflow:', JSON.stringify(workflow, null, 2));
 
   return apiRequest<ExecuteWorkflowResponse>('/api/workflows/execute', {
     method: 'POST',
