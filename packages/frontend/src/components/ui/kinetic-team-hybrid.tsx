@@ -3,7 +3,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, useMotionValue, useSpring, AnimatePresence } from 'framer-motion';
 import { ArrowUpRight, Minus, Plus } from 'lucide-react';
 
-/* ---------- Types ---------- */
 
 interface TeamMember {
   id: string;
@@ -17,7 +16,6 @@ interface TeamMember {
   };
 }
 
-/* ---------- Data (VlowGen Team) ---------- */
 
 const TEAM: TeamMember[] = [
   {
@@ -38,7 +36,7 @@ const TEAM: TeamMember[] = [
     image: '/avatar/akbar.jpeg',
     socials: {
       github: 'https://github.com/akbarwjyy',
-      twitter: 'https://twitter.com/akbarwjyy',
+      twitter: 'https://x.com/akbarwjyy',
       instagram: 'https://www.instagram.com/akbarwjyaa_/',
     },
   },
@@ -55,7 +53,6 @@ const TEAM: TeamMember[] = [
   },
 ];
 
-/* ---------- Main Component ---------- */
 
 export default function KineticTeamHybrid() {
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -105,12 +102,12 @@ export default function KineticTeamHybrid() {
         >
           <div>
             <h1 className="text-3xl font-bold tracking-tighter text-slate-900 sm:text-4xl md:text-5xl">
-              Creative <span className="text-slate-400">Talent</span>
+              Team <span className="text-slate-400">Developer</span>
             </h1>
           </div>
           <div className="h-px flex-1 bg-slate-200 mx-8 hidden md:block" />
           <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
-            Meet Our Team '24
+            Team UTDIVibe
           </p>
         </motion.header>
 
@@ -170,7 +167,6 @@ export default function KineticTeamHybrid() {
   );
 }
 
-/* ---------- Row Component ---------- */
 
 function TeamRow({
   data,
