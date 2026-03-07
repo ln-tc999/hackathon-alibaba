@@ -6,21 +6,19 @@ import FeaturesSection from '../components/landing/FeaturesSection.astro';
 import HowItWorksSection from '../components/landing/HowItWorksSection.astro';
 import PoweredBySection from '../components/landing/PoweredBySection.astro';
 import GetStartedSection from '../components/landing/GetStartedSection.astro';
+import TeamSection from '../components/landing/TeamSection.astro';
 import Footer from '../components/landing/Footer.astro';
 import App from '../components/App';
 import '../styles/globals.css';
 
-const preconnect = [
-  'https://fonts.googleapis.com',
-  'https://fonts.gstatic.com',
-];
+const preconnect = ['https://fonts.googleapis.com', 'https://fonts.gstatic.com'];
 ---
 
 <LandingLayout>
   <!-- Global state for SPA view management -->
   <script is:inline>
     window.__currentView = 'landing';
-    window.__setView = function(view) {
+    window.__setView = function (view) {
       window.__currentView = view;
       const landing = document.getElementById('landing-page');
       const appRoot = document.getElementById('app-root');
@@ -57,7 +55,10 @@ const preconnect = [
   <div id="landing-page">
     <!-- Background Effects -->
     <div class="fixed inset-0 bg-grid-pattern pointer-events-none z-0"></div>
-    <div class="fixed top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[600px] radial-glow-top pointer-events-none z-0 opacity-60"></div>
+    <div
+      class="fixed top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[600px] radial-glow-top pointer-events-none z-0 opacity-60"
+    >
+    </div>
 
     <!-- Navigation -->
     <Navbar />
@@ -69,6 +70,7 @@ const preconnect = [
         <FeaturesSection />
         <HowItWorksSection />
         <PoweredBySection />
+        <TeamSection />
         <GetStartedSection />
       </div>
       <Footer />
