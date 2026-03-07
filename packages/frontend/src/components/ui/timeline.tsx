@@ -62,8 +62,8 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
                 ))}
                 {/* Timeline Line */}
                 <div
-                    className="absolute left-6 md:left-9 top-0 overflow-hidden w-[3px] z-10"
-                    style={{ height: `${height}px` }}
+                    className="absolute left-6 md:left-9 top-0 w-[3px] z-0"
+                    style={{ height: `${height}px`, overflow: 'visible' }}
                 >
                     {/* Background line */}
                     <div className="absolute inset-x-0 top-0 w-[3px] bg-slate-200 h-full" />
