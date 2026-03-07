@@ -68,14 +68,14 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
                 ))}
                 {/* Timeline Line - Aligned with bullet points center */}
                 <div
-                    className="absolute left-[21px] md:left-[25px] top-0"
+                    className="absolute left-5 md:left-6 top-0"
                     style={{ height: `${height}px` }}
                 >
                     {/* Background line */}
-                    <div className="absolute inset-x-0 top-0 w-[3px] bg-slate-300 h-full" />
+                    <div className="absolute inset-x-0 top-0 w-[2px] bg-slate-200 h-full" />
                     {/* Animated progress line */}
                     <motion.div
-                        className="absolute inset-x-0 top-0 w-[3px] bg-gradient-to-b from-[#0446ff] to-blue-600 shadow-md shadow-[#0446ff]/50"
+                        className="absolute inset-x-0 top-0 w-[2px] bg-gradient-to-b from-[#0446ff] to-blue-600"
                         initial={{ height: 0, opacity: 0 }}
                         style={{
                             height: heightTransform,
