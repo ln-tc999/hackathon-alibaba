@@ -58,7 +58,6 @@ class SchedulerService {
         this.executionEngine.registerNodeHandler('tiktok', new nodes.TikTokNodeHandler());
         this.executionEngine.registerNodeHandler('youtube', new nodes.YouTubeNodeHandler());
 
-        console.log('[Scheduler] Node handlers registered');
       })
       .catch((error) => {
         console.error('[Scheduler] Failed to register node handlers:', error);
@@ -71,7 +70,6 @@ class SchedulerService {
   private loadScheduledPosts() {
     // In production, load from database
     // For now, we'll sync with frontend localStorage via API
-    console.log('[Scheduler] Service initialized');
   }
 
   /**
@@ -79,7 +77,6 @@ class SchedulerService {
    */
   addScheduledPost(post: ScheduledPost): void {
     this.scheduledPosts.set(post.id, post);
-    console.log(`[Scheduler] Added post ${post.id} scheduled for ${post.scheduledTime}`);
   }
 
   /**
@@ -87,7 +84,6 @@ class SchedulerService {
    */
   removeScheduledPost(postId: string): void {
     this.scheduledPosts.delete(postId);
-    console.log(`[Scheduler] Removed post ${postId}`);
   }
 
   /**
@@ -97,7 +93,6 @@ class SchedulerService {
     const post = this.scheduledPosts.get(postId);
     if (post) {
       post.status = status;
-      console.log(`[Scheduler] Updated post ${postId} status to ${status}`);
     }
   }
 
@@ -184,7 +179,6 @@ class SchedulerService {
    * Execute a scheduled post
    */
   private async executePost(post: ScheduledPost): Promise<void> {
-    console.log(`[Scheduler] Executing post ${post.id} to ${post.platform}`);
 
     try {
       // Create workflow for this post
@@ -206,7 +200,6 @@ class SchedulerService {
 
       if (result.status === 'success') {
         this.updatePostStatus(post.id, 'posted');
-        console.log(`[Scheduler] Successfully posted ${post.id} to ${post.platform}`);
       } else {
         this.updatePostStatus(post.id, 'failed');
         console.error(`[Scheduler] Failed to post ${post.id}:`, result.error);
@@ -224,7 +217,6 @@ class SchedulerService {
     const duePosts = this.getDuePosts();
 
     if (duePosts.length > 0) {
-      console.log(`[Scheduler] Found ${duePosts.length} due post(s)`);
 
       for (const post of duePosts) {
         await this.executePost(post);
@@ -237,11 +229,9 @@ class SchedulerService {
    */
   start(): void {
     if (this.checkInterval) {
-      console.log('[Scheduler] Already running');
       return;
     }
 
-    console.log('[Scheduler] Starting scheduler service...');
 
     // Check immediately
     this.checkAndExecuteDuePosts();
@@ -251,7 +241,6 @@ class SchedulerService {
       this.checkAndExecuteDuePosts();
     }, 60000); // 60 seconds
 
-    console.log('[Scheduler] Scheduler service started (checking every 60 seconds)');
   }
 
   /**
@@ -261,7 +250,6 @@ class SchedulerService {
     if (this.checkInterval) {
       clearInterval(this.checkInterval);
       this.checkInterval = null;
-      console.log('[Scheduler] Scheduler service stopped');
     }
   }
 

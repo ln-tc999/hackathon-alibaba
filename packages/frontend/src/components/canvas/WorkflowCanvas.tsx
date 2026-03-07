@@ -126,10 +126,6 @@ function WorkflowCanvasInner({
 
     // Only update if there are actual changes
     if (newNodes.length > 0 || newEdges.length > 0) {
-      console.log('[WorkflowCanvas] Updating nodes and edges from workflow prop:', {
-        nodes: newNodes.length,
-        edges: newEdges.length,
-      });
       setNodes(newNodes);
       setEdges(newEdges);
       setWorkflowId(workflow.id);

@@ -64,7 +64,7 @@ function TikTokNode({ id, data, selected }: TikTokNodeProps) {
                 
                 if (statusData.connected) {
                   alert('TikTok connected successfully!');
-                  window.location.reload();
+                  // window.location.reload(); // Disabled - user should stay in workflow view
                 }
               }
             } catch (error) {

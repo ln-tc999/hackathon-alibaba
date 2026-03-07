@@ -8,6 +8,7 @@
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "test:properties": "pnpm -r test -- --grep \"Property [0-9]+:\"",
+    "test:social": "tsx test-social-media.ts",
     "lint": "pnpm -r lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "type-check": "pnpm -r type-check"

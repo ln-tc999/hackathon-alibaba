@@ -448,6 +448,25 @@ export class Wan2NodeHandler implements NodeHandler {
 
       console.log('[Wan2Handler] Image saved to history:', imageId);
 
+      // Save to media history for frontend gallery
+      try {
+        // Import media service to save directly
+        const { saveMediaToHistory } = await import('../../services/media-history.service');
+        
+        await saveMediaToHistory({
+          userId: context.userId || 'anonymous',
+          minioUrl,
+          mediaType: 'image',
+          prompt,
+          workflowId: context.workflowId,
+        });
+        
+        console.log('[Wan2Handler] Media saved to media history');
+      } catch (error) {
+        console.error('[Wan2Handler] Failed to save to media history:', error);
+        // Don't fail the execution if media history save fails
+      }
+
       // IMPORTANT: Use Dashscope URL for social media posting (publicly accessible)
       // MinIO URL is for internal storage only (localhost not accessible from Instagram API)
       const publicImageUrl = result.imageUrl; // Use Dashscope URL which is publicly accessible

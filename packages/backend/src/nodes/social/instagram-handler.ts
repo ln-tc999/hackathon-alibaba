@@ -30,7 +30,16 @@ export class InstagramNodeHandler extends BaseSocialMediaHandler {
     }
 
     // Get connected Instagram account ID
-    const connectedAccountId = await this.composioClient.getConnectedAccountId('INSTAGRAM');
+    let connectedAccountId = process.env.INSTAGRAM_CONNECTED_ACCOUNT_ID;
+    
+    if (!connectedAccountId) {
+      console.log('[Instagram Handler] No connected account ID in env, fetching from Composio...');
+      connectedAccountId = await this.composioClient.getConnectedAccountId('INSTAGRAM');
+    }
+
+    if (!connectedAccountId) {
+      throw new Error('No Instagram connected account found. Please connect your Instagram account in Composio first.');
+    }
 
     try {
       // Post video (reel) if available, otherwise post image
@@ -75,8 +84,15 @@ export class InstagramNodeHandler extends BaseSocialMediaHandler {
 
         return result.postUrl || 'Posted successfully to Instagram';
       }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+    } catch (composioError: any) {
+      console.error('[Instagram Handler] Composio API error:', composioError?.response?.data || composioError?.message);
+      
+      // Check for 401 Unauthorized specifically
+      if (composioError?.response?.status === 401) {
+        throw new Error('Instagram connection expired. Please reconnect your Instagram account in Composio dashboard. Go to app.composio.dev and reconnect Instagram, then update INSTAGRAM_CONNECTED_ACCOUNT_ID in your .env file.');
+      }
+      
+      const errorMessage = composioError instanceof Error ? composioError.message : String(composioError);
       const mediaType = hasVideo ? 'video' : 'image';
       throw new Error(
         `Failed to post ${mediaType} to Instagram: ${errorMessage}\n` +

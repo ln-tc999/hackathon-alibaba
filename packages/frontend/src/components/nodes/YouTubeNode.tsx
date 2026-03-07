@@ -64,7 +64,7 @@ function YouTubeNode({ id, data, selected }: YouTubeNodeProps) {
                 
                 if (statusData.connected) {
                   alert('YouTube connected successfully!');
-                  window.location.reload();
+                  // window.location.reload(); // Disabled - user should stay in workflow view
                 }
               }
             } catch (error) {

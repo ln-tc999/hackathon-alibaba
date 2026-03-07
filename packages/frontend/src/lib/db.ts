@@ -41,6 +41,23 @@ interface VlowGenDB extends DBSchema {
     };
     indexes: { 'by-user': string; 'by-updated': number };
   };
+  mediaHistory: {
+    key: string;
+    value: {
+      id: string;
+      userId: string;
+      minioUrl: string;
+      mediaType: 'image' | 'video';
+      prompt: string;
+      sessionId?: string;
+      workflowId?: string;
+      platform?: string;
+      createdAt: number;
+      size?: number;
+      dimensions?: { width: number; height: number };
+    };
+    indexes: { 'by-user': string; 'by-session': string; 'by-type': string; 'by-created': number };
+  };
   executions: {
     key: string;
     value: {
@@ -75,46 +92,46 @@ export async function getDB(): Promise<IDBPDatabase<VlowGenDB>> {
     return dbInstance;
   }
 
-  dbInstance = await openDB<VlowGenDB>('vlowgen-db', 1, {
-    upgrade(db) {
-      // Workflows store
-      const workflowStore = db.createObjectStore('workflows', { keyPath: 'id' });
-      workflowStore.createIndex('by-user', 'userId');
-      workflowStore.createIndex('by-updated', 'updatedAt');
+  dbInstance = await openDB<VlowGenDB>('vlowgen-db', 2, {
+    upgrade(db, oldVersion) {
+      if (oldVersion < 1) {
+        const workflowStore = db.createObjectStore('workflows', { keyPath: 'id' });
+        workflowStore.createIndex('by-user', 'userId');
+        workflowStore.createIndex('by-updated', 'updatedAt');
 
-      // Users store
-      db.createObjectStore('users', { keyPath: 'id' });
+        db.createObjectStore('users', { keyPath: 'id' });
 
-      // Chat sessions store
-      const chatSessionStore = db.createObjectStore('chatSessions', { keyPath: 'id' });
-      chatSessionStore.createIndex('by-user', 'userId');
-      chatSessionStore.createIndex('by-updated', 'updatedAt');
+        const chatSessionStore = db.createObjectStore('chatSessions', { keyPath: 'id' });
+        chatSessionStore.createIndex('by-user', 'userId');
+        chatSessionStore.createIndex('by-updated', 'updatedAt');
 
-      // Executions store
-      const executionStore = db.createObjectStore('executions', { keyPath: 'id' });
-      executionStore.createIndex('by-workflow', 'workflowId');
-      executionStore.createIndex('by-user', 'userId');
+        const executionStore = db.createObjectStore('executions', { keyPath: 'id' });
+        executionStore.createIndex('by-workflow', 'workflowId');
+        executionStore.createIndex('by-user', 'userId');
 
-      // Rate limits store
-      const rateLimitStore = db.createObjectStore('rateLimits', { keyPath: ['userId', 'action'] });
-      rateLimitStore.createIndex('by-user-action', ['userId', 'action']);
+        const rateLimitStore = db.createObjectStore('rateLimits', { keyPath: ['userId', 'action'] });
+        rateLimitStore.createIndex('by-user-action', ['userId', 'action']);
+      }
+
+      if (oldVersion < 2) {
+        const mediaHistoryStore = db.createObjectStore('mediaHistory', { keyPath: 'id' });
+        mediaHistoryStore.createIndex('by-user', 'userId');
+        mediaHistoryStore.createIndex('by-session', 'sessionId');
+        mediaHistoryStore.createIndex('by-type', 'mediaType');
+        mediaHistoryStore.createIndex('by-created', 'createdAt');
+      }
     },
   });
 
   return dbInstance;
 }
 
-// User operations
 export async function getOrCreateUser(userId: string) {
   const db = await getDB();
   let user = await db.get('users', userId);
 
   if (!user) {
-    user = {
-      id: userId,
-      createdAt: Date.now(),
-      lastActive: Date.now(),
-    };
+    user = { id: userId, createdAt: Date.now(), lastActive: Date.now() };
     await db.put('users', user);
   } else {
     user.lastActive = Date.now();
@@ -124,11 +141,9 @@ export async function getOrCreateUser(userId: string) {
   return user;
 }
 
-// Workflow operations
 export async function saveWorkflow(workflow: Workflow, userId: string) {
   const db = await getDB();
   const now = Date.now();
-
   const existing = await db.get('workflows', workflow.id);
 
   const record = {
@@ -161,7 +176,172 @@ export async function deleteWorkflow(id: string) {
   await db.delete('workflows', id);
 }
 
-// Execution operations
+export async function saveChatSession(
+  id: string,
+  userId: string,
+  title: string,
+  messages: Array<{ role: 'user' | 'assistant'; content: string; timestamp: number }>,
+  workflowId?: string
+) {
+  const db = await getDB();
+  const now = Date.now();
+  const existing = await db.get('chatSessions', id);
+
+  const session = {
+    id,
+    userId,
+    title,
+    messages,
+    workflowId,
+    createdAt: existing?.createdAt || now,
+    updatedAt: now,
+  };
+
+  await db.put('chatSessions', session);
+  return session;
+}
+
+export async function getChatSession(id: string) {
+  const db = await getDB();
+  return await db.get('chatSessions', id);
+}
+
+export async function getUserChatSessions(userId: string) {
+  const db = await getDB();
+  const index = db.transaction('chatSessions').store.index('by-user');
+  const sessions = await index.getAll(userId);
+  return sessions.sort((a, b) => b.updatedAt - a.updatedAt);
+}
+
+export async function deleteChatSession(id: string) {
+  const db = await getDB();
+  await db.delete('chatSessions', id);
+}
+
+export async function createChatSession(
+  userId: string,
+  title: string,
+  messages: Array<{ role: 'user' | 'assistant'; content: string; timestamp: number }>,
+  workflowId?: string
+): Promise<string> {
+  const db = await getDB();
+  const id = `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const now = Date.now();
+
+  const session = {
+    id,
+    userId,
+    title,
+    messages,
+    workflowId,
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  await db.put('chatSessions', session);
+  return id;
+}
+
+export interface MediaHistory {
+  id: string;
+  userId: string;
+  minioUrl: string;
+  mediaType: 'image' | 'video';
+  prompt: string;
+  sessionId?: string;
+  workflowId?: string;
+  platform?: string;
+  createdAt: number;
+  size?: number;
+  dimensions?: { width: number; height: number };
+}
+
+export async function saveMediaHistory(media: Omit<MediaHistory, 'id' | 'userId'>): Promise<string> {
+  const db = await getDB();
+  const userId = getUserId();
+  const id = `media_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const now = Date.now();
+
+  const mediaRecord: MediaHistory = {
+    id,
+    userId,
+    createdAt: now,
+    ...media,
+  };
+
+  await db.put('mediaHistory', mediaRecord);
+  return id;
+}
+
+export async function getUserMediaHistory(
+  userId: string,
+  filter?: {
+    mediaType?: 'image' | 'video';
+    sessionId?: string;
+    limit?: number;
+  }
+): Promise<MediaHistory[]> {
+  const db = await getDB();
+  const index = db.transaction('mediaHistory').store.index('by-user');
+  const all = await index.getAll(userId);
+
+  let filtered = all;
+
+  if (filter?.mediaType) {
+    filtered = filtered.filter(m => m.mediaType === filter.mediaType);
+  }
+
+  if (filter?.sessionId) {
+    filtered = filtered.filter(m => m.sessionId === filter.sessionId);
+  }
+
+  filtered.sort((a, b) => b.createdAt - a.createdAt);
+
+  if (filter?.limit) {
+    filtered = filtered.slice(0, filter.limit);
+  }
+
+  return filtered;
+}
+
+export async function getMediaHistoryById(id: string): Promise<MediaHistory | undefined> {
+  const db = await getDB();
+  return await db.get('mediaHistory', id);
+}
+
+export async function deleteMediaHistory(id: string): Promise<void> {
+  const db = await getDB();
+  await db.delete('mediaHistory', id);
+}
+
+export async function getMediaStats(userId: string): Promise<{
+  total: number;
+  images: number;
+  videos: number;
+}> {
+  const db = await getDB();
+  const index = db.transaction('mediaHistory').store.index('by-user');
+  const all = await index.getAll(userId);
+
+  return {
+    total: all.length,
+    images: all.filter(m => m.mediaType === 'image').length,
+    videos: all.filter(m => m.mediaType === 'video').length,
+  };
+}
+
+export function getUserId(): string {
+  if (typeof window === 'undefined') {
+    return 'anonymous';
+  }
+  let userId = localStorage.getItem('vlowgen_user_id');
+  if (!userId) {
+    userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    localStorage.setItem('vlowgen_user_id', userId);
+  }
+  return userId;
+}
+
 export async function startExecution(workflowId: string, userId: string) {
   const db = await getDB();
   const execution = {
@@ -201,104 +381,4 @@ export async function getWorkflowExecutions(workflowId: string, limit = 50) {
   const index = db.transaction('executions').store.index('by-workflow');
   const all = await index.getAll(workflowId);
   return all.slice(0, limit);
-}
-
-// Rate limiting operations
-export async function checkRateLimit(
-  userId: string,
-  action: string,
-  maxCount: number,
-  windowMs: number
-): Promise<{ allowed: boolean; remaining: number; resetAt: number }> {
-  const db = await getDB();
-  const now = Date.now();
-  const key = `${userId}_${action}`;
-
-  let limit = await db.get('rateLimits', key as any);
-
-  if (!limit || limit.resetAt < now) {
-    limit = {
-      userId,
-      action,
-      count: 0,
-      resetAt: now + windowMs,
-    };
-  }
-
-  if (limit.count >= maxCount) {
-    return {
-      allowed: false,
-      remaining: 0,
-      resetAt: limit.resetAt,
-    };
-  }
-
-  limit.count++;
-  await db.put('rateLimits', limit);
-
-  return {
-    allowed: true,
-    remaining: maxCount - limit.count,
-    resetAt: limit.resetAt,
-  };
-}
-
-export async function cleanupExpiredRateLimits() {
-  const db = await getDB();
-  const now = Date.now();
-  const tx = db.transaction('rateLimits', 'readwrite');
-  const store = tx.store;
-  const all = await store.getAll();
-
-  for (const limit of all) {
-    if (limit.resetAt < now) {
-      await store.delete([limit.userId, limit.action] as any);
-    }
-  }
-
-  await tx.done;
-}
-
-// Chat session operations
-export async function saveChatSession(
-  id: string,
-  userId: string,
-  title: string,
-  messages: Array<{ role: 'user' | 'assistant'; content: string; timestamp: number }>,
-  workflowId?: string
-) {
-  const db = await getDB();
-  const now = Date.now();
-
-  const existing = await db.get('chatSessions', id);
-
-  const session = {
-    id,
-    userId,
-    title,
-    messages,
-    workflowId,
-    createdAt: existing?.createdAt || now,
-    updatedAt: now,
-  };
-
-  await db.put('chatSessions', session);
-  return session;
-}
-
-export async function getChatSession(id: string) {
-  const db = await getDB();
-  return await db.get('chatSessions', id);
-}
-
-export async function getUserChatSessions(userId: string) {
-  const db = await getDB();
-  const index = db.transaction('chatSessions').store.index('by-user');
-  const sessions = await index.getAll(userId);
-  return sessions.sort((a, b) => b.updatedAt - a.updatedAt);
-}
-
-export async function deleteChatSession(id: string) {
-  const db = await getDB();
-  await db.delete('chatSessions', id);
 }

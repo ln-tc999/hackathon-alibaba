@@ -16,6 +16,9 @@ import {
   Eye,
   Sparkles,
   TrendingUp,
+  Upload,
+  X,
+  User,
 } from 'lucide-react';
 import type { Workflow, WorkflowNode, WorkflowEdge } from '@vlowgen/shared';
 import { saveChatSession } from '@/lib/db';
@@ -35,6 +38,8 @@ interface Message {
     hashtags: string[];
     insights: string;
   };
+  researchOptions?: string[];
+  selectedResearchTopic?: string;
 }
 
 interface ChatInterfaceProps {
@@ -46,12 +51,34 @@ interface ChatInterfaceProps {
 
 // Memoized Message Component
 const MessageBubble = memo(({ message, isUser }: { message: Message; isUser: boolean }) => (
-  <div
-    className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-lg ${
-      isUser ? 'bg-blue-600 text-white' : 'bg-white text-gray-900 border border-gray-200'
-    }`}
-  >
-    <p className="text-sm whitespace-pre-line leading-relaxed font-sans">{message.content}</p>
+  <div className={`flex items-end gap-2 sm:gap-2.5 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+    {/* Avatar */}
+    <div
+      className={`flex-shrink-0 w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center ${isUser
+          ? 'bg-[#0446ff] text-white'
+          : 'bg-white border border-slate-200 text-slate-600'
+        }`}
+      style={{ boxShadow: isUser ? '0 2px 12px rgba(4,70,255,0.4)' : '0 1px 4px rgba(0,0,0,0.06)' }}
+    >
+      {isUser ? <User className="w-3 h-3" /> : <Bot className="w-3 h-3" />}
+    </div>
+
+    <div
+      className={`max-w-[85%] sm:max-w-[80%] px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm leading-relaxed font-sans whitespace-pre-line ${isUser
+          ? 'bg-[#0446ff] text-white'
+          : 'bg-white border border-slate-200 text-slate-800'
+        }`}
+      style={{
+        boxShadow: isUser
+          ? '0 4px 20px rgba(4,70,255,0.3)'
+          : '0 2px 12px rgba(0,0,0,0.06)',
+      }}
+    >
+      {message.content}
+      <div className={`text-[10px] mt-1.5 ${isUser ? 'text-blue-200' : 'text-slate-400'}`}>
+        {message.timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+      </div>
+    </div>
   </div>
 ));
 
@@ -67,6 +94,10 @@ export default function ChatInterface({
   const [input, setInput] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [currentWorkflow, setCurrentWorkflow] = useState<Workflow | undefined>(workflow);
+  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
+  const [showResearchOptions, setShowResearchOptions] = useState(false);
+  const [uploadedImage, setUploadedImage] = useState<{ file: File; preview: string } | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Load session messages when sessionId changes
@@ -234,11 +265,70 @@ export default function ChatInterface({
     'meme',
     'hot',
     'most',
+    'berita',
+    'gadget',
+    'tech',
+    'sport',
+    'football',
+    'dance',
+    'challenge',
   ];
 
   const isViralResearchQuery = (prompt: string): boolean => {
     const promptLower = prompt.toLowerCase();
     return viralKeywords.some((keyword) => promptLower.includes(keyword));
+  };
+
+  const isPostToSocial = (prompt: string): { platform: string; hasWorkflow: boolean } | null => {
+    const promptLower = prompt.toLowerCase();
+    if (
+      promptLower.includes('post') ||
+      promptLower.includes('share') ||
+      promptLower.includes('upload')
+    ) {
+      if (promptLower.includes('instagram')) return { platform: 'instagram', hasWorkflow: true };
+      if (promptLower.includes('twitter') || promptLower.includes('x.com'))
+        return { platform: 'twitter', hasWorkflow: true };
+      if (promptLower.includes('tiktok')) return { platform: 'tiktok', hasWorkflow: true };
+      if (promptLower.includes('facebook')) return { platform: 'facebook', hasWorkflow: true };
+      if (promptLower.includes('youtube')) return { platform: 'youtube', hasWorkflow: true };
+    }
+    return null;
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const preview = URL.createObjectURL(file);
+      setUploadedImage({ file, preview });
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('[Chat] Image uploaded:', result.url);
+      }
+    } catch (error) {
+      console.error('[Chat] Upload error:', error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    if (uploadedImage) {
+      URL.revokeObjectURL(uploadedImage.preview);
+      setUploadedImage(null);
+    }
   };
 
   const generateWorkflowFromPrompt = async (
@@ -248,10 +338,36 @@ export default function ChatInterface({
     workflow?: Workflow;
     researchResult?: Message['researchResult'];
     enhancedPrompt?: string;
+    researchOptions?: string[];
   }> => {
     const promptLower = prompt.toLowerCase();
 
-    if (isViralResearchQuery(prompt)) {
+    const postToSocial = isPostToSocial(prompt);
+
+    if (postToSocial && existingWorkflow && existingWorkflow.nodes.length > 0) {
+      const workflow = addSocialToWorkflow(existingWorkflow, postToSocial.platform);
+      return { workflow };
+    }
+
+    if (postToSocial && !existingWorkflow) {
+      const workflow = createSimplePostWorkflow(prompt);
+      return { workflow };
+    }
+
+    const wantsResearch =
+      promptLower.includes('riset') ||
+      promptLower.includes('research') ||
+      promptLower.includes('cari topik') ||
+      promptLower.includes('apa trending');
+
+    if (
+      selectedTopic &&
+      (promptLower.includes('mau') ||
+        promptLower.includes('buat') ||
+        promptLower.includes('create') ||
+        promptLower.includes('generate'))
+    ) {
+      const fullQuery = `${selectedTopic} ${prompt}`;
       try {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/nodes/viral-research`,
@@ -259,7 +375,7 @@ export default function ChatInterface({
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              query: prompt,
+              query: fullQuery,
               nodeId: 'viral-research-node',
               enhanceWithQwen: true,
             }),
@@ -270,23 +386,17 @@ export default function ChatInterface({
           const data = await response.json();
           if (data.output) {
             const research = data.output;
-
-            // Use Qwen-enhanced prompt if available, otherwise fall back to suggested titles
             let finalPrompt = research.qwenResponse || research.enhancedPrompt;
-
-            if (!finalPrompt && research.suggestedTitles && research.suggestedTitles.length > 0) {
+            if (!finalPrompt && research.suggestedTitles?.[0]) {
               finalPrompt = `${research.suggestedTitles[0]} ${research.hashtags
                 .slice(0, 5)
                 .map((h: string) => '#' + h)
                 .join(' ')}`;
             }
-
             if (finalPrompt) {
               const workflow = generateViralWorkflow(finalPrompt, research);
               return { workflow, researchResult: research, enhancedPrompt: finalPrompt };
             }
-
-            return { researchResult: research };
           }
         }
       } catch (error) {
@@ -353,7 +463,6 @@ export default function ChatInterface({
     nodes.push(previewNode);
     edges.push({ id: 'edge-preview', source: 'node-3', target: 'node-preview' });
 
-    // Add social platforms
     let currentY = 50;
 
     nodes.push({
@@ -376,6 +485,99 @@ export default function ChatInterface({
     return {
       id: `workflow-${Date.now()}`,
       name: 'Viral Content Workflow',
+      nodes,
+      edges,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+  };
+
+  const addSocialToWorkflow = (existingWorkflow: Workflow, platform: string): Workflow => {
+    const lastNode = existingWorkflow.nodes[existingWorkflow.nodes.length - 1];
+    const newNodes = [...existingWorkflow.nodes];
+    const newEdges = [...existingWorkflow.edges];
+
+    const platformNodeId = `node-${platform}-${Date.now()}`;
+    const platformNode: WorkflowNode = {
+      id: platformNodeId,
+      type: platform as any,
+      position: { x: lastNode.position.x + 300, y: lastNode.position.y },
+      data: { type: platform as any, authenticated: false },
+    };
+
+    newNodes.push(platformNode);
+    newEdges.push({
+      id: `edge-to-${platform}`,
+      source: lastNode.id,
+      target: platformNodeId,
+    });
+
+    return {
+      ...existingWorkflow,
+      nodes: newNodes,
+      edges: newEdges,
+      updatedAt: new Date().toISOString(),
+    };
+  };
+
+  const createSimplePostWorkflow = (prompt: string): Workflow => {
+    const promptLower = prompt.toLowerCase();
+    const platform = promptLower.includes('instagram')
+      ? 'instagram'
+      : promptLower.includes('twitter') || promptLower.includes('x.com')
+        ? 'twitter'
+        : promptLower.includes('tiktok')
+          ? 'tiktok'
+          : promptLower.includes('facebook')
+            ? 'facebook'
+            : 'instagram';
+
+    const nodes: WorkflowNode[] = [
+      {
+        id: 'node-1',
+        type: 'prompt-text',
+        position: { x: 100, y: 100 },
+        data: { type: 'prompt-text', promptText: prompt },
+      },
+      {
+        id: 'node-2',
+        type: 'prompt-enhancer-image',
+        position: { x: 400, y: 100 },
+        data: { type: 'prompt-enhancer-image', userPrompt: prompt },
+      },
+      {
+        id: 'node-3',
+        type: 'wan2',
+        position: { x: 700, y: 100 },
+        data: { type: 'wan2', model: 'wan2.1-t2i-turbo', size: '1024*1024' },
+      },
+    ];
+
+    const edges: WorkflowEdge[] = [
+      { id: 'edge-1', source: 'node-1', target: 'node-2' },
+      { id: 'edge-2', source: 'node-2', target: 'node-3' },
+    ];
+
+    const previewNode: WorkflowNode = {
+      id: 'node-preview',
+      type: 'preview',
+      position: { x: 1000, y: 100 },
+      data: { type: 'preview', mediaType: 'auto', showMetadata: true },
+    };
+    nodes.push(previewNode);
+    edges.push({ id: 'edge-preview', source: 'node-3', target: 'node-preview' });
+
+    nodes.push({
+      id: `node-${platform}`,
+      type: platform as any,
+      position: { x: 1300, y: 100 },
+      data: { type: platform, authenticated: false },
+    });
+    edges.push({ id: `edge-to-${platform}`, source: 'node-preview', target: `node-${platform}` });
+
+    return {
+      id: `workflow-${Date.now()}`,
+      name: `Post to ${platform.charAt(0).toUpperCase() + platform.slice(1)}`,
       nodes,
       edges,
       createdAt: new Date().toISOString(),
@@ -408,14 +610,13 @@ export default function ChatInterface({
           id: `msg-${Date.now()}-assistant`,
           role: 'assistant',
           content:
-            `📊 **Viral Content Research + AI Generation**\n\n` +
-            `**Research Insights:**\n${r.insights.slice(0, 200)}...\n\n` +
-            `**Selected Title:** ${result.enhancedPrompt}\n\n` +
-            `**Hashtags:** ${r.hashtags
+            `Viral Content Research + AI Generation\n\n` +
+            `Prompt: ${result.enhancedPrompt}\n\n` +
+            `Hashtags: ${r.hashtags
               .slice(0, 8)
-              .map((h: string) => `#${h}`)
+              .map((h: string) => '#' + h)
               .join(' ')}\n\n` +
-            `✅ Generated workflow with viral-optimized prompt!`,
+            `Workflow created successfully!`,
           timestamp: new Date(),
           workflow: result.workflow,
           researchResult: r,
@@ -426,20 +627,29 @@ export default function ChatInterface({
           id: `msg-${Date.now()}-assistant`,
           role: 'assistant',
           content:
-            `📊 **Viral Content Research Results**\n\n` +
-            `**Top Topics:**\n${r.relevantTopics.map((t) => `• ${t}`).join('\n')}\n\n` +
-            `**Trending Titles:**\n${r.suggestedTitles.map((t) => `• ${t}`).join('\n')}\n\n` +
-            `**Hashtags:** ${r.hashtags.map((h) => `#${h}`).join(' ')}\n\n` +
-            `💡 ${r.insights}`,
+            `Viral Content Research Results\n\n` +
+            `Topics: ${r.relevantTopics.join(', ')}\n\n` +
+            `Titles: ${r.suggestedTitles.join(', ')}\n\n` +
+            `Hashtags: ${r.hashtags.map((h: string) => '#' + h).join(' ')}\n\n` +
+            `${r.insights}`,
           timestamp: new Date(),
           researchResult: r,
+        };
+      } else if (result.researchOptions) {
+        setShowResearchOptions(true);
+        assistantMessage = {
+          id: `msg-${Date.now()}-assistant`,
+          role: 'assistant',
+          content: 'Pilih topik yang ingin dibuat:',
+          timestamp: new Date(),
+          researchOptions: result.researchOptions,
         };
       } else if (result.workflow) {
         setCurrentWorkflow(result.workflow);
         assistantMessage = {
           id: `msg-${Date.now()}-assistant`,
           role: 'assistant',
-          content: `Perfect! I've created your workflow:\n\n${input}\n\nSteps:\n1. Prompt enhancement\n2. Image generation\n3. Multi-platform posting\n\nClick "Open Editor" to review and execute.`,
+          content: `Workflow created for: ${input}\n\nClick "Open Editor" to review and execute.`,
           timestamp: new Date(),
           workflow: result.workflow,
         };
@@ -447,7 +657,7 @@ export default function ChatInterface({
         assistantMessage = {
           id: `msg-${Date.now()}-assistant`,
           role: 'assistant',
-          content: 'Sorry, there was an error processing your request. Please try again.',
+          content: 'Sorry, there was an error. Please try again.',
           timestamp: new Date(),
         };
       }
@@ -526,98 +736,193 @@ export default function ChatInterface({
     return iconMap[nodeType] || { icon: <Sparkles className="w-3 h-3" />, label: 'Unknown' };
   }, []);
 
+  const quickViralTags = [
+    { label: 'Funny', desc: 'Humor & meme viral Indonesia', query: 'viral lucu indonesia', icon: <Sparkles className="w-4 h-4" /> },
+    { label: 'Love', desc: 'Konten romantis & emosional', query: 'viral love emotional', icon: <Zap className="w-4 h-4" /> },
+    { label: 'News', desc: 'Berita & trending terkini', query: 'viral berita indonesia', icon: <TrendingUp className="w-4 h-4" /> },
+    { label: 'Gadget', desc: 'Review & unboxing teknologi', query: 'viral gadget tech', icon: <Eye className="w-4 h-4" /> },
+    { label: 'Sports', desc: 'Highlight olahraga terbaik', query: 'viral football sports', icon: <CheckCircle2 className="w-4 h-4" /> },
+    { label: 'Dance', desc: 'Challenge dance & choreography', query: 'viral dance challenge', icon: <Wand2 className="w-4 h-4" /> },
+  ];
+
+  const quickCreateTags = [
+    { label: 'Product Photo', desc: 'Foto produk profesional & post ke Instagram', query: 'Create a professional product photo and post to Instagram', icon: <ImageIcon className="w-4 h-4" /> },
+    { label: 'Viral Meme', desc: 'Buat meme AI lucu & viral di Twitter', query: 'Generate a viral meme about AI and share on Twitter', icon: <Twitter className="w-4 h-4" /> },
+    { label: 'Video Content', desc: 'Video sinematik & post ke semua platform', query: 'Create cinematic video of a dragon and post everywhere', icon: <Video className="w-4 h-4" /> },
+  ];
+
   return (
-    <div className="flex items-center justify-center h-full bg-gradient-to-br from-gray-50 to-gray-100 p-4 sm:p-6 lg:p-8">
-      <div className="w-full max-w-4xl space-y-4 sm:space-y-6 lg:space-y-8">
+    <div
+      className="flex items-start sm:items-center justify-center min-h-full p-3 sm:p-6 lg:p-8 font-sans overflow-y-auto"
+      style={{ background: 'linear-gradient(135deg, #f8faff 0%, #eef2ff 50%, #f0f4ff 100%)' }}
+    >
+      <div className="w-full max-w-3xl space-y-4 sm:space-y-6 py-2 sm:py-0">
+
         {/* Welcome Header */}
-        <div className="text-center">
-          <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-none mb-3 sm:mb-4 bg-[#0446ff] shadow-lg shadow-[#0446ff]/25">
-            <img src="/logo.svg" alt="VlowGen" className="w-8 h-8 sm:w-10 sm:h-10" />
+        {messages.length === 0 && (
+          <div className="text-center space-y-2 sm:space-y-3 animate-fade-in-up pb-2">
+            <div
+              className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 mb-1"
+              style={{
+                background: 'linear-gradient(135deg, #0446ff 0%, #0341e0 100%)',
+                boxShadow: '0 8px 32px rgba(4,70,255,0.35)',
+              }}
+            >
+              <img src="/logo.svg" alt="VlowGen" className="w-7 h-7 sm:w-8 sm:h-8" />
+            </div>
+            <div>
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 tracking-tight">
+                VlowGen <span style={{ color: '#0446ff' }}>AI</span>
+              </h1>
+              <p className="text-slate-500 text-xs sm:text-sm mt-1 px-4">
+                Describe your content idea — get a full automated workflow instantly.
+              </p>
+            </div>
+
+            {/* Quick Stats */}
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 pt-1 px-2">
+              {[
+                { icon: <Zap className="w-3 h-3" />, label: 'Instant Generation' },
+                { icon: <Sparkles className="w-3 h-3" />, label: 'AI-Enhanced' },
+                { icon: <TrendingUp className="w-3 h-3" />, label: 'Viral Research' },
+              ].map((stat) => (
+                <div key={stat.label} className="flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs text-slate-500">
+                  <span style={{ color: '#0446ff' }}>{stat.icon}</span>
+                  <span>{stat.label}</span>
+                </div>
+              ))}
+            </div>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2 font-sans">VlowGen</h1>
-          <p className="text-gray-600 max-w-md mx-auto">
-            AI-powered workflow automation. Describe what you want, and watch it build
-            automatically.
-          </p>
-        </div>
+        )}
 
         {/* Messages */}
         {messages.length > 0 && (
-          <div className="space-y-4 max-h-48 sm:max-h-64 lg:max-h-96 overflow-y-auto px-2">
+          <div className="space-y-4 max-h-[40vh] sm:max-h-[45vh] lg:max-h-[55vh] overflow-y-auto px-1">
             {messages.map((message) => (
-              <div key={message.id}>
-                <div
-                  className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <MessageBubble message={message} isUser={message.role === 'user'} />
-                </div>
+              <div key={message.id} className="space-y-2">
+                <MessageBubble message={message} isUser={message.role === 'user'} />
+
+                {/* Research Options */}
+                {message.role === 'assistant' && message.researchOptions && (
+                  <div className="flex justify-start pl-8 sm:pl-10 mt-2">
+
+                    <div className="max-w-[85%] space-y-2">
+                      <p className="text-xs text-slate-500 font-medium">Pilih topik:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {message.researchOptions.map((option, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => {
+                              setSelectedTopic(option);
+                              setInput(`oke mau buat konten ${option}`);
+                              setShowResearchOptions(false);
+                              setTimeout(() => handleSend(), 100);
+                            }}
+                            className="px-3 py-1.5 text-xs bg-white border border-slate-200 hover:border-[#0446ff] hover:text-[#0446ff] transition-all text-slate-700 font-medium"
+                            style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}
+                          >
+                            {option}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Workflow Preview */}
                 {message.role === 'assistant' && message.workflow && (
-                  <div className="flex justify-start mt-3">
-                    <div className="max-w-[85%] space-y-3">
-                      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
-                        <div className="flex items-center gap-2 mb-3">
-                          <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
-                          <span className="text-xs font-semibold text-blue-900">
-                            Workflow Preview
+                  <div className="flex justify-start pl-8 sm:pl-10 mt-2">
+
+                    <div className="max-w-[90%] w-full">
+                      <div
+                        className="border p-4 space-y-3"
+                        style={{
+                          background: 'linear-gradient(135deg, rgba(4,70,255,0.04) 0%, rgba(4,70,255,0.02) 100%)',
+                          borderColor: 'rgba(4,70,255,0.2)',
+                          boxShadow: '0 4px 20px rgba(4,70,255,0.08)',
+                        }}
+                      >
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="w-2 h-2 animate-pulse"
+                            style={{ background: '#0446ff' }}
+                          />
+                          <span className="text-xs font-semibold" style={{ color: '#0446ff' }}>
+                            Workflow Ready
+                          </span>
+                          <span className="text-xs text-slate-400 ml-auto">
+                            {message.workflow.nodes.length} nodes · {message.workflow.edges.length} edges
                           </span>
                         </div>
-                        <div className="flex items-center gap-2 overflow-x-auto pb-2">
+
+                        {/* Node pipeline */}
+                        <div className="flex items-center gap-2 overflow-x-auto pb-1">
                           {message.workflow.nodes.map((node, idx) => {
                             const { icon, label } = getNodeLabel(node.type);
                             return (
                               <div key={node.id} className="flex items-center gap-2 flex-shrink-0">
-                                <div className="px-3 py-2 bg-white rounded-lg border border-blue-200 shadow-sm">
-                                  <div className="flex items-center gap-1.5 text-xs font-medium text-gray-700 whitespace-nowrap">
-                                    {icon}
-                                    <span>{label}</span>
-                                  </div>
+                                <div
+                                  className="px-2.5 py-1.5 bg-white border flex items-center gap-1.5 text-xs font-medium text-slate-700"
+                                  style={{
+                                    borderColor: 'rgba(4,70,255,0.15)',
+                                    boxShadow: '0 1px 4px rgba(4,70,255,0.08)',
+                                  }}
+                                >
+                                  <span style={{ color: '#0446ff' }}>{icon}</span>
+                                  <span>{label}</span>
                                 </div>
                                 {idx < message.workflow!.nodes.length - 1 && (
-                                  <ArrowRight className="w-3 h-3 text-blue-400" />
+                                  <ArrowRight className="w-3 h-3 text-slate-300" />
                                 )}
                               </div>
                             );
                           })}
                         </div>
-                        <div className="mt-3 flex items-center gap-2 text-xs text-blue-700">
-                          <CheckCircle2 className="w-3 h-3" />
-                          <span>
-                            {message.workflow!.nodes.length} nodes •{' '}
-                            {message.workflow!.edges.length} connections
-                          </span>
-                        </div>
-                      </div>
 
-                      {/* Action Buttons */}
-                      <div className="flex gap-2">
-                        <button
-                          onClick={handleDownloadWorkflow}
-                          className="px-3 py-1.5 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1.5 text-xs font-medium border border-gray-300 shadow-sm"
-                        >
-                          <Download className="w-3 h-3" />
-                          <span>Download</span>
-                        </button>
-                        <button
-                          onClick={onContinueToWorkflow}
-                          className="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1.5 text-xs font-medium shadow-sm"
-                        >
-                          <span>Open Editor</span>
-                          <ArrowRight className="w-3 h-3" />
-                        </button>
+                        {/* Action Buttons */}
+                        <div className="flex gap-2 pt-1">
+                          <button
+                            onClick={handleDownloadWorkflow}
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors"
+                          >
+                            <Download className="w-3 h-3" />
+                            Download
+                          </button>
+                          <button
+                            onClick={onContinueToWorkflow}
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white transition-all hover:opacity-90"
+                            style={{
+                              background: 'linear-gradient(135deg, #0446ff 0%, #0341e0 100%)',
+                              boxShadow: '0 2px 12px rgba(4,70,255,0.35)',
+                            }}
+                          >
+                            Open Editor
+                            <ArrowRight className="w-3 h-3" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
                 )}
               </div>
             ))}
+
+            {/* Generating indicator */}
             {isGenerating && (
-              <div className="flex justify-start">
-                <div className="max-w-[85%] rounded-2xl px-4 py-3 bg-white shadow-lg border border-gray-200">
+              <div className="flex items-end gap-2.5">
+                <div
+                  className="flex-shrink-0 w-7 h-7 flex items-center justify-center bg-white border border-slate-200"
+                  style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}
+                >
+                  <Bot className="w-3.5 h-3.5 text-slate-500" />
+                </div>
+                <div
+                  className="px-4 py-3 bg-white border border-slate-200"
+                  style={{ boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}
+                >
                   <div className="flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
-                    <span className="text-sm text-gray-700">Generating workflow...</span>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: '#0446ff' }} />
+                    <span className="text-sm text-slate-500">Generating workflow...</span>
                   </div>
                 </div>
               </div>
@@ -626,104 +931,158 @@ export default function ChatInterface({
           </div>
         )}
 
-        {/* Input */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-3 sm:p-4">
-          <div className="flex gap-2 sm:gap-3">
+        {/* Input Box */}
+        <div
+          className="bg-white border border-slate-200 p-2 sm:p-3"
+          style={{ boxShadow: '0 8px 40px rgba(4,70,255,0.08), 0 2px 12px rgba(0,0,0,0.06)' }}
+        >
+          {/* Image preview */}
+          {uploadedImage && (
+            <div className="mb-3 relative inline-block">
+              <img
+                src={uploadedImage.preview}
+                alt="Uploaded"
+                className="max-h-20 border border-slate-200"
+              />
+              <button
+                onClick={handleRemoveImage}
+                className="absolute -top-2 -right-2 bg-rose-500 text-white p-1 hover:bg-rose-600 transition-colors"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          )}
+
+          <div className="flex items-center gap-2">
+            {/* Upload */}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+              id="chat-image-upload"
+            />
+            <label
+              htmlFor="chat-image-upload"
+              className="flex items-center justify-center p-2.5 text-slate-400 hover:text-[#0446ff] hover:bg-slate-50 transition-colors cursor-pointer"
+            >
+              {isUploading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Upload className="w-4 h-4" />
+              )}
+            </label>
+
+            {/* Text input */}
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Describe what you want to create..."
+              placeholder={
+                uploadedImage
+                  ? 'Describe what to do with this image...'
+                  : 'Describe your content idea...'
+              }
               disabled={isGenerating}
-              className="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 text-sm border-0 focus:outline-none focus:ring-0 disabled:bg-white disabled:text-gray-500"
+              className="flex-1 py-2.5 text-sm text-slate-800 placeholder-slate-400 bg-transparent border-0 outline-none focus:ring-0 font-sans disabled:opacity-50"
             />
+
+            {/* Send Button */}
             <button
               onClick={handleSend}
-              disabled={!input.trim() || isGenerating}
-              className="px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5 sm:gap-2 font-medium text-sm whitespace-nowrap"
+              disabled={(!input.trim() && !uploadedImage) || isGenerating}
+              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{
+                background: 'linear-gradient(135deg, #0446ff 0%, #0341e0 100%)',
+                boxShadow: '0 2px 12px rgba(4,70,255,0.4)',
+              }}
             >
-              <Send className="w-4 h-4" />
-              <span className="hidden sm:inline">Generate</span>
+              {isGenerating ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
+              <span className="hidden sm:inline">
+                {uploadedImage ? 'Analyze' : 'Generate'}
+              </span>
             </button>
           </div>
         </div>
 
-        {/* Quick Actions - Viral Research */}
-        <div className="text-center">
-          <p className="text-sm text-gray-500 mb-3 flex items-center justify-center gap-2">
-            <TrendingUp className="w-4 h-4 text-pink-500" />
-            <span>Cari konten viral:</span>
-          </p>
-          <div className="flex flex-wrap gap-2 justify-center">
-            <button
-              onClick={() => setInput('viral lucu indonesia')}
-              className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-gradient-to-r from-pink-400 to-pink-500 text-white border-0 rounded-lg hover:from-pink-500 hover:to-pink-600 hover:shadow-md transition-all flex items-center gap-1.5"
-            >
-              <span>Funny</span>
-            </button>
-            <button
-              onClick={() => setInput('viral love emotional')}
-              className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-gradient-to-r from-red-400 to-red-500 text-white border-0 rounded-lg hover:from-red-500 hover:to-red-600 hover:shadow-md transition-all flex items-center gap-1.5"
-            >
-              <span>Love</span>
-            </button>
-            <button
-              onClick={() => setInput('viral berita indonesia')}
-              className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-gradient-to-r from-blue-400 to-blue-500 text-white border-0 rounded-lg hover:from-blue-500 hover:to-blue-600 hover:shadow-md transition-all flex items-center gap-1.5"
-            >
-              <span>News</span>
-            </button>
-            <button
-              onClick={() => setInput('viral gadget tech')}
-              className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-gradient-to-r from-green-400 to-green-500 text-white border-0 rounded-lg hover:from-green-500 hover:to-green-600 hover:shadow-md transition-all flex items-center gap-1.5"
-            >
-              <span>Gadget</span>
-            </button>
-            <button
-              onClick={() => setInput('viral football sports')}
-              className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-gradient-to-r from-orange-400 to-orange-500 text-white border-0 rounded-lg hover:from-orange-500 hover:to-orange-600 hover:shadow-md transition-all flex items-center gap-1.5"
-            >
-              <span>Sports</span>
-            </button>
-            <button
-              onClick={() => setInput('viral dance challenge')}
-              className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-gradient-to-r from-purple-400 to-purple-500 text-white border-0 rounded-lg hover:from-purple-500 hover:to-purple-600 hover:shadow-md transition-all flex items-center gap-1.5"
-            >
-              <span>Dance</span>
-            </button>
-          </div>
-        </div>
+        {/* Quick Cards */}
+        <div className="space-y-5">
 
-        {/* Quick Actions - Create Content */}
-        <div className="text-center">
-          <p className="text-sm text-gray-500 mb-3 flex items-center justify-center gap-2">
-            <Zap className="w-4 h-4" />
-            <span>Atau buat konten:</span>
-          </p>
-          <div className="flex flex-wrap gap-2 justify-center">
-            <button
-              onClick={() => setInput('Create a professional product photo and post to Instagram')}
-              className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all flex items-center gap-1.5 sm:gap-2"
-            >
-              <Instagram className="w-3 h-3" />
-              <span>Product Photo</span>
-            </button>
-            <button
-              onClick={() => setInput('Generate a viral meme about AI and share on Twitter')}
-              className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all flex items-center gap-1.5 sm:gap-2"
-            >
-              <Twitter className="w-3 h-3" />
-              <span>Viral Meme</span>
-            </button>
-            <button
-              onClick={() => setInput('Create cinematic video of a dragon and post everywhere')}
-              className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all flex items-center gap-1.5 sm:gap-2"
-            >
-              <Video className="w-3 h-3" />
-              <span>Video Content</span>
-            </button>
+          {/* Section: Viral Research */}
+          <div className="space-y-2.5">
+            <p className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              <TrendingUp className="w-3.5 h-3.5" style={{ color: '#0446ff' }} />
+              Cari konten viral
+            </p>
+            <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-6 gap-1.5 sm:gap-2">
+              {quickViralTags.map((tag) => (
+                <button
+                  key={tag.label}
+                  onClick={() => setInput(tag.query)}
+                  className="group flex flex-col items-center gap-1.5 sm:gap-2 p-2 sm:p-3 bg-white border border-slate-200 text-center transition-all hover:-translate-y-0.5 hover:border-[#0446ff] hover:shadow-md"
+                  style={{ borderRadius: '10px', boxShadow: '0 1px 6px rgba(0,0,0,0.05)' }}
+                >
+                  <span
+                    className="w-8 h-8 flex items-center justify-center bg-slate-50 group-hover:bg-blue-50 transition-colors"
+                    style={{ borderRadius: '8px' }}
+                  >
+                    <span className="group-hover:text-[#0446ff] transition-colors text-slate-400">
+                      {tag.icon}
+                    </span>
+                  </span>
+                  <div>
+                    <p className="text-xs font-semibold text-slate-700 leading-tight group-hover:text-[#0446ff] transition-colors">
+                      {tag.label}
+                    </p>
+                    <p className="text-[10px] text-slate-400 mt-0.5 leading-tight hidden sm:block">
+                      {tag.desc}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
+
+          {/* Section: Create Content */}
+          <div className="space-y-2.5">
+            <p className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              <Zap className="w-3.5 h-3.5 text-slate-400" />
+              Atau buat konten
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 sm:gap-2">
+              {quickCreateTags.map((tag) => (
+                <button
+                  key={tag.label}
+                  onClick={() => setInput(tag.query)}
+                  className="group flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3.5 bg-white border border-slate-200 text-left transition-all hover:-translate-y-0.5 hover:border-[#0446ff] hover:shadow-md"
+                  style={{ borderRadius: '10px', boxShadow: '0 1px 6px rgba(0,0,0,0.05)' }}
+                >
+                  <span
+                    className="w-9 h-9 flex items-center justify-center bg-slate-50 flex-shrink-0 group-hover:bg-blue-50 transition-colors"
+                    style={{ borderRadius: '8px' }}
+                  >
+                    <span className="text-slate-400 group-hover:text-[#0446ff] transition-colors">
+                      {tag.icon}
+                    </span>
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-slate-700 leading-tight group-hover:text-[#0446ff] transition-colors">
+                      {tag.label}
+                    </p>
+                    <p className="text-[10px] text-slate-400 mt-0.5 leading-snug line-clamp-2">
+                      {tag.desc}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
