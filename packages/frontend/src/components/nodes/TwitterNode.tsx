@@ -51,18 +51,21 @@ export default function TwitterNode({ data, selected }: NodeProps<TwitterNodeDat
         const pollInterval = setInterval(async () => {
           if (popup.closed) {
             clearInterval(pollInterval);
-            
+
             try {
               const statusResponse = await fetch(
                 `/api/composio/status?userId=default-user&platform=twitter`
               );
-              
+
               if (statusResponse.ok) {
                 const statusData = await statusResponse.json();
-                
+
                 if (statusData.connected) {
-                  alert('Twitter connected successfully!');
-                  window.location.reload();
+                  alert('Twitter connected successfully! Please refresh the page to use it.');
+                  // Don't reload - let user continue working
+                  // window.location.reload();
+                } else {
+                  alert('Connection status unknown. Please try connecting again or refresh the page.');
                 }
               }
             } catch (error) {
