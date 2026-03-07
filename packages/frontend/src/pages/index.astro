@@ -5,8 +5,8 @@ import HeroSection from '../components/landing/HeroSection.astro';
 import FeaturesSection from '../components/landing/FeaturesSection.astro';
 import HowItWorksSection from '../components/landing/HowItWorksSection.astro';
 import PoweredBySection from '../components/landing/PoweredBySection.astro';
+import KineticTeamHybrid from '@/components/ui/kinetic-team-hybrid';
 import GetStartedSection from '../components/landing/GetStartedSection.astro';
-import TeamSection from '../components/landing/TeamSection.astro';
 import Footer from '../components/landing/Footer.astro';
 import App from '../components/App';
 import '../styles/globals.css';
@@ -70,7 +70,7 @@ const preconnect = ['https://fonts.googleapis.com', 'https://fonts.gstatic.com']
         <FeaturesSection />
         <HowItWorksSection />
         <PoweredBySection />
-        <TeamSection />
+        <KineticTeamHybrid client:visible />
         <GetStartedSection />
       </div>
       <Footer />
