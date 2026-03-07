@@ -36,7 +36,7 @@ const TEAM: TeamMember[] = [
     image: '/avatar/akbar.jpeg',
     socials: {
       github: 'https://github.com/akbarwjyy',
-      twitter: 'https://x.com/akbarwjyy',
+      twitter: 'https://x.com/AkbarWjyyy',
       instagram: 'https://www.instagram.com/akbarwjyaa_/',
     },
   },
