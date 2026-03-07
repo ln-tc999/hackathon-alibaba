@@ -1,11 +1,6 @@
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
-import {
-  motion,
-  useMotionValue,
-  useSpring,
-  AnimatePresence,
-} from 'framer-motion';
+import { motion, useMotionValue, useSpring, AnimatePresence } from 'framer-motion';
 import { ArrowUpRight, Minus, Plus } from 'lucide-react';
 
 /* ---------- Types ---------- */
@@ -27,35 +22,35 @@ interface TeamMember {
 const TEAM: TeamMember[] = [
   {
     id: '01',
-    name: 'Raka Ardiansyah',
+    name: 'Muhammad Maulana Firdaussyah',
     role: 'Founder & Fullstack Developer',
-    image: 'https://i.pravatar.cc/150?img=11',
+    image: '/avatar/maulana.jpeg',
     socials: {
-      github: 'https://github.com',
-      twitter: 'https://twitter.com',
-      instagram: 'https://instagram.com',
+      github: 'https://github.com/maulana-tech',
+      twitter: 'https://x.com/develprlana',
+      instagram: 'https://www.instagram.com/lana.dev_/',
     },
   },
   {
     id: '02',
-    name: 'Dina Amelia',
-    role: 'Lead AI Engineer',
-    image: 'https://i.pravatar.cc/150?img=5',
+    name: 'Akbar Wijaya',
+    role: 'Fullstack Developer',
+    image: '/avatar/akbar.jpeg',
     socials: {
-      github: 'https://github.com',
-      twitter: 'https://twitter.com',
-      instagram: 'https://instagram.com',
+      github: 'https://github.com/akbarwjyy',
+      twitter: 'https://twitter.com/akbarwjyy',
+      instagram: 'https://www.instagram.com/akbarwjyaa_/',
     },
   },
   {
     id: '03',
-    name: 'Budi Santoso',
-    role: 'Product Designer',
-    image: 'https://i.pravatar.cc/150?img=12',
+    name: 'Catur Setyono',
+    role: 'Fullstack Developer',
+    image: '/avatar/catur.jpg',
     socials: {
-      github: 'https://github.com',
-      twitter: 'https://twitter.com',
-      instagram: 'https://instagram.com',
+      github: 'https://github.com/catursetyono',
+      twitter: 'https://x.com/tyodev',
+      instagram: 'https://instagram.com/tyodev.id',
     },
   },
 ];
@@ -214,9 +209,7 @@ function TeamRow({
       <div className="relative z-10 flex flex-col py-8 md:flex-row md:items-center md:justify-between md:py-12">
         {/* Name & Index Section */}
         <div className="flex items-baseline gap-6 md:gap-12 pl-4 md:pl-0 transition-transform duration-500 group-hover:translate-x-4">
-          <span className="font-mono text-xs text-slate-400">
-            0{index + 1}
-          </span>
+          <span className="font-mono text-xs text-slate-400">0{index + 1}</span>
           <h2 className="text-xl font-semibold tracking-tight text-slate-600 transition-colors duration-300 group-hover:text-[#0446ff] md:text-2xl">
             {data.name}
           </h2>
@@ -237,7 +230,20 @@ function TeamRow({
                   rel="noopener noreferrer"
                   className="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-[#0446ff] transition-colors"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path><path d="M9 18c-4.51 2-5-2-7-2"></path></svg>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path>
+                    <path d="M9 18c-4.51 2-5-2-7-2"></path>
+                  </svg>
                 </a>
               )}
               {data.socials.twitter && (
@@ -247,7 +253,19 @@ function TeamRow({
                   rel="noopener noreferrer"
                   className="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-[#1DA1F2] transition-colors"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path>
+                  </svg>
                 </a>
               )}
               {data.socials.instagram && (
@@ -257,12 +275,26 @@ function TeamRow({
                   rel="noopener noreferrer"
                   className="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-[#E1306C] transition-colors"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line></svg>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect>
+                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                    <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line>
+                  </svg>
                 </a>
               )}
             </div>
           </div>
-          
+
           {/* Mobile Toggle Icon */}
           <div className="block md:hidden text-slate-400">
             {isActive ? <Minus size={18} /> : <Plus size={18} />}
@@ -290,16 +322,10 @@ function TeamRow({
           >
             <div className="p-4">
               <div className="relative aspect-video w-full overflow-hidden">
-                <img
-                  src={data.image}
-                  alt={data.name}
-                  className="h-full w-full object-cover"
-                />
+                <img src={data.image} alt={data.name} className="h-full w-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0446ff]/60 to-transparent" />
                 <div className="absolute bottom-4 left-4">
-                  <p className="text-xs uppercase tracking-widest text-white">
-                    View Profile
-                  </p>
+                  <p className="text-xs uppercase tracking-widest text-white">View Profile</p>
                 </div>
               </div>
             </div>
