@@ -1,61 +1,79 @@
-import { useState, useRef, useEffect, useCallback, memo } from 'react';
-import {
-  Send,
-  Loader2,
-  Download,
-  ArrowRight,
-  Bot,
-  CheckCircle2,
-  FileText,
-  Wand2,
-  Video,
-  Eye,
-  Image as ImageIcon,
-  Twitter,
-  Instagram,
-  Sparkles
-} from 'lucide-react';
-import type { Workflow, WorkflowNode, WorkflowEdge } from '@vlowgen/shared';
-import { saveChatSession } from '@/lib/db';
-import { getUserId } from '@/lib/user';
-import { sessionEvents } from '@/lib/session-events';
-
-interface Message {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-  workflow?: Workflow;
-}
+import { useState, useRef, useCallback, memo, Suspense, useEffect } from 'react';
+import { Send, Loader2, Plus } from 'lucide-react';
+import type { Workflow } from '@vlowgen/shared';
+import { saveWorkflow as saveWorkflowToDb } from '@/lib/workflow-api';
+import { executeWorkflow } from '@/lib/api-client';
+import { useWorkflowGenerator } from '@/hooks/useWorkflowGenerator';
+import { useChatSession } from '@/hooks/useChatSession';
+import { getNodeLabel } from '@/lib/chat-constants';
+import WorkflowPreview from './WorkflowPreview';
+import { toast } from 'sonner';
+import { detectIntent, getSuggestions } from '@/lib/intent-detector';
+import { chatWithAI, generateCaption } from '@/lib/ai-chat-api';
 
 interface ChatSidebarProps {
-  sessionId?: string;
+  sessionId: string;
   onWorkflowGenerated: (workflow: Workflow) => void;
   workflow?: Workflow;
+  onNewSession?: () => void;
 }
 
-// Memoized Message Component
+// Memoized Message Bubble
 const MessageBubble = memo(({
   message,
   isUser
 }: {
-  message: Message;
+  message: { id: string; role: string; content: string; timestamp: Date; type?: string };
   isUser: boolean;
 }) => (
-  <div
-    className={`max-w-[85%] rounded-2xl px-4 py-2.5 shadow-sm ${isUser
-      ? 'bg-blue-600 text-white'
-      : 'bg-gray-50 text-gray-900 border border-gray-200'
+  <div className={`flex items-end gap-2 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+    <div
+      className="flex-shrink-0 w-6 h-6 flex items-center justify-center text-white"
+      style={{
+        background: isUser
+          ? 'linear-gradient(135deg, #0446ff 0%, #0341e0 100%)'
+          : '#f1f5f9',
+        boxShadow: isUser ? '0 2px 8px rgba(4,70,255,0.35)' : 'none',
+      }}
+    >
+      {isUser ? (
+        <svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      ) : (
+        <svg className="w-3 h-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <rect x="3" y="11" width="18" height="10" rx="2"></rect>
+          <circle cx="12" cy="5" r="2"></circle>
+          <path d="M12 7v4"></path>
+          <line x1="8" y1="16" x2="8" y2="16"></line>
+          <line x1="16" y1="16" x2="16" y2="16"></line>
+        </svg>
+      )}
+    </div>
+
+    <div
+      className={`max-w-[80%] px-3 py-2 text-sm leading-relaxed font-sans whitespace-pre-line ${
+        isUser ? 'text-white' : 'text-slate-700 bg-white border border-slate-200'
       }`}
-  >
-    <p className="text-sm whitespace-pre-line leading-relaxed font-sans">{message.content}</p>
-    <span className={`text-xs mt-1.5 block ${isUser ? 'text-blue-100' : 'text-gray-500'
-      }`}>
-      {message.timestamp.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-      })}
-    </span>
+      style={isUser
+        ? {
+          background: 'linear-gradient(135deg, #0446ff 0%, #0341e0 100%)',
+          boxShadow: '0 2px 12px rgba(4,70,255,0.3)',
+        }
+        : {
+          boxShadow: '0 1px 6px rgba(0,0,0,0.05)',
+        }
+      }
+    >
+      {message.content}
+      <div className={`text-[10px] mt-1 ${isUser ? 'text-blue-200' : 'text-slate-400'}`}>
+        {message.timestamp.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+        })}
+      </div>
+    </div>
   </div>
 ));
 
@@ -64,496 +82,383 @@ MessageBubble.displayName = 'MessageBubble';
 export default function ChatSidebar({
   sessionId,
   onWorkflowGenerated,
-  workflow
+  workflow,
+  onNewSession
 }: ChatSidebarProps) {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      role: 'assistant',
-      content: 'Hi! I\'m your AI assistant.\n\nTell me what you want to create, and I\'ll build an optimized workflow automatically.\n\nTry: "Create a viral meme and post to Instagram"',
-      timestamp: new Date(),
-    },
-  ]);
   const [input, setInput] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [currentWorkflow, setCurrentWorkflow] = useState<Workflow | undefined>(workflow);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
 
-  // Load session messages when sessionId changes
-  useEffect(() => {
-    const loadSession = async () => {
-      if (!sessionId || sessionId.startsWith('session_')) {
-        setMessages([
-          {
-            id: '1',
-            role: 'assistant',
-            content: 'Hi! I\'m your AI assistant.\n\nTell me what you want to create, and I\'ll build an optimized workflow automatically.\n\nTry: "Create a viral meme and post to Instagram"',
-            timestamp: new Date(),
-          },
-        ]);
-        return;
-      }
+  const { messages, addMessage, saveSession } = useChatSession(sessionId);
+  const { generateWorkflowFromPrompt } = useWorkflowGenerator();
 
-      const { getChatSession } = await import('@/lib/db');
-      const session = await getChatSession(sessionId);
-
-      if (session && session.messages.length > 0) {
-        const loadedMessages: Message[] = session.messages.map((m, idx) => ({
-          id: `msg-${idx}`,
-          role: m.role,
-          content: m.content,
-          timestamp: new Date(m.timestamp),
-        }));
-        setMessages(loadedMessages);
-      }
-    };
-
-    loadSession();
-  }, [sessionId]);
-
-  useEffect(() => {
-    if (workflow) {
-      setCurrentWorkflow(workflow);
-    }
-  }, [workflow]);
+  const [currentWorkflow, setCurrentWorkflow] = useState<Workflow | undefined>(workflow);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
-  useEffect(() => {
+  const handleScroll = useCallback(() => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
 
-  const generateNewWorkflow = (prompt: string): Workflow => {
-    const promptLower = prompt.toLowerCase();
-    
-    const nodes: WorkflowNode[] = [
-      {
-        id: 'node-1',
-        type: 'prompt-text',
-        position: { x: 100, y: 100 },
-        data: {
-          type: 'prompt-text',
-          promptText: prompt,
-        },
-      },
-      {
-        id: 'node-2',
-        type: 'prompt-enhancer-image',
-        position: { x: 400, y: 100 },
-        data: {
-          type: 'prompt-enhancer-image',
-          userPrompt: prompt,
-        },
-      },
-      {
-        id: 'node-3',
-        type: 'wan2',
-        position: { x: 700, y: 100 },
-        data: {
-          type: 'wan2',
-          model: 'wan2.1-t2i-turbo',
-          size: '1024*1024',
-        },
-      },
-    ];
-
-    const edges: WorkflowEdge[] = [
-      {
-        id: 'edge-1',
-        source: 'node-1',
-        target: 'node-2',
-      },
-      {
-        id: 'edge-2',
-        source: 'node-2',
-        target: 'node-3',
-      },
-    ];
-
-    const previewNode: WorkflowNode = {
-      id: 'node-preview',
-      type: 'preview',
-      position: { x: 1000, y: 100 },
-      data: {
-        type: 'preview',
-        mediaType: 'auto',
-        showMetadata: true,
-      },
-    };
-    nodes.push(previewNode);
-    edges.push({
-      id: 'edge-preview',
-      source: 'node-3',
-      target: 'node-preview',
-    });
-
-    const isTwitterRequested = promptLower.includes('twitter') || promptLower.includes('x');
-    const isInstagramRequested = promptLower.includes('instagram') || promptLower.includes('ig');
-    let currentY = 50;
-
-    if (isTwitterRequested) {
-      nodes.push({
-        id: 'node-twitter',
-        type: 'twitter',
-        position: { x: 1300, y: currentY },
-        data: {
-          type: 'twitter',
-          authenticated: false,
-        },
+  // Show initial greeting and suggestions
+  useEffect(() => {
+    if (messages.length === 0) {
+      addMessage({
+        id: 'msg-greeting',
+        role: 'assistant',
+        content: "Hi! 👋 I'm your AI workflow assistant. I can help you:\n\n• Create automated workflows\n• Post to social media (Twitter, Instagram, Facebook, YouTube, TikTok)\n• Generate AI images and videos\n• Answer questions about the platform\n\nWhat would you like to create today?",
+        timestamp: new Date(),
+        type: 'greeting',
       });
-      edges.push({
-        id: `edge-twitter`,
-        source: 'node-preview',
-        target: 'node-twitter',
-      });
-      currentY += 150;
+      setSuggestions(getSuggestions({ type: 'greeting', confidence: 1 }));
     }
+  }, []);
 
-    if (isInstagramRequested) {
-      nodes.push({
-        id: 'node-instagram',
-        type: 'instagram',
-        position: { x: 1300, y: currentY },
-        data: {
-          type: 'instagram',
-          authenticated: false,
-        },
-      });
-      edges.push({
-        id: `edge-instagram`,
-        source: 'node-preview',
-        target: 'node-instagram',
-      });
-    }
-
-    return {
-      id: `workflow-${Date.now()}`,
-      name: 'AI Generated Workflow',
-      nodes,
-      edges,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-  };
-
-  const modifyExistingWorkflow = (existingWorkflow: Workflow, prompt: string): Workflow => {
-    const promptLower = prompt.toLowerCase();
-    const nodes = [...existingWorkflow.nodes];
-    const edges = [...existingWorkflow.edges];
-
-    const previewNode = nodes.find(n => n.type === 'preview');
-    if (!previewNode) {
-      return generateNewWorkflow(prompt);
-    }
-
-    const addInstagram = promptLower.includes('instagram') || promptLower.includes('ig');
-    const addTwitter = promptLower.includes('twitter') || promptLower.includes('x');
-    const addFacebook = promptLower.includes('facebook') || promptLower.includes('fb');
-    const addTikTok = promptLower.includes('tiktok') || promptLower.includes('tik tok');
-    const addYouTube = promptLower.includes('youtube') || promptLower.includes('yt');
-
-    let currentY = 50;
-    let modified = false;
-
-    if (addInstagram && !nodes.some(n => n.type === 'instagram')) {
-      nodes.push({
-        id: `node-instagram-${Date.now()}`,
-        type: 'instagram',
-        position: { x: previewNode.position.x + 300, y: currentY },
-        data: { type: 'instagram', authenticated: false },
-      });
-      edges.push({
-        id: `edge-instagram-${Date.now()}`,
-        source: previewNode.id,
-        target: `node-instagram-${Date.now()}`,
-      });
-      currentY += 150;
-      modified = true;
-    }
-
-    if (addTwitter && !nodes.some(n => n.type === 'twitter')) {
-      nodes.push({
-        id: `node-twitter-${Date.now()}`,
-        type: 'twitter',
-        position: { x: previewNode.position.x + 300, y: currentY },
-        data: { type: 'twitter', authenticated: false },
-      });
-      edges.push({
-        id: `edge-twitter-${Date.now()}`,
-        source: previewNode.id,
-        target: `node-twitter-${Date.now()}`,
-      });
-      currentY += 150;
-      modified = true;
-    }
-
-    if (addFacebook && !nodes.some(n => n.type === 'facebook')) {
-      nodes.push({
-        id: `node-facebook-${Date.now()}`,
-        type: 'facebook',
-        position: { x: previewNode.position.x + 300, y: currentY },
-        data: { type: 'facebook', authenticated: false },
-      });
-      edges.push({
-        id: `edge-facebook-${Date.now()}`,
-        source: previewNode.id,
-        target: `node-facebook-${Date.now()}`,
-      });
-      currentY += 150;
-      modified = true;
-    }
-
-    if (addTikTok && !nodes.some(n => n.type === 'tiktok')) {
-      nodes.push({
-        id: `node-tiktok-${Date.now()}`,
-        type: 'tiktok',
-        position: { x: previewNode.position.x + 300, y: currentY },
-        data: { type: 'tiktok', authenticated: false },
-      });
-      edges.push({
-        id: `edge-tiktok-${Date.now()}`,
-        source: previewNode.id,
-        target: `node-tiktok-${Date.now()}`,
-      });
-      currentY += 150;
-      modified = true;
-    }
-
-    if (addYouTube && !nodes.some(n => n.type === 'youtube')) {
-      nodes.push({
-        id: `node-youtube-${Date.now()}`,
-        type: 'youtube',
-        position: { x: previewNode.position.x + 300, y: currentY },
-        data: { type: 'youtube', authenticated: false },
-      });
-      edges.push({
-        id: `edge-youtube-${Date.now()}`,
-        source: previewNode.id,
-        target: `node-youtube-${Date.now()}`,
-      });
-      modified = true;
-    }
-
-    if (!modified) {
-      return existingWorkflow;
-    }
-
-    return {
-      ...existingWorkflow,
-      nodes,
-      edges,
-      updatedAt: new Date().toISOString(),
-    };
-  };
-
-  const generateWorkflowFromPrompt = async (
-    prompt: string,
-    existingWorkflow?: Workflow
-  ): Promise<Workflow> => {
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    const promptLower = prompt.toLowerCase();
-    const isModificationRequest = 
-      promptLower.includes('post to') || 
-      promptLower.includes('add') ||
-      promptLower.includes('also') ||
-      promptLower.includes('and post') ||
-      promptLower.includes('share on') ||
-      promptLower.includes('upload to');
-
-    if (existingWorkflow && existingWorkflow.nodes.length > 0 && isModificationRequest) {
-      return modifyExistingWorkflow(existingWorkflow, prompt);
-    }
-
-    return generateNewWorkflow(prompt);
-  };
-
-  const handleSend = async () => {
+  const handleSend = useCallback(async () => {
     if (!input.trim() || isGenerating) return;
 
-    const userMessage: Message = {
+    const userMessage = {
       id: `msg-${Date.now()}`,
-      role: 'user',
+      role: 'user' as const,
       content: input,
       timestamp: new Date(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    addMessage(userMessage);
     setInput('');
     setIsGenerating(true);
+    setSuggestions([]);
 
     try {
-      const workflow = await generateWorkflowFromPrompt(input, currentWorkflow);
-      setCurrentWorkflow(workflow);
+      // Step 1: Detect intent
+      const intent = detectIntent(input);
+      
+      // Step 2: Handle based on intent
+      if (intent.type === 'greeting') {
+        // Respond to greeting
+        const aiResponse = await chatWithAI([...messages, userMessage]);
+        addMessage({
+          id: `msg-${Date.now()}-assistant`,
+          role: 'assistant',
+          content: aiResponse.response,
+          timestamp: new Date(),
+          type: 'greeting',
+        });
+        setSuggestions(aiResponse.suggestions || []);
+        
+      } else if (intent.type === 'help') {
+        // Provide help
+        const aiResponse = await chatWithAI([...messages, userMessage]);
+        addMessage({
+          id: `msg-${Date.now()}-assistant`,
+          role: 'assistant',
+          content: aiResponse.response,
+          timestamp: new Date(),
+          type: 'help',
+        });
+        setSuggestions(aiResponse.suggestions || []);
+        
+      } else if (intent.type === 'question') {
+        // Answer question
+        const aiResponse = await chatWithAI([...messages, userMessage]);
+        addMessage({
+          id: `msg-${Date.now()}-assistant`,
+          role: 'assistant',
+          content: aiResponse.response,
+          timestamp: new Date(),
+          type: 'answer',
+        });
+        setSuggestions(aiResponse.suggestions || []);
+        
+      } else if (intent.type === 'workflow_create' || (intent.type === 'chat' && intent.confidence < 0.6)) {
+        // Create new workflow
+        const newWorkflow = generateWorkflowFromPrompt(input, undefined);
+        setCurrentWorkflow(newWorkflow);
+        onWorkflowGenerated(newWorkflow);
 
-      const isModification = currentWorkflow && workflow.id === currentWorkflow.id;
+        const credentials = {
+          wan2ApiKey: import.meta.env.PUBLIC_WAN2_API_KEY || '',
+          openRouterApiKey: import.meta.env.PUBLIC_OPENROUTER_API_KEY || '',
+          composioApiKey: import.meta.env.PUBLIC_COMPOSIO_API_KEY || '',
+        };
 
-      const assistantMessage: Message = {
+        const result = await executeWorkflow(newWorkflow, credentials);
+
+        if (result.status === 'success') {
+          const aiCaption = await generateCaption(input, intent.platforms || []);
+          
+          addMessage({
+            id: `msg-${Date.now()}-assistant`,
+            role: 'assistant',
+            content: `Perfect! I've created your workflow:\n\n${aiCaption}\n\n**Steps:**\n1. Prompt enhancement\n2. Image generation with Wan2.1\n3. Ready to post to social media\n\nCheck the canvas to see your workflow! 🎨`,
+            timestamp: new Date(),
+            type: 'workflow_result',
+            workflowId: newWorkflow.id,
+          });
+
+          const title = input.slice(0, 50) + (input.length > 50 ? '...' : '');
+          await saveWorkflowToDb(newWorkflow);
+          await saveSession(title, newWorkflow.id);
+
+          toast.success('Workflow created successfully!');
+        } else {
+          addMessage({
+            id: `msg-${Date.now()}-assistant`,
+            role: 'assistant',
+            content: `I've created your workflow, but execution failed:\n\n${result.error || 'Unknown error'}\n\nYou can still see and edit the workflow in the canvas.`,
+            timestamp: new Date(),
+            type: 'workflow_result',
+            workflowId: newWorkflow.id,
+          });
+          toast.error('Workflow execution failed');
+        }
+        
+      } else if (intent.type === 'workflow_modify' && currentWorkflow) {
+        // Modify existing workflow
+        const newWorkflow = generateWorkflowFromPrompt(input, currentWorkflow);
+        setCurrentWorkflow(newWorkflow);
+        onWorkflowGenerated(newWorkflow);
+
+        const credentials = {
+          wan2ApiKey: import.meta.env.PUBLIC_WAN2_API_KEY || '',
+          openRouterApiKey: import.meta.env.PUBLIC_OPENROUTER_API_KEY || '',
+          composioApiKey: import.meta.env.PUBLIC_COMPOSIO_API_KEY || '',
+        };
+
+        const result = await executeWorkflow(newWorkflow, credentials);
+
+        if (result.status === 'success') {
+          const platformNames = getPlatformNames(newWorkflow, currentWorkflow);
+          const aiCaption = await generateCaption(input, intent.platforms || []);
+          
+          addMessage({
+            id: `msg-${Date.now()}-assistant`,
+            role: 'assistant',
+            content: `Great! I've added **${platformNames}** to your workflow.\n\n${aiCaption}\n\nThe workflow executed successfully! Check the canvas to see the results. ✅`,
+            timestamp: new Date(),
+            type: 'workflow_result',
+            workflowId: newWorkflow.id,
+          });
+
+          toast.success('Workflow updated successfully!');
+        } else {
+          addMessage({
+            id: `msg-${Date.now()}-assistant`,
+            role: 'assistant',
+            content: `I've updated your workflow, but execution failed:\n\n${result.error || 'Unknown error'}`,
+            timestamp: new Date(),
+            type: 'workflow_result',
+            workflowId: newWorkflow.id,
+          });
+          toast.error('Workflow execution failed');
+        }
+        
+      } else if (intent.type === 'workflow_modify' && !currentWorkflow) {
+        // User wants to modify but no workflow exists
+        addMessage({
+          id: `msg-${Date.now()}-assistant`,
+          role: 'assistant',
+          content: "I'd be happy to help you post to those platforms! But first, let's create a workflow. Could you tell me what content you'd like to post?",
+          timestamp: new Date(),
+          type: 'suggestion',
+        });
+        setSuggestions([
+          'Create a viral meme',
+          'Generate an AI image',
+          'Make content for Instagram',
+        ]);
+        
+      } else {
+        // Default chat response
+        const aiResponse = await chatWithAI([...messages, userMessage]);
+        addMessage({
+          id: `msg-${Date.now()}-assistant`,
+          role: 'assistant',
+          content: aiResponse.response,
+          timestamp: new Date(),
+          type: 'chat',
+        });
+        setSuggestions(aiResponse.suggestions || []);
+      }
+      
+    } catch (error) {
+      console.error('Failed to send message:', error);
+      
+      // Still generate workflow even if execution fails
+      const newWorkflow = generateWorkflowFromPrompt(input, currentWorkflow);
+      setCurrentWorkflow(newWorkflow);
+      onWorkflowGenerated(newWorkflow);
+
+      addMessage({
         id: `msg-${Date.now()}-assistant`,
         role: 'assistant',
-        content: isModification 
-          ? `Great! I've updated your workflow:\n\n${input}\n\nCheck the canvas to see the changes.`
-          : `Perfect! I've created your workflow:\n\n${input}\n\nSteps:\n1. Prompt enhancement\n2. Image generation\n3. Multi-platform posting\n\nCheck the canvas to see your workflow.`,
+        content: `I've created your workflow, but there was an error:\n\n${error instanceof Error ? error.message : 'Unknown error'}\n\nYou can still see and edit the workflow in the canvas.`,
         timestamp: new Date(),
-        workflow,
-      };
-
-      const updatedMessages = [...messages, userMessage, assistantMessage];
-      setMessages(updatedMessages);
-      onWorkflowGenerated(workflow);
-
-      if (sessionId) {
-        const userId = getUserId();
-        const title = input.slice(0, 50) + (input.length > 50 ? '...' : '');
-
-        const { saveWorkflow: saveWorkflowToDb } = await import('@/lib/workflow-api');
-        await saveWorkflowToDb(workflow);
-
-        await saveChatSession(
-          sessionId,
-          userId,
-          title,
-          updatedMessages.map(m => ({
-            role: m.role,
-            content: m.content,
-            timestamp: m.timestamp.getTime(),
-          })),
-          workflow.id
-        );
-
-        sessionEvents.emit();
-      }
-    } catch (error) {
-      const errorMessage: Message = {
-        id: `msg-${Date.now()}-error`,
-        role: 'assistant',
-        content: 'Sorry, there was an error creating the workflow. Please try again.',
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, errorMessage]);
+        type: 'workflow_result',
+        workflowId: newWorkflow.id,
+      });
+      toast.error('Failed to execute workflow');
     } finally {
       setIsGenerating(false);
     }
-  };
+  }, [input, isGenerating, currentWorkflow, messages, generateWorkflowFromPrompt, onWorkflowGenerated, addMessage, saveSession]);
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
-  };
+  }, [handleSend]);
 
-  const getNodeLabel = useCallback((nodeType: string): { icon: JSX.Element; label: string } => {
-    const iconMap: Record<string, { icon: JSX.Element; label: string }> = {
-      'prompt-text': { icon: <FileText className="w-3 h-3" />, label: 'Prompt' },
-      'prompt-enhancer-image': { icon: <Wand2 className="w-3 h-3" />, label: 'AI Enhancer' },
-      'prompt-enhancer-video': { icon: <Video className="w-3 h-3" />, label: 'Video Enhancer' },
-      'vision-analyzer': { icon: <Eye className="w-3 h-3" />, label: 'Vision AI' },
-      'wan2': { icon: <ImageIcon className="w-3 h-3" />, label: 'Image Gen' },
-      'twitter': { icon: <Twitter className="w-3 h-3" />, label: 'Twitter' },
-      'instagram': { icon: <Instagram className="w-3 h-3" />, label: 'Instagram' },
-    };
-    return iconMap[nodeType] || { icon: <Sparkles className="w-3 h-3" />, label: 'Unknown' };
+  const handleNewChat = useCallback(() => {
+    onNewSession?.();
+  }, [onNewSession]);
+
+  const handleSuggestionClick = useCallback((suggestion: string) => {
+    setInput(suggestion);
+  }, []);
+
+  // Helper function to get platform names that were added
+  const getPlatformNames = useCallback((newWorkflow: Workflow, oldWorkflow: Workflow): string => {
+    const oldPlatformTypes = new Set(oldWorkflow.nodes.filter(n => 
+      ['twitter', 'instagram', 'facebook', 'youtube', 'tiktok'].includes(n.type)
+    ).map(n => n.type));
+    
+    const newPlatforms = newWorkflow.nodes
+      .filter(n => ['twitter', 'instagram', 'facebook', 'youtube', 'tiktok'].includes(n.type) && !oldPlatformTypes.has(n.type))
+      .map(n => n.type.charAt(0).toUpperCase() + n.type.slice(1));
+    
+    return newPlatforms.join(' & ');
   }, []);
 
   return (
-    <div className="flex flex-col h-full bg-white">
+    <div className="flex flex-col h-full font-sans" style={{ background: '#fafbff', height: '100%' }}>
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-none bg-[#0446ff] flex items-center justify-center shadow-lg shadow-[#0446ff]/25">
-            <img src="/logo.svg" alt="VlowGen" className="w-5 h-5" />
-          </div>
-          <div>
-            <h2 className="text-sm font-semibold text-gray-900 font-sans">AI Assistant</h2>
-            <p className="text-xs text-gray-500">Workflow Builder</p>
-          </div>
+      <div
+        className="px-4 py-3 flex items-center gap-3 border-b border-slate-200 flex-shrink-0"
+        style={{ background: 'rgba(255,255,255,0.95)' }}
+      >
+        <div
+          className="w-7 h-7 flex items-center justify-center flex-shrink-0"
+          style={{
+            background: 'linear-gradient(135deg, #0446ff 0%, #0341e0 100%)',
+            boxShadow: '0 2px 10px rgba(4,70,255,0.35)',
+          }}
+        >
+          <img src="/logo.svg" alt="VlowGen" className="w-4 h-4" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h2 className="text-sm font-semibold text-gray-900 leading-tight">AI Assistant</h2>
+          <p className="text-[11px] text-gray-500 leading-tight">Workflow Builder</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleNewChat}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors"
+            title="Start new session"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">New Session</span>
+          </button>
+          <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+          <span className="text-[10px] text-gray-500 hidden sm:inline">Online</span>
         </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-4 min-h-0" ref={messagesEndRef} style={{ minHeight: 0 }}>
         {messages.map((message) => (
-          <div key={message.id}>
-            <div
-              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <MessageBubble message={message} isUser={message.role === 'user'} />
-            </div>
+          <div key={message.id} className="space-y-2">
+            <MessageBubble message={message} isUser={message.role === 'user'} />
 
-            {/* Workflow Preview for assistant messages */}
-            {message.role === 'assistant' && message.workflow && (
-              <div className="flex justify-start mt-3">
-                <div className="max-w-[85%]">
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
-                      <span className="text-xs font-semibold text-blue-900">Workflow Updated</span>
-                    </div>
-                    <div className="flex items-center gap-2 overflow-x-auto pb-2">
-                      {message.workflow.nodes.slice(0, 4).map((node, idx) => {
-                        const { icon, label } = getNodeLabel(node.type);
-                        return (
-                          <div key={node.id} className="flex items-center gap-2 flex-shrink-0">
-                            <div className="px-2 py-1.5 bg-white rounded-lg border border-blue-200 shadow-sm">
-                              <div className="flex items-center gap-1 text-xs font-medium text-gray-700 whitespace-nowrap">
-                                {icon}
-                                <span>{label}</span>
-                              </div>
-                            </div>
-                            {idx < Math.min(3, message.workflow!.nodes.length - 1) && (
-                              <ArrowRight className="w-3 h-3 text-blue-400" />
-                            )}
-                          </div>
-                        );
-                      })}
-                      {message.workflow.nodes.length > 4 && (
-                        <span className="text-xs text-blue-600">+{message.workflow.nodes.length - 4} more</span>
-                      )}
-                    </div>
-                    <div className="mt-2 flex items-center gap-2 text-xs text-blue-700">
-                      <CheckCircle2 className="w-3 h-3" />
-                      <span>{message.workflow!.nodes.length} nodes</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            {message.role === 'assistant' && 'workflowId' in message && message.workflowId && currentWorkflow && (
+              <Suspense fallback={<div className="pl-8 text-sm text-gray-400">Loading preview...</div>}>
+                <WorkflowPreview workflow={currentWorkflow} />
+              </Suspense>
             )}
           </div>
         ))}
+
         {isGenerating && (
-          <div className="flex justify-start">
-            <div className="max-w-[85%] rounded-2xl px-4 py-2.5 bg-gray-50 shadow-sm border border-gray-200">
+          <div className="flex items-end gap-2">
+            <div
+              className="flex-shrink-0 w-6 h-6 flex items-center justify-center"
+              style={{ background: '#f1f5f9' }}
+            >
+              <svg className="w-3 h-3 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="11" width="18" height="10" rx="2"></rect>
+                <circle cx="12" cy="5" r="2"></circle>
+                <path d="M12 7v4"></path>
+                <line x1="8" y1="16" x2="8" y2="16"></line>
+                <line x1="16" y1="16" x2="16" y2="16"></line>
+              </svg>
+            </div>
+            <div
+              className="px-3 py-2 bg-white border border-gray-200"
+              style={{ boxShadow: '0 1px 6px rgba(0,0,0,0.05)' }}
+            >
               <div className="flex items-center gap-2">
-                <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
-                <span className="text-sm text-gray-700">Generating workflow...</span>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: '#0446ff' }} />
+                <span className="text-xs text-gray-500">Thinking...</span>
               </div>
             </div>
           </div>
         )}
-        <div ref={messagesEndRef} />
       </div>
 
+      {/* Quick Suggestions */}
+      {suggestions.length > 0 && (
+        <div className="px-3 py-2 space-y-2 border-t border-gray-200 bg-gray-50 flex-shrink-0">
+          <p className="text-xs text-gray-500">Quick suggestions:</p>
+          <div className="flex flex-wrap gap-2">
+            {suggestions.map((suggestion, index) => (
+              <button
+                key={index}
+                onClick={() => handleSuggestionClick(suggestion)}
+                className="px-3 py-1.5 text-xs bg-white text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-100 hover:border-gray-300 transition-colors"
+              >
+                {suggestion}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Input */}
-      <div className="p-4 border-t border-gray-200">
-        <div className="flex gap-2">
+      <div className="p-3 border-t border-gray-200 bg-white flex-shrink-0">
+        <div
+          className="flex items-center gap-2 border border-gray-200 px-3 py-2 bg-white"
+          style={{ boxShadow: '0 2px 12px rgba(4,70,255,0.06)' }}
+        >
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Describe your workflow..."
+            placeholder="Chat with AI assistant..."
             disabled={isGenerating}
-            className="flex-1 px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+            className="flex-1 text-sm text-gray-800 placeholder-gray-400 bg-transparent border-0 outline-none focus:ring-0 font-sans disabled:opacity-50"
           />
           <button
             onClick={handleSend}
             disabled={!input.trim() || isGenerating}
-            className="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2 font-medium text-sm"
+            className="flex items-center justify-center w-8 h-8 text-white transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+            style={{
+              background: 'linear-gradient(135deg, #0446ff 0%, #0341e0 100%)',
+              boxShadow: '0 2px 8px rgba(4,70,255,0.4)',
+            }}
           >
-            <Send className="w-4 h-4" />
+            {isGenerating ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            )}
           </button>
         </div>
       </div>
