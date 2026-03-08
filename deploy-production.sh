@@ -74,9 +74,15 @@ echo ""
 echo -e "${GREEN}🎉 Deployment complete!${NC}"
 echo ""
 echo "Access your application at:"
-echo "  Frontend: http://8.219.216.140"
-echo "  Backend API: http://8.219.216.140:3001"
-echo "  MinIO Console: http://8.219.216.140:9001"
+if grep -q "USE_SSL=true" .env; then
+    echo "  Frontend: https://www.vlowgen-hacks.my.id"
+    echo "  Backend API: https://www.vlowgen-hacks.my.id/api"
+    echo "  MinIO Console: http://8.219.216.140:9001"
+else
+    echo "  Frontend: http://8.219.216.140"
+    echo "  Backend API: http://8.219.216.140:3001"
+    echo "  MinIO Console: http://8.219.216.140:9001"
+fi
 echo ""
 echo "To view logs:"
 echo "  sudo docker compose logs -f backend"
