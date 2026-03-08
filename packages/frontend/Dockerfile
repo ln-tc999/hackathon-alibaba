@@ -55,6 +55,9 @@ RUN pnpm --filter @vlowgen/frontend build
 # Production stage
 FROM node:18-alpine AS production
 
+# Install wget for health check
+RUN apk add --no-cache wget
+
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
