@@ -76,8 +76,7 @@ services:
       dockerfile: packages/backend/Dockerfile
     container_name: vlowgen-backend
     ports:
-      - "3001:3001"
-      - "443:3443"  # HTTPS port (mapped to standard 443)
+      - "443:3001"  # HTTPS on standard port 443 (backend handles SSL internally)
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt:ro  # Mount SSL certificates
     environment:
