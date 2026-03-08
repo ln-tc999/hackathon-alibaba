@@ -5,7 +5,8 @@
 
 import type { ScheduledPost } from '@/components/schedule/types';
 
-const API_BASE_URL = import.meta.env.PUBLIC_BACKEND_URL || 'http://localhost:3001';
+// Use relative path for nginx reverse proxy
+const API_BASE_URL = import.meta.env.PUBLIC_BACKEND_URL || '/api';
 
 export interface SchedulerStatus {
     running: boolean;

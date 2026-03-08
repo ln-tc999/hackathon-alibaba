@@ -369,8 +369,9 @@ export default function ChatInterface({
     ) {
       const fullQuery = `${selectedTopic} ${prompt}`;
       try {
+        // Use relative path for nginx reverse proxy
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/nodes/viral-research`,
+          `${import.meta.env.PUBLIC_API_URL || '/api'}/api/nodes/viral-research`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

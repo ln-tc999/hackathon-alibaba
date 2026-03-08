@@ -95,7 +95,8 @@ export async function getVisitorData(): Promise<any> {
  */
 async function sendVisitorData(data: any): Promise<void> {
   try {
-    const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3001';
+    // Use relative path for nginx reverse proxy
+    const apiUrl = import.meta.env.PUBLIC_API_URL || '/api';
 
     await fetch(`${apiUrl}/api/analytics/visitor`, {
       method: 'POST',
@@ -129,7 +130,8 @@ async function sendVisitorData(data: any): Promise<void> {
  */
 export async function trackEvent(eventName: string, eventData?: any): Promise<void> {
   try {
-    const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3001';
+    // Use relative path for nginx reverse proxy
+    const apiUrl = import.meta.env.PUBLIC_API_URL || '/api';
     const currentVisitorId = getVisitorId();
 
     if (!currentVisitorId) {
