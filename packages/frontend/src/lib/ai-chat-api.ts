@@ -3,7 +3,8 @@
  * Handles conversational AI interactions
  */
 
-const API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:3001';
+// Use relative path for nginx reverse proxy
+const API_URL = import.meta.env.PUBLIC_API_URL || '/api';
 
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
