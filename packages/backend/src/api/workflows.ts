@@ -74,6 +74,13 @@ router.post('/execute', async (req: Request, res: Response) => {
       } as ErrorResponse);
     }
 
+    // Log credentials for debugging
+    console.log('[Workflows API] Credentials received:', {
+      hasComposioApiKey: !!requestBody.credentials.composioApiKey,
+      hasUserId: !!requestBody.credentials.userId,
+      userId: requestBody.credentials.userId,
+    });
+
     // Create execution engine with node handlers
     const engine = new WorkflowExecutionEngine();
 
@@ -94,7 +101,7 @@ router.post('/execute', async (req: Request, res: Response) => {
     // Execute workflow
     const executionResult = await engine.execute(requestBody.workflow, {
       credentials: requestBody.credentials,
-      userId: requestBody.userId || 'anonymous',
+      userId: requestBody.credentials.userId || requestBody.userId || 'anonymous',
     });
 
     // Return execution results
