@@ -228,7 +228,8 @@ export class ComposioClient {
       params.appNames = filters.app;
       if (filters.statuses) params.statuses = filters.statuses;
 
-      const response = await this.client.get('/v3/connectedAccounts', { params });
+      // Use correct Composio API v1 endpoint
+      const response = await this.client.get('/v1/connected_accounts', { params });
 
       return response.data.items || [];
     } catch (error) {
