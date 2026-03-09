@@ -59,6 +59,7 @@ export class TikTokNodeHandler extends BaseSocialMediaHandler {
       throw new Error('No TikTok connected account found. Please connect your TikTok account via the Connect TikTok button in the UI.');
     }
 
+    try {
       const result = await this.composioClient.postToTikTok({
         videoUrl,
         caption: text || 'Posted via VlowGen',
@@ -68,12 +69,12 @@ export class TikTokNodeHandler extends BaseSocialMediaHandler {
       return result.postUrl || 'Posted successfully to TikTok';
     } catch (composioError: any) {
       console.error('[TikTok Handler] Composio API error:', composioError?.response?.data || composioError?.message);
-      
+
       // Check for 401 Unauthorized specifically
       if (composioError?.response?.status === 401) {
-        throw new Error('TikTok connection expired. Please reconnect your TikTok account in Composio dashboard. Go to app.composio.dev and reconnect TikTok, then update TIKTOK_CONNECTED_ACCOUNT_ID in your .env file.');
+        throw new Error('TikTok connection expired. Please reconnect your TikTok account in Composio dashboard.');
       }
-      
+
       throw composioError;
     }
   }

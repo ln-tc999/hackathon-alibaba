@@ -59,6 +59,7 @@ export class FacebookNodeHandler extends BaseSocialMediaHandler {
       throw new Error('No Facebook connected account found. Please connect your Facebook account via the Connect Facebook button in the UI.');
     }
 
+    try {
       this.composioClient.setDefaultConnectedAccountId(connectedAccountId);
 
       const result = await this.composioClient.postToFacebook({
@@ -70,12 +71,12 @@ export class FacebookNodeHandler extends BaseSocialMediaHandler {
       return result.postUrl || 'Posted successfully to Facebook';
     } catch (composioError: any) {
       console.error('[Facebook Handler] Composio API error:', composioError?.response?.data || composioError?.message);
-      
+
       // Check for 401 Unauthorized specifically
       if (composioError?.response?.status === 401) {
-        throw new Error('Facebook connection expired. Please reconnect your Facebook account in Composio dashboard. Go to app.composio.dev and reconnect Facebook, then update FACEBOOK_CONNECTED_ACCOUNT_ID in your .env file.');
+        throw new Error('Facebook connection expired. Please reconnect your Facebook account in Composio dashboard.');
       }
-      
+
       throw composioError;
     }
   }
