@@ -219,10 +219,14 @@ router.get('/connected', async (req: Request, res: Response) => {
     const composioApiUrl = process.env.COMPOSIO_API_URL || 'https://backend.composio.dev/api';
     const composioClient = new ComposioClient(composioApiKey, composioApiUrl);
 
+    // Type-safe variables after validation
+    const userIdStr: string = userId;
+    const platformStr: string = platform;
+
     // Fetch connected accounts from Composio API
     const connectedAccounts = await composioClient.getConnectedAccounts({
-      userId: userId as string,
-      app: platform as string,
+      userId: userIdStr,
+      app: platformStr,
       statuses: ['ACTIVE'],
     });
 
@@ -263,13 +267,17 @@ router.get('/status', async (req: Request, res: Response) => {
   const { platform, userId } = req.query;
 
   try {
+    // Type-safe variables after validation
+    const platformStr: string = platform || 'instagram';
+    const userIdStr: string = userId || 'default-user';
+
     const composioApiKey = process.env.COMPOSIO_API_KEY;
     const composioApiUrl = process.env.COMPOSIO_API_URL || 'https://backend.composio.dev/api';
     const composioClient = new ComposioClient(composioApiKey, composioApiUrl);
 
     const connectedAccounts = await composioClient.getConnectedAccounts({
-      userId: userId as string,
-      app: platform as string,
+      userId: userIdStr,
+      app: platformStr,
       statuses: ['ACTIVE'],
     });
 
