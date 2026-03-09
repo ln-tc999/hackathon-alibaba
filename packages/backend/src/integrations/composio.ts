@@ -196,7 +196,7 @@ export class ComposioClient {
    */
   async getConnectedAccountId(appName: string): Promise<string> {
     try {
-      const response = await this.client.get('/v1/connectedAccounts', {
+      const response = await this.client.get('/v3/connectedAccounts', {
         params: { appNames: appName },
       });
 
@@ -209,6 +209,32 @@ export class ComposioClient {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         throw new Error(`Failed to get connected account: ${error.message}`);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * List connected accounts with filters
+   */
+  async getConnectedAccounts(filters?: {
+    userId?: string;
+    app?: string;
+    statuses?: string[];
+  }): Promise<any[]> {
+    try {
+      const params: any = {};
+      if (filters?.userId) params.user_id = filters.userId;
+      if (filters?.app) params.appNames = filters.app;
+      if (filters?.statuses) params.statuses = filters.statuses;
+
+      const response = await this.client.get('/v3/connectedAccounts', { params });
+
+      return response.data.items || [];
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error('[Composio] Failed to list connected accounts:', error.response?.data);
+        throw new Error(`Failed to list connected accounts: ${error.message}`);
       }
       throw error;
     }

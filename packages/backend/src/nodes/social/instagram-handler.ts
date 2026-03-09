@@ -30,22 +30,41 @@ export class InstagramNodeHandler extends BaseSocialMediaHandler {
       );
     }
 
-    // Get connected Instagram account ID from context (per-user)
-    // Priority: 1. Context credentials, 2. User-specific env, 3. Fallback (deprecated)
+    // Get connected Instagram account ID
+    // Priority: 1. From context credentials, 2. Fetch from Composio API
     let connectedAccountId = context?.credentials?.instagramConnectedAccountId;
 
     if (!connectedAccountId) {
-      // Try to get from user-specific environment variable
+      // Fetch from Composio API using user ID
       const userId = context?.credentials?.userId;
-      if (userId) {
-        connectedAccountId = process.env[`INSTAGRAM_CONNECTED_ACCOUNT_ID_${userId.toUpperCase()}`];
+      
+      if (!userId) {
+        throw new Error('User ID not provided in execution context. Cannot fetch Instagram connected account.');
       }
-    }
 
-    if (!connectedAccountId) {
-      // Fallback to shared env (deprecated - will be removed)
-      connectedAccountId = process.env.INSTAGRAM_CONNECTED_ACCOUNT_ID;
-      console.warn('[Instagram Handler] Using shared connected account ID. This is deprecated!');
+      try {
+        console.log(`[Instagram Handler] Fetching connected account for user: ${userId}`);
+        
+        // List connected accounts for this user
+        const connectedAccounts = await this.composioClient.getConnectedAccounts({
+          userId,
+          app: 'instagram',
+        });
+
+        if (connectedAccounts && connectedAccounts.length > 0) {
+          // Find active Instagram connection
+          const instagramAccount = connectedAccounts.find(
+            (acc: any) => acc.appName === 'instagram' && acc.status === 'ACTIVE'
+          );
+
+          if (instagramAccount) {
+            connectedAccountId = instagramAccount.id;
+            console.log(`[Instagram Handler] Found connected account: ${connectedAccountId}`);
+          }
+        }
+      } catch (error) {
+        console.error('[Instagram Handler] Failed to fetch connected accounts:', error);
+      }
     }
 
     if (!connectedAccountId) {
