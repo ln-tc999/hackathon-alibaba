@@ -13,7 +13,8 @@ export class FacebookNodeHandler extends BaseSocialMediaHandler {
   protected async postToSocialMedia(
     text: string,
     imageUrl: string,
-    videoUrl: string
+    videoUrl: string,
+    context?: any
   ): Promise<string> {
     if (!this.composioClient) {
       throw new Error('Composio client not initialized');
@@ -22,11 +23,11 @@ export class FacebookNodeHandler extends BaseSocialMediaHandler {
     try {
       // Get connected Facebook account ID from context (per-user)
       // Priority: 1. Context credentials, 2. User-specific env, 3. Fallback (deprecated)
-      let connectedAccountId = context.credentials.facebookConnectedAccountId;
+      let connectedAccountId = context?.credentials?.facebookConnectedAccountId;
 
       if (!connectedAccountId) {
         // Try to get from user-specific environment variable
-        const userId = context.credentials.userId;
+        const userId = context?.credentials?.userId;
         if (userId) {
           connectedAccountId = process.env[`FACEBOOK_CONNECTED_ACCOUNT_ID_${userId.toUpperCase()}`];
         }

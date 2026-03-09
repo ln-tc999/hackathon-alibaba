@@ -13,7 +13,8 @@ export class InstagramNodeHandler extends BaseSocialMediaHandler {
   protected async postToSocialMedia(
     text: string,
     imageUrl: string,
-    videoUrl: string
+    videoUrl: string,
+    context?: any
   ): Promise<string> {
     if (!this.composioClient) {
       throw new Error('Composio client not initialized');
@@ -31,11 +32,11 @@ export class InstagramNodeHandler extends BaseSocialMediaHandler {
 
     // Get connected Instagram account ID from context (per-user)
     // Priority: 1. Context credentials, 2. User-specific env, 3. Fallback (deprecated)
-    let connectedAccountId = context.credentials.instagramConnectedAccountId;
+    let connectedAccountId = context?.credentials?.instagramConnectedAccountId;
 
     if (!connectedAccountId) {
       // Try to get from user-specific environment variable
-      const userId = context.credentials.userId;
+      const userId = context?.credentials?.userId;
       if (userId) {
         connectedAccountId = process.env[`INSTAGRAM_CONNECTED_ACCOUNT_ID_${userId.toUpperCase()}`];
       }

@@ -13,7 +13,8 @@ export class YouTubeNodeHandler extends BaseSocialMediaHandler {
   protected async postToSocialMedia(
     text: string,
     _imageUrl: string,
-    videoUrl: string
+    videoUrl: string,
+    context?: any
   ): Promise<string> {
     if (!this.composioClient) {
       throw new Error('Composio client not initialized');
@@ -29,11 +30,11 @@ export class YouTubeNodeHandler extends BaseSocialMediaHandler {
 
       // Get connected YouTube account ID from context (per-user)
       // Priority: 1. Context credentials, 2. User-specific env, 3. Fallback (deprecated)
-      let connectedAccountId = context.credentials.youtubeConnectedAccountId;
+      let connectedAccountId = context?.credentials?.youtubeConnectedAccountId;
 
       if (!connectedAccountId) {
         // Try to get from user-specific environment variable
-        const userId = context.credentials.userId;
+        const userId = context?.credentials?.userId;
         if (userId) {
           connectedAccountId = process.env[`YOUTUBE_CONNECTED_ACCOUNT_ID_${userId.toUpperCase()}`];
         }
