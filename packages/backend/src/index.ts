@@ -13,6 +13,7 @@ import viralResearchRouter from './api/viral-research';
 import mediaRouter from './api/media';
 import chatRouter from './api/chat';
 import composioRouter from './api/composio';
+import composioCallbackRouter from './api/composio-callback';
 import { schedulerService } from './services/scheduler.service';
 import { logger } from './utils/logger';
 import {
@@ -67,6 +68,7 @@ app.use('/api/nodes/viral-research', viralResearchRouter);
 app.use('/api/media', mediaRouter);
 app.use('/api/chat', chatRouter);
 app.use('/api/composio', composioRouter);
+app.use('/api/composio', composioCallbackRouter);
 // OAuth routes are also in the workflow router, mounted at /api
 app.use('/api', workflowRouter);
 
