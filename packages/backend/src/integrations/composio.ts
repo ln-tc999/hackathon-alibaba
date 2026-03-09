@@ -217,16 +217,16 @@ export class ComposioClient {
   /**
    * List connected accounts with filters
    */
-  async getConnectedAccounts(filters?: {
-    userId?: string;
-    app?: string;
+  async getConnectedAccounts(filters: {
+    userId: string;
+    app: string;
     statuses?: string[];
   }): Promise<any[]> {
     try {
       const params: any = {};
-      if (filters?.userId) params.user_id = filters.userId;
-      if (filters?.app) params.appNames = filters.app;
-      if (filters?.statuses) params.statuses = filters.statuses;
+      params.user_id = filters.userId;
+      params.appNames = filters.app;
+      if (filters.statuses) params.statuses = filters.statuses;
 
       const response = await this.client.get('/v3/connectedAccounts', { params });
 
