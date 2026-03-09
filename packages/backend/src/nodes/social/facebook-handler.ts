@@ -1,4 +1,4 @@
-import { FacebookNodeData } from '@vlowgen/shared';
+import { FacebookNodeData, ExecutionContext } from '@vlowgen/shared';
 import { BaseSocialMediaHandler } from '../base/social-handler';
 
 export class FacebookNodeHandler extends BaseSocialMediaHandler {

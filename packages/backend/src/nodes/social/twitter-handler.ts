@@ -1,4 +1,4 @@
-import { TwitterNodeData } from '@vlowgen/shared';
+import { TwitterNodeData, ExecutionContext } from '@vlowgen/shared';
 import { BaseSocialMediaHandler } from '../base/social-handler';
 import { TwitterDirectClient } from '../../integrations/twitter-direct';
 

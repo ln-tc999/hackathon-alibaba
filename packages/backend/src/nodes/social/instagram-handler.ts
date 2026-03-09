@@ -1,4 +1,4 @@
-import { InstagramNodeData } from '@vlowgen/shared';
+import { InstagramNodeData, ExecutionContext } from '@vlowgen/shared';
 import { BaseSocialMediaHandler } from '../base/social-handler';
 
 export class InstagramNodeHandler extends BaseSocialMediaHandler {

@@ -1,4 +1,4 @@
-import { YouTubeNodeData } from '@vlowgen/shared';
+import { YouTubeNodeData, ExecutionContext } from '@vlowgen/shared';
 import { BaseSocialMediaHandler } from '../base/social-handler';
 
 export class YouTubeNodeHandler extends BaseSocialMediaHandler {

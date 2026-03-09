@@ -1,4 +1,4 @@
-import { TikTokNodeData } from '@vlowgen/shared';
+import { TikTokNodeData, ExecutionContext } from '@vlowgen/shared';
 import { BaseSocialMediaHandler } from '../base/social-handler';
 
 export class TikTokNodeHandler extends BaseSocialMediaHandler {
