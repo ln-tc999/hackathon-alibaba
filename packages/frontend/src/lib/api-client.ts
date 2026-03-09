@@ -13,8 +13,8 @@ import type {
   ServiceCredentials,
 } from '@vlowgen/shared';
 
-// Use relative path for nginx reverse proxy, fallback to /api
-const API_URL = import.meta.env.PUBLIC_API_URL || '/api';
+// Use empty string - endpoints already include /api prefix
+const API_URL = import.meta.env.PUBLIC_API_URL || '';
 
 /**
  * Custom error class for API errors with user-friendly messages
