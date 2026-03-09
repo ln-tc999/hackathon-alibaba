@@ -152,7 +152,12 @@ export class ComposioClient {
       });
 
       const connectionId = response.data.id;
-      const redirectUrl = response.data.connectionData?.val?.redirectUrl || response.data.connectionData?.val?.authUri;
+      // Handle multiple possible response formats from Composio
+      const redirectUrl = 
+        response.data.redirect_url || 
+        response.data.redirectUrl ||
+        response.data.connectionData?.val?.redirectUrl || 
+        response.data.connectionData?.val?.authUri;
 
       if (!redirectUrl) {
         throw new Error('No redirect URL received from Composio');
