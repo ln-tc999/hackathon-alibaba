@@ -191,42 +191,39 @@ router.post('/callback', async (req: Request, res: Response) => {
  * Check if user has connected account for a platform
  */
 router.get('/connected', async (req: Request, res: Response) => {
+  const platform = req.query.platform as string | undefined;
+  const userId = req.query.userId as string | undefined;
+
+  if (!platform || typeof platform !== 'string') {
+    return res.status(400).json({
+      error: {
+        type: 'user',
+        message: 'Platform is required',
+        retryable: false,
+      },
+    } as ErrorResponse);
+  }
+
+  if (!userId || typeof userId !== 'string') {
+    return res.status(400).json({
+      error: {
+        type: 'user',
+        message: 'User ID is required',
+        retryable: false,
+      },
+    } as ErrorResponse);
+  }
+
   try {
-    const { platform, userId } = req.query;
-
-    if (!platform || typeof platform !== 'string') {
-      return res.status(400).json({
-        error: {
-          type: 'user',
-          message: 'Platform is required',
-          retryable: false,
-        },
-      } as ErrorResponse);
-    }
-
-    if (!userId || typeof userId !== 'string') {
-      return res.status(400).json({
-        error: {
-          type: 'user',
-          message: 'User ID is required',
-          retryable: false,
-        },
-      } as ErrorResponse);
-    }
-
     // Create Composio client
     const composioApiKey = process.env.COMPOSIO_API_KEY;
     const composioApiUrl = process.env.COMPOSIO_API_URL || 'https://backend.composio.dev/api';
     const composioClient = new ComposioClient(composioApiKey, composioApiUrl);
 
-    // Type-safe variables after validation
-    const userIdStr: string = userId;
-    const platformStr: string = platform;
-
     // Fetch connected accounts from Composio API
     const connectedAccounts = await composioClient.getConnectedAccounts({
-      userId: userIdStr,
-      app: platformStr,
+      userId,
+      app: platform,
       statuses: ['ACTIVE'],
     });
 
@@ -259,18 +256,14 @@ router.get('/connected', async (req: Request, res: Response) => {
  * Alias for /connected - for backward compatibility with frontend
  */
 router.get('/status', async (req: Request, res: Response) => {
-  // Just call the /connected endpoint logic
-  req.query.platform = req.query.platform as string || 'instagram';
-  req.query.userId = req.query.userId as string || 'default-user';
-  
-  // Re-use the /connected logic by calling it directly
-  const { platform, userId } = req.query;
+  const platform = req.query.platform as string | undefined;
+  const userId = req.query.userId as string | undefined;
+
+  // Default values for backward compatibility
+  const platformStr = platform || 'instagram';
+  const userIdStr = userId || 'default-user';
 
   try {
-    // Type-safe variables after validation
-    const platformStr: string = platform || 'instagram';
-    const userIdStr: string = userId || 'default-user';
-
     const composioApiKey = process.env.COMPOSIO_API_KEY;
     const composioApiUrl = process.env.COMPOSIO_API_URL || 'https://backend.composio.dev/api';
     const composioClient = new ComposioClient(composioApiKey, composioApiUrl);
@@ -282,15 +275,15 @@ router.get('/status', async (req: Request, res: Response) => {
     });
 
     const connectedAccount = connectedAccounts.find(
-      (acc: any) => acc.appName === platform
+      (acc: any) => acc.appName === platformStr
     );
 
     res.json({
       success: true,
       connected: !!connectedAccount,
       connectedAccountId: connectedAccount?.id,
-      platform,
-      userId,
+      platform: platformStr,
+      userId: userIdStr,
     });
   } catch (error) {
     console.error('Composio status check error:', error);
