@@ -167,7 +167,6 @@ export default function KineticTeamHybrid() {
   );
 }
 
-
 function TeamRow({
   data,
   index,

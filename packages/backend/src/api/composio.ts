@@ -86,9 +86,12 @@ router.post('/connect', async (req: Request, res: Response) => {
     // Create Composio client
     const composioClient = new ComposioClient(composioApiKey, composioApiUrl);
 
+    // Normalize platform to uppercase
+    const platformUpper = platform.toUpperCase();
+
     // Check if user already has a connected account
     const userAccounts = getUserAccountMap(userId);
-    const existingConnectedId = userAccounts.get(platform.toUpperCase());
+    const existingConnectedId = userAccounts.get(platformUpper);
 
     if (existingConnectedId) {
       // User already connected, return success
