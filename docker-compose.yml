@@ -96,15 +96,9 @@ services:
     container_name: vlowgen-backend
     ports:
       - "3001:3001"
-    dns:
-      - 100.100.2.136
-      - 100.100.2.138
-      - 8.8.8.8
-      - 1.1.1.1
+      - "3443:3443"
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt:ro  # Mount SSL certificates
-    cap_add:
-      - NET_ADMIN  # Allow network configuration
     environment:
       - NODE_ENV=${NODE_ENV:-production}
       - PORT=3001
