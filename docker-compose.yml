@@ -94,9 +94,7 @@ services:
       context: .
       dockerfile: packages/backend/Dockerfile
     container_name: vlowgen-backend
-    ports:
-      - "3001:3001"
-      - "3443:3443"
+    network_mode: host
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt:ro  # Mount SSL certificates
     environment:
@@ -121,7 +119,7 @@ services:
       - TWITTER_CONSUMER_SECRET=${TWITTER_CONSUMER_SECRET}
       - TWITTER_ACCESS_TOKEN=${TWITTER_ACCESS_TOKEN}
       - TWITTER_ACCESS_TOKEN_SECRET=${TWITTER_ACCESS_TOKEN_SECRET}
-      - MINIO_ENDPOINT=minio
+      - MINIO_ENDPOINT=127.0.0.1  # Use localhost since backend uses host network
       - MINIO_PORT=9000
       - MINIO_USE_SSL=false
       - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
@@ -130,22 +128,9 @@ services:
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:4321}
       - REQUIRE_API_KEY=${REQUIRE_API_KEY:-false}
       - API_KEY=${API_KEY}
-    depends_on:
-      minio:
-        condition: service_healthy
     restart: unless-stopped
-    networks:
-      - vlowgen-network
     security_opt:
       - no-new-privileges:true
-    deploy:
-      resources:
-        limits:
-          cpus: '2'
-          memory: 1G
-        reservations:
-          cpus: '1'
-          memory: 512M
 
 networks:
   vlowgen-network:
