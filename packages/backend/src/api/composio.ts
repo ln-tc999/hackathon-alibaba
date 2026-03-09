@@ -106,15 +106,11 @@ router.post('/connect', async (req: Request, res: Response) => {
 
     // Initiate connection using Auth Config ID
     // This creates a connection request that user must authorize
-    // callbackUrl is where Composio redirects after OAuth completion
+    // Note: Not using callbackUrl - Composio will use default redirect
     const connReq = await composioClient.initiateConnection(
       userId,
       authConfigId,
-      {
-        // This is the URL where Composio will redirect after user authorizes
-        // It should be YOUR backend endpoint that handles the OAuth callback
-        callbackUrl: `${frontendUrl}/api/composio/callback`,
-      }
+      {}  // Empty options - let Composio handle redirect
     );
 
     const authUrl = connReq.redirectUrl;
@@ -132,7 +128,7 @@ router.post('/connect', async (req: Request, res: Response) => {
       connectionRequestId: connReq.id,
       platform,
       message: `Please authorize your ${platform} account`,
-      instructions: 'You will be redirected to Composio to authorize your account. After authorization, you will be redirected back to our app.',
+      instructions: 'You will be redirected to Composio to authorize your account. After authorization, you will be redirected back.',
     });
   } catch (error) {
     console.error('Composio connect error:', error);
