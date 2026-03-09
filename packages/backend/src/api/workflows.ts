@@ -79,6 +79,7 @@ router.post('/execute', async (req: Request, res: Response) => {
       hasComposioApiKey: !!requestBody.credentials.composioApiKey,
       hasUserId: !!requestBody.credentials.userId,
       userId: requestBody.credentials.userId,
+      composioApiKey: requestBody.credentials.composioApiKey?.substring(0, 10) + '...',
     });
 
     // Create execution engine with node handlers
@@ -97,6 +98,14 @@ router.post('/execute', async (req: Request, res: Response) => {
     engine.registerNodeHandler('prompt-enhancer-image', new PromptEnhancerImageHandler());
     engine.registerNodeHandler('prompt-enhancer-video', new PromptEnhancerVideoHandler());
     engine.registerNodeHandler('vision-analyzer', new VisionAnalyzerHandler());
+
+    // Log context before execution
+    console.log('[Workflows API] Executing workflow with context:', {
+      hasCredentials: !!requestBody.credentials,
+      credentialsUserId: requestBody.credentials.userId,
+      requestBodyUserId: requestBody.userId,
+      finalUserId: requestBody.credentials.userId || requestBody.userId || 'anonymous',
+    });
 
     // Execute workflow
     const executionResult = await engine.execute(requestBody.workflow, {

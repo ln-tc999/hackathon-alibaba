@@ -30,11 +30,21 @@ export class InstagramNodeHandler extends BaseSocialMediaHandler {
       );
     }
 
+    // Log context for debugging
+    console.log('[Instagram Handler] Received context:', {
+      hasContext: !!context,
+      hasCredentials: !!context?.credentials,
+      credentialsUserId: context?.credentials?.userId,
+      credentialsKeys: context?.credentials ? Object.keys(context.credentials) : [],
+    });
+
     // Get connected Instagram account ID
     // Fetch from Composio API using user ID
     const userId = context?.credentials?.userId;
-    
+
     if (!userId) {
+      console.error('[Instagram Handler] ERROR: userId is undefined or null!');
+      console.error('[Instagram Handler] Full context:', JSON.stringify(context, null, 2));
       throw new Error('User ID not provided in execution context. Cannot fetch Instagram connected account.');
     }
 
