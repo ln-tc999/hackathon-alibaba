@@ -20,28 +20,44 @@ export class FacebookNodeHandler extends BaseSocialMediaHandler {
       throw new Error('Composio client not initialized');
     }
 
-    try {
-      // Get connected Facebook account ID from context (per-user)
-      // Priority: 1. Context credentials, 2. User-specific env, 3. Fallback (deprecated)
-      let connectedAccountId = context?.credentials?.facebookConnectedAccountId;
+    // Get user ID from context for per-user account lookup
+    const userId = context?.credentials?.userId;
 
-      if (!connectedAccountId) {
-        // Try to get from user-specific environment variable
-        const userId = context?.credentials?.userId;
-        if (userId) {
-          connectedAccountId = process.env[`FACEBOOK_CONNECTED_ACCOUNT_ID_${userId.toUpperCase()}`];
+    if (!userId) {
+      throw new Error('User ID not provided in execution context. Cannot fetch Facebook connected account.');
+    }
+
+    let connectedAccountId: string | null = null;
+
+    try {
+      console.log(`[Facebook Handler] Fetching connected account for user: ${userId}`);
+
+      // List connected accounts for this user
+      const connectedAccounts = await this.composioClient.getConnectedAccounts({
+        userId,
+        app: 'facebook',
+        statuses: ['ACTIVE'],
+      });
+
+      console.log(`[Facebook Handler] Found ${connectedAccounts.length} connected account(s)`);
+
+      if (connectedAccounts && connectedAccounts.length > 0) {
+        const facebookAccount = connectedAccounts.find(
+          (acc: any) => acc.appName === 'facebook' && acc.status === 'ACTIVE'
+        );
+
+        if (facebookAccount) {
+          connectedAccountId = facebookAccount.id;
+          console.log(`[Facebook Handler] Found connected account: ${connectedAccountId}`);
         }
       }
+    } catch (error) {
+      console.error('[Facebook Handler] Failed to fetch connected accounts:', error);
+    }
 
-      if (!connectedAccountId) {
-        // Fallback to shared env (deprecated - will be removed)
-        connectedAccountId = process.env.FACEBOOK_CONNECTED_ACCOUNT_ID;
-        console.warn('[Facebook Handler] Using shared connected account ID. This is deprecated!');
-      }
-
-      if (!connectedAccountId) {
-        throw new Error('No Facebook connected account found. Please connect your Facebook account via the Connect Facebook button in the UI.');
-      }
+    if (!connectedAccountId) {
+      throw new Error('No Facebook connected account found. Please connect your Facebook account via the Connect Facebook button in the UI.');
+    }
 
       this.composioClient.setDefaultConnectedAccountId(connectedAccountId);
 

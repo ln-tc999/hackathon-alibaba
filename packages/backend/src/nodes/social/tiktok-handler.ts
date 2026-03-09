@@ -20,33 +20,44 @@ export class TikTokNodeHandler extends BaseSocialMediaHandler {
       throw new Error('Composio client not initialized');
     }
 
+    // Get user ID from context for per-user account lookup
+    const userId = context?.credentials?.userId;
+
+    if (!userId) {
+      throw new Error('User ID not provided in execution context. Cannot fetch TikTok connected account.');
+    }
+
+    let connectedAccountId: string | null = null;
+
     try {
-      // Validate video URL
-      if (!videoUrl || videoUrl.trim() === '') {
-        throw new Error('TikTok requires a valid video URL. Please ensure the video generation node is connected.');
-      }
+      console.log(`[TikTok Handler] Fetching connected account for user: ${userId}`);
 
-      // Get connected TikTok account ID from context (per-user)
-      // Priority: 1. Context credentials, 2. User-specific env, 3. Fallback (deprecated)
-      let connectedAccountId = context?.credentials?.tiktokConnectedAccountId;
+      // List connected accounts for this user
+      const connectedAccounts = await this.composioClient.getConnectedAccounts({
+        userId,
+        app: 'tiktok',
+        statuses: ['ACTIVE'],
+      });
 
-      if (!connectedAccountId) {
-        // Try to get from user-specific environment variable
-        const userId = context?.credentials?.userId;
-        if (userId) {
-          connectedAccountId = process.env[`TIKTOK_CONNECTED_ACCOUNT_ID_${userId.toUpperCase()}`];
+      console.log(`[TikTok Handler] Found ${connectedAccounts.length} connected account(s)`);
+
+      if (connectedAccounts && connectedAccounts.length > 0) {
+        const tiktokAccount = connectedAccounts.find(
+          (acc: any) => acc.appName === 'tiktok' && acc.status === 'ACTIVE'
+        );
+
+        if (tiktokAccount) {
+          connectedAccountId = tiktokAccount.id;
+          console.log(`[TikTok Handler] Found connected account: ${connectedAccountId}`);
         }
       }
+    } catch (error) {
+      console.error('[TikTok Handler] Failed to fetch connected accounts:', error);
+    }
 
-      if (!connectedAccountId) {
-        // Fallback to shared env (deprecated - will be removed)
-        connectedAccountId = process.env.TIKTOK_CONNECTED_ACCOUNT_ID;
-        console.warn('[TikTok Handler] Using shared connected account ID. This is deprecated!');
-      }
-
-      if (!connectedAccountId) {
-        throw new Error('No TikTok connected account found. Please connect your TikTok account via the Connect TikTok button in the UI.');
-      }
+    if (!connectedAccountId) {
+      throw new Error('No TikTok connected account found. Please connect your TikTok account via the Connect TikTok button in the UI.');
+    }
 
       const result = await this.composioClient.postToTikTok({
         videoUrl,

@@ -20,63 +20,67 @@ export class YouTubeNodeHandler extends BaseSocialMediaHandler {
       throw new Error('Composio client not initialized');
     }
 
+    // Validate video URL
+    if (!videoUrl || videoUrl.trim() === '') {
+      throw new Error('YouTube requires a valid video URL. Please ensure the video generation node is connected.');
+    }
+
+    // Get user ID from context for per-user account lookup
+    const userId = context?.credentials?.userId;
+
+    if (!userId) {
+      throw new Error('User ID not provided in execution context. Cannot fetch YouTube connected account.');
+    }
+
+    let connectedAccountId: string | null = null;
+
     try {
-      // Validate video URL
-      if (!videoUrl || videoUrl.trim() === '') {
-        throw new Error(
-          'YouTube requires a valid video URL. Please ensure the video generation node is connected.'
-        );
-      }
+      console.log(`[YouTube Handler] Fetching connected account for user: ${userId}`);
 
-      // Get connected YouTube account ID from context (per-user)
-      // Priority: 1. Context credentials, 2. User-specific env, 3. Fallback (deprecated)
-      let connectedAccountId = context?.credentials?.youtubeConnectedAccountId;
-
-      if (!connectedAccountId) {
-        // Try to get from user-specific environment variable
-        const userId = context?.credentials?.userId;
-        if (userId) {
-          connectedAccountId = process.env[`YOUTUBE_CONNECTED_ACCOUNT_ID_${userId.toUpperCase()}`];
-        }
-      }
-
-      if (!connectedAccountId) {
-        // Fallback to shared env (deprecated - will be removed)
-        connectedAccountId = process.env.YOUTUBE_CONNECTED_ACCOUNT_ID;
-        console.warn('[YouTube Handler] Using shared connected account ID. This is deprecated!');
-      }
-
-      if (!connectedAccountId) {
-        throw new Error('No YouTube connected account found. Please connect your YouTube account via the Connect YouTube button in the UI.');
-      }
-
-      console.log('[YouTube Handler] Using connected account:', connectedAccountId);
-      console.log('[YouTube Handler] Video URL:', videoUrl);
-
-      const result = await this.composioClient.uploadToYouTube({
-        videoUrl,
-        title: text || 'VlowGen Video',
-        description: text || 'Uploaded via VlowGen',
-        connectedAccountId,
+      // List connected accounts for this user
+      const connectedAccounts = await this.composioClient.getConnectedAccounts({
+        userId,
+        app: 'youtube',
+        statuses: ['ACTIVE'],
       });
 
-      console.log('[YouTube Handler] Upload result:', result);
+      console.log(`[YouTube Handler] Found ${connectedAccounts.length} connected account(s)`);
 
-      // Check if manual upload is required
-      if (result.manualUpload && result.instructions) {
-        return result.instructions;
-      }
+      if (connectedAccounts && connectedAccounts.length > 0) {
+        const youtubeAccount = connectedAccounts.find(
+          (acc: any) => acc.appName === 'youtube' && acc.status === 'ACTIVE'
+        );
 
-      return result.videoUrl || 'Uploaded successfully to YouTube';
-    } catch (composioError: any) {
-      console.error('[YouTube Handler] Composio API error:', composioError?.response?.data || composioError?.message);
-      
-      // Check for 401 Unauthorized specifically
-      if (composioError?.response?.status === 401) {
-        throw new Error('YouTube connection expired. Please reconnect your YouTube account in Composio dashboard. Go to app.composio.dev and reconnect YouTube, then update YOUTUBE_CONNECTED_ACCOUNT_ID in your .env file.');
+        if (youtubeAccount) {
+          connectedAccountId = youtubeAccount.id;
+          console.log(`[YouTube Handler] Found connected account: ${connectedAccountId}`);
+        }
       }
-      
-      throw composioError;
+    } catch (error) {
+      console.error('[YouTube Handler] Failed to fetch connected accounts:', error);
     }
+
+    if (!connectedAccountId) {
+      throw new Error('No YouTube connected account found. Please connect your YouTube account via the Connect YouTube button in the UI.');
+    }
+
+    console.log('[YouTube Handler] Using connected account:', connectedAccountId);
+    console.log('[YouTube Handler] Video URL:', videoUrl);
+
+    const result = await this.composioClient.uploadToYouTube({
+      videoUrl,
+      title: text || 'VlowGen Video',
+      description: text || 'Uploaded via VlowGen',
+      connectedAccountId,
+    });
+
+    console.log('[YouTube Handler] Upload result:', result);
+
+    // Check if manual upload is required
+    if (result.manualUpload && result.instructions) {
+      return result.instructions;
+    }
+
+    return result.videoUrl || 'Uploaded successfully to YouTube';
   }
 }
