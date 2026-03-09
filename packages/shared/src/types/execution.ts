@@ -35,6 +35,7 @@ export interface ServiceCredentials {
   composioApiKey?: string;
   composioApiUrl?: string;
   twitterToken?: string;
+  userId?: string;  // Add userId for per-user account lookup
 }
 
 export interface Logger {

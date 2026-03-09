@@ -51,10 +51,16 @@ export function useWorkflowExecution(): UseWorkflowExecutionReturn {
 
     try {
 
+      // Get user ID from localStorage
+      const userId = typeof window !== 'undefined' 
+        ? localStorage.getItem('vlowgen_user_id') || `user_${Date.now()}`
+        : `user_${Date.now()}`;
+
       const credentials = {
         wan2ApiKey: import.meta.env.PUBLIC_WAN2_API_KEY,
         openRouterApiKey: import.meta.env.PUBLIC_OPENROUTER_API_KEY,
         composioApiKey: import.meta.env.PUBLIC_COMPOSIO_API_KEY,
+        userId,  // Pass userId for per-user account lookup
       };
 
       const result = await executeWorkflow(workflow, credentials);
