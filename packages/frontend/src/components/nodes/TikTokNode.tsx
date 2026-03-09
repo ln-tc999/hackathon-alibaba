@@ -54,28 +54,41 @@ function TikTokNode({ id, data, selected }: TikTokNodeProps) {
           return;
         }
 
+        // Show message to user about COOP restriction
+        alert('TikTok OAuth opened in a new window.\n\nAfter authorizing, close the window and come back here. Your connection will be verified automatically.');
+
+        // Poll for connection status
         const pollInterval = setInterval(async () => {
-          if (popup.closed) {
-            clearInterval(pollInterval);
+          try {
+            const statusResponse = await fetch(
+              `/api/composio/connected?platform=tiktok&userId=${encodeURIComponent(userId)}`
+            );
             
-            try {
-              const statusResponse = await fetch(
-                `/api/composio/status?userId=default-user&platform=tiktok`
-              );
+            if (statusResponse.ok) {
+              const statusData = await statusResponse.json();
               
-              if (statusResponse.ok) {
-                const statusData = await statusResponse.json();
-                
-                if (statusData.connected) {
-                  alert('TikTok connected successfully!');
-                  // window.location.reload(); // Disabled - user should stay in workflow view
+              if (statusData.connected && statusData.connectedAccountId) {
+                clearInterval(pollInterval);
+                alert('✅ TikTok connected successfully!');
+                if (data) {
+                  data.authenticated = true;
+                  data.connectedAccountId = statusData.connectedAccountId;
                 }
+                return;
               }
-            } catch (error) {
-              // Silent fail
             }
+          } catch (error) {
+            // Silent fail
           }
-        }, 1000);
+          
+          try {
+            if (popup.closed) {
+              console.log('[TikTok] Popup closed, continuing to poll...');
+            }
+          } catch (e) {
+            // COOP blocks this - ignore
+          }
+        }, 5000);
         
         setTimeout(() => clearInterval(pollInterval), 300000);
       }

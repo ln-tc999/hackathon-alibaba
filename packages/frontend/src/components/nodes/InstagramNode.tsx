@@ -56,30 +56,56 @@ function InstagramNode({ id, data, selected }: InstagramNodeProps) {
           return;
         }
 
-        // Poll for popup close and check connection status
+        // Show message to user about COOP restriction
+        alert('Instagram OAuth opened in a new window.\n\nAfter authorizing, close the window and come back here. Your connection will be verified automatically.');
+
+        // Poll for connection status instead of checking popup.closed
+        // This works around Cross-Origin Opener Policy restrictions
+        const userId = localStorage.getItem('vlowgen_user_id') || `user_${Date.now()}`;
+        let checkCount = 0;
+        const maxChecks = 60; // Check for up to 5 minutes
+
         const pollInterval = setInterval(async () => {
-          if (popup.closed) {
-            clearInterval(pollInterval);
+          checkCount++;
+          
+          try {
+            const statusResponse = await fetch(
+              `/api/composio/connected?platform=instagram&userId=${encodeURIComponent(userId)}`
+            );
 
-            // Check if connection was successful
-            try {
-              const statusResponse = await fetch(
-                `/api/composio/status?userId=default-user&platform=instagram`
-              );
+            if (statusResponse.ok) {
+              const statusData = await statusResponse.json();
 
-              if (statusResponse.ok) {
-                const statusData = await statusResponse.json();
-
-                if (statusData.connected) {
-                  alert('Instagram connected successfully!');
-                  // window.location.reload(); // Disabled - user should stay in workflow view
+              if (statusData.connected && statusData.connectedAccountId) {
+                clearInterval(pollInterval);
+                alert('✅ Instagram connected successfully!');
+                // Update UI to show connected state
+                if (data) {
+                  data.authenticated = true;
+                  data.connectedAccountId = statusData.connectedAccountId;
                 }
+                return;
               }
-            } catch (error) {
-              // Silent fail
             }
+          } catch (error) {
+            // Silent fail - keep polling
           }
-        }, 1000);
+
+          // Stop after max checks or if popup is closed (if accessible)
+          if (checkCount >= maxChecks) {
+            clearInterval(pollInterval);
+            console.log('[Instagram] Connection check timeout');
+          }
+          
+          // Try to check popup closed (may fail due to COOP)
+          try {
+            if (popup.closed) {
+              console.log('[Instagram] Popup closed, continuing to poll for connection...');
+            }
+          } catch (e) {
+            // COOP blocks this - ignore and keep polling
+          }
+        }, 5000); // Check every 5 seconds
 
         // Clear interval after 5 minutes
         setTimeout(() => clearInterval(pollInterval), 300000);

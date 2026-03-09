@@ -52,32 +52,42 @@ export default function TwitterNode({ data, selected }: NodeProps<TwitterNodeDat
           return;
         }
 
+        // Show message to user about COOP restriction
+        alert('Twitter OAuth opened in a new window.\n\nAfter authorizing, close the window and come back here. Your connection will be verified automatically.');
+
+        // Poll for connection status
         const pollInterval = setInterval(async () => {
-          if (popup.closed) {
-            clearInterval(pollInterval);
+          try {
+            const statusResponse = await fetch(
+              `/api/composio/connected?platform=twitter&userId=${encodeURIComponent(userId)}`
+            );
 
-            try {
-              const statusResponse = await fetch(
-                `/api/composio/status?userId=default-user&platform=twitter`
-              );
+            if (statusResponse.ok) {
+              const statusData = await statusResponse.json();
 
-              if (statusResponse.ok) {
-                const statusData = await statusResponse.json();
-
-                if (statusData.connected) {
-                  alert('Twitter connected successfully! Please refresh the page to use it.');
-                  // Don't reload - let user continue working
-                  // window.location.reload();
-                } else {
-                  alert('Connection status unknown. Please try connecting again or refresh the page.');
+              if (statusData.connected && statusData.connectedAccountId) {
+                clearInterval(pollInterval);
+                alert('✅ Twitter connected successfully!');
+                if (data) {
+                  data.authenticated = true;
+                  data.connectedAccountId = statusData.connectedAccountId;
                 }
+                return;
               }
-            } catch (error) {
-              // Silent fail
             }
+          } catch (error) {
+            // Silent fail
           }
-        }, 1000);
-        
+
+          try {
+            if (popup.closed) {
+              console.log('[Twitter] Popup closed, continuing to poll...');
+            }
+          } catch (e) {
+            // COOP blocks this - ignore
+          }
+        }, 5000);
+
         setTimeout(() => clearInterval(pollInterval), 300000);
       }
     } catch (error) {
