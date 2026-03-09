@@ -133,6 +133,7 @@ export class ComposioClient {
   /**
    * Initiate OAuth connection using Auth Config ID
    * This is the proper way to let users connect their own accounts
+   * API: POST /api/v3/connected_accounts
    */
   async initiateConnection(
     userId: string,
@@ -140,14 +141,18 @@ export class ComposioClient {
     options?: { callbackUrl?: string }
   ): Promise<ConnectionRequest> {
     try {
-      const response = await this.client.post('/v1/connectedAccounts', {
-        authConfigId,
-        userId,
-        callbackUrl: options?.callbackUrl,
+      const response = await this.client.post('/v3/connected_accounts', {
+        auth_config: {
+          id: authConfigId,
+        },
+        connection: {
+          user_id: userId,
+          callback_url: options?.callbackUrl,
+        },
       });
 
-      const connectionId = response.data.id || response.data.connectedAccountId;
-      const redirectUrl = response.data.redirectUrl;
+      const connectionId = response.data.id;
+      const redirectUrl = response.data.connectionData?.val?.redirectUrl || response.data.connectionData?.val?.authUri;
 
       if (!redirectUrl) {
         throw new Error('No redirect URL received from Composio');
@@ -162,8 +167,8 @@ export class ComposioClient {
           for (let i = 0; i < maxAttempts; i++) {
             await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
             try {
-              const statusResponse = await this.client.get(`/v1/connectedAccounts/${connectionId}`);
-              if (statusResponse.data.active) {
+              const statusResponse = await this.client.get(`/v3/connected_accounts/${connectionId}`);
+              if (statusResponse.data.status === 'ACTIVE') {
                 return statusResponse.data;
               }
             } catch (error) {
