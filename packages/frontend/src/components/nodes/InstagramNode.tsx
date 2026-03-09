@@ -38,14 +38,15 @@ function InstagramNode({ id, data, selected }: InstagramNodeProps) {
       const responseData = await response.json();
 
       // Open OAuth popup
-      if (responseData.redirectUrl) {
+      if (responseData.authUrl || responseData.redirectUrl) {
+        const oauthUrl = responseData.authUrl || responseData.redirectUrl;
         const width = 600;
         const height = 700;
         const left = window.screen.width / 2 - width / 2;
         const top = window.screen.height / 2 - height / 2;
 
         const popup = window.open(
-          responseData.redirectUrl,
+          oauthUrl,
           'Instagram OAuth',
           `width=${width},height=${height},left=${left},top=${top}`
         );
