@@ -20,10 +20,18 @@ export class FacebookNodeHandler extends BaseSocialMediaHandler {
       throw new Error('Composio client not initialized');
     }
 
+    // Log context for debugging
+    console.log('[Facebook Handler] Received context:', {
+      hasContext: !!context,
+      hasCredentials: !!context?.credentials,
+      credentialsUserId: context?.credentials?.userId,
+    });
+
     // Get user ID from context for per-user account lookup
     const userId = context?.credentials?.userId;
 
     if (!userId) {
+      console.error('[Facebook Handler] ERROR: userId is undefined or null!');
       throw new Error('User ID not provided in execution context. Cannot fetch Facebook connected account.');
     }
 
@@ -42,13 +50,28 @@ export class FacebookNodeHandler extends BaseSocialMediaHandler {
       console.log(`[Facebook Handler] Found ${connectedAccounts.length} connected account(s)`);
 
       if (connectedAccounts && connectedAccounts.length > 0) {
+        // Find active Facebook connection
         const facebookAccount = connectedAccounts.find(
-          (acc: any) => acc.appName === 'facebook' && acc.status === 'ACTIVE'
+          (acc: any) => acc.toolkit?.slug === 'facebook' && acc.status === 'ACTIVE'
         );
 
         if (facebookAccount) {
-          connectedAccountId = facebookAccount.id;
+          // Use UUID from deprecated field for v2 API (not ca_XXX format)
+          connectedAccountId = facebookAccount.deprecated?.uuid || facebookAccount.uuid || facebookAccount.id;
           console.log(`[Facebook Handler] Found connected account: ${connectedAccountId}`);
+          console.log(`[Facebook Handler] Account details:`, {
+            id: facebookAccount.id,
+            uuid: facebookAccount.uuid,
+            deprecated: facebookAccount.deprecated?.uuid,
+            usingId: connectedAccountId,
+          });
+        } else {
+          console.error('[Facebook Handler] No ACTIVE Facebook account found!');
+          console.error('[Facebook Handler] Available accounts:', connectedAccounts.map((acc: any) => ({
+            id: acc.id,
+            toolkit: acc.toolkit?.slug,
+            status: acc.status,
+          })));
         }
       }
     } catch (error) {
