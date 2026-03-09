@@ -69,8 +69,15 @@ export class InstagramNodeHandler extends BaseSocialMediaHandler {
         );
 
         if (instagramAccount) {
-          connectedAccountId = instagramAccount.id;
+          // Use UUID from deprecated field for v2 API (not ca_XXX format)
+          connectedAccountId = instagramAccount.deprecated?.uuid || instagramAccount.uuid || instagramAccount.id;
           console.log(`[Instagram Handler] Found connected account: ${connectedAccountId}`);
+          console.log(`[Instagram Handler] Account details:`, {
+            id: instagramAccount.id,
+            uuid: instagramAccount.uuid,
+            deprecated: instagramAccount.deprecated?.uuid,
+            usingId: connectedAccountId,
+          });
         } else {
           console.error('[Instagram Handler] No ACTIVE Instagram account found!');
           console.error('[Instagram Handler] Available accounts:', connectedAccounts.map((acc: any) => ({
