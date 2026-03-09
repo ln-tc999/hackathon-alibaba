@@ -118,7 +118,7 @@ export class ComposioClient {
   private apiKey: string;
   private defaultConnectedAccountId: string = 'default';
 
-  constructor(apiKey: string, apiUrl: string = 'https://api.composio.dev/api') {
+  constructor(apiKey: string, apiUrl: string = 'https://backend.composio.dev/api') {
     this.apiKey = apiKey;
     this.client = axios.create({
       baseURL: apiUrl,
