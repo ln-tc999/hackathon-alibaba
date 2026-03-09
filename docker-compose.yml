@@ -101,11 +101,10 @@ services:
       - 100.100.2.138
       - 8.8.8.8
       - 1.1.1.1
-    extra_hosts:
-      - "api.composio.dev:host"  # Use host's DNS resolution
-      - "backend.composio.dev:host"
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt:ro  # Mount SSL certificates
+    cap_add:
+      - NET_ADMIN  # Allow network configuration
     environment:
       - NODE_ENV=${NODE_ENV:-production}
       - PORT=3001
