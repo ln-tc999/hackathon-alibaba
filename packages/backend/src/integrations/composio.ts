@@ -216,6 +216,7 @@ export class ComposioClient {
 
   /**
    * List connected accounts with filters
+   * API: GET /api/v3/connected_accounts
    */
   async getConnectedAccounts(filters: {
     userId: string;
@@ -228,8 +229,8 @@ export class ComposioClient {
       params.appNames = filters.app;
       if (filters.statuses) params.statuses = filters.statuses;
 
-      // Use Composio API endpoint for listing connected accounts
-      const response = await this.client.get('/connected_accounts', { params });
+      // Composio API v3 endpoint - underscore naming
+      const response = await this.client.get('/v3/connected_accounts', { params });
 
       return response.data.items || [];
     } catch (error) {
