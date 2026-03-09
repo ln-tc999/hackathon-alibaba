@@ -20,16 +20,26 @@ export class FacebookNodeHandler extends BaseSocialMediaHandler {
     }
 
     try {
-      // Get connected Facebook account ID
-      let connectedAccountId = process.env.FACEBOOK_CONNECTED_ACCOUNT_ID;
-      
+      // Get connected Facebook account ID from context (per-user)
+      // Priority: 1. Context credentials, 2. User-specific env, 3. Fallback (deprecated)
+      let connectedAccountId = context.credentials.facebookConnectedAccountId;
+
       if (!connectedAccountId) {
-        console.log('[Facebook Handler] No connected account ID in env, fetching from Composio...');
-        connectedAccountId = await this.composioClient.getConnectedAccountId('FACEBOOK');
+        // Try to get from user-specific environment variable
+        const userId = context.credentials.userId;
+        if (userId) {
+          connectedAccountId = process.env[`FACEBOOK_CONNECTED_ACCOUNT_ID_${userId.toUpperCase()}`];
+        }
       }
 
       if (!connectedAccountId) {
-        throw new Error('No Facebook connected account found. Please connect your Facebook account in Composio first.');
+        // Fallback to shared env (deprecated - will be removed)
+        connectedAccountId = process.env.FACEBOOK_CONNECTED_ACCOUNT_ID;
+        console.warn('[Facebook Handler] Using shared connected account ID. This is deprecated!');
+      }
+
+      if (!connectedAccountId) {
+        throw new Error('No Facebook connected account found. Please connect your Facebook account via the Connect Facebook button in the UI.');
       }
 
       this.composioClient.setDefaultConnectedAccountId(connectedAccountId);

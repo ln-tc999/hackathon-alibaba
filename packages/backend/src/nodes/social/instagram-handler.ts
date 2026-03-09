@@ -29,16 +29,26 @@ export class InstagramNodeHandler extends BaseSocialMediaHandler {
       );
     }
 
-    // Get connected Instagram account ID
-    let connectedAccountId = process.env.INSTAGRAM_CONNECTED_ACCOUNT_ID;
-    
+    // Get connected Instagram account ID from context (per-user)
+    // Priority: 1. Context credentials, 2. User-specific env, 3. Fallback (deprecated)
+    let connectedAccountId = context.credentials.instagramConnectedAccountId;
+
     if (!connectedAccountId) {
-      console.log('[Instagram Handler] No connected account ID in env, fetching from Composio...');
-      connectedAccountId = await this.composioClient.getConnectedAccountId('INSTAGRAM');
+      // Try to get from user-specific environment variable
+      const userId = context.credentials.userId;
+      if (userId) {
+        connectedAccountId = process.env[`INSTAGRAM_CONNECTED_ACCOUNT_ID_${userId.toUpperCase()}`];
+      }
     }
 
     if (!connectedAccountId) {
-      throw new Error('No Instagram connected account found. Please connect your Instagram account in Composio first.');
+      // Fallback to shared env (deprecated - will be removed)
+      connectedAccountId = process.env.INSTAGRAM_CONNECTED_ACCOUNT_ID;
+      console.warn('[Instagram Handler] Using shared connected account ID. This is deprecated!');
+    }
+
+    if (!connectedAccountId) {
+      throw new Error('No Instagram connected account found. Please connect your Instagram account via the Connect Instagram button in the UI.');
     }
 
     try {

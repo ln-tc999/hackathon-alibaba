@@ -14,6 +14,9 @@ interface FacebookNodeProps {
 function FacebookNode({ id, data, selected }: FacebookNodeProps) {
   const handleConnect = useCallback(async () => {
     try {
+      // Get actual user ID from localStorage
+      const userId = localStorage.getItem('vlowgen_user_id') || `user_${Date.now()}`;
+
       const response = await fetch('/api/composio/connect', {
         method: 'POST',
         headers: {
@@ -21,7 +24,7 @@ function FacebookNode({ id, data, selected }: FacebookNodeProps) {
         },
         body: JSON.stringify({
           platform: 'facebook',
-          userId: 'default-user',
+          userId,
         }),
       });
 

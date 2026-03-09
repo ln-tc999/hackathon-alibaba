@@ -27,16 +27,26 @@ export class YouTubeNodeHandler extends BaseSocialMediaHandler {
         );
       }
 
-      // Use connected account ID from environment or get first connected account
-      let connectedAccountId = process.env.YOUTUBE_CONNECTED_ACCOUNT_ID;
-      
+      // Get connected YouTube account ID from context (per-user)
+      // Priority: 1. Context credentials, 2. User-specific env, 3. Fallback (deprecated)
+      let connectedAccountId = context.credentials.youtubeConnectedAccountId;
+
       if (!connectedAccountId) {
-        console.log('[YouTube Handler] No connected account ID in env, fetching from Composio...');
-        connectedAccountId = await this.composioClient.getConnectedAccountId('YOUTUBE');
+        // Try to get from user-specific environment variable
+        const userId = context.credentials.userId;
+        if (userId) {
+          connectedAccountId = process.env[`YOUTUBE_CONNECTED_ACCOUNT_ID_${userId.toUpperCase()}`];
+        }
       }
 
       if (!connectedAccountId) {
-        throw new Error('No YouTube connected account found. Please connect your YouTube account in Composio first.');
+        // Fallback to shared env (deprecated - will be removed)
+        connectedAccountId = process.env.YOUTUBE_CONNECTED_ACCOUNT_ID;
+        console.warn('[YouTube Handler] Using shared connected account ID. This is deprecated!');
+      }
+
+      if (!connectedAccountId) {
+        throw new Error('No YouTube connected account found. Please connect your YouTube account via the Connect YouTube button in the UI.');
       }
 
       console.log('[YouTube Handler] Using connected account:', connectedAccountId);

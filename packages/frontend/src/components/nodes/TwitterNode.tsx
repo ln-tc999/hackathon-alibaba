@@ -12,6 +12,9 @@ import BaseNode from './BaseNode';
 export default function TwitterNode({ data, selected }: NodeProps<TwitterNodeData & { error?: string }>) {
   const handleConnectTwitter = useCallback(async () => {
     try {
+      // Get actual user ID from localStorage
+      const userId = localStorage.getItem('vlowgen_user_id') || `user_${Date.now()}`;
+
       const response = await fetch('/api/composio/connect', {
         method: 'POST',
         headers: {
@@ -19,7 +22,7 @@ export default function TwitterNode({ data, selected }: NodeProps<TwitterNodeDat
         },
         body: JSON.stringify({
           platform: 'twitter',
-          userId: 'default-user',
+          userId,
         }),
       });
 
