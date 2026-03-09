@@ -35,15 +35,16 @@ function TikTokNode({ id, data, selected }: TikTokNodeProps) {
       }
 
       const data = await response.json();
-      
-      if (data.redirectUrl) {
+
+      if (data.authUrl || data.redirectUrl) {
+        const oauthUrl = data.authUrl || data.redirectUrl;
         const width = 600;
         const height = 700;
         const left = window.screen.width / 2 - width / 2;
         const top = window.screen.height / 2 - height / 2;
-        
+
         const popup = window.open(
-          data.redirectUrl,
+          oauthUrl,
           'TikTok OAuth',
           `width=${width},height=${height},left=${left},top=${top}`
         );

@@ -33,15 +33,16 @@ export default function TwitterNode({ data, selected }: NodeProps<TwitterNodeDat
       }
 
       const data = await response.json();
-      
-      if (data.redirectUrl) {
+
+      if (data.authUrl || data.redirectUrl) {
+        const oauthUrl = data.authUrl || data.redirectUrl;
         const width = 600;
         const height = 700;
         const left = window.screen.width / 2 - width / 2;
         const top = window.screen.height / 2 - height / 2;
-        
+
         const popup = window.open(
-          data.redirectUrl,
+          oauthUrl,
           'Twitter OAuth',
           `width=${width},height=${height},left=${left},top=${top}`
         );
