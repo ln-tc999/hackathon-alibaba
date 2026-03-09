@@ -14,6 +14,9 @@ interface TikTokNodeProps {
 function TikTokNode({ id, data, selected }: TikTokNodeProps) {
   const handleConnect = useCallback(async () => {
     try {
+      // Get actual user ID from localStorage
+      const userId = localStorage.getItem('vlowgen_user_id') || `user_${Date.now()}`;
+
       const response = await fetch('/api/composio/connect', {
         method: 'POST',
         headers: {
@@ -21,7 +24,7 @@ function TikTokNode({ id, data, selected }: TikTokNodeProps) {
         },
         body: JSON.stringify({
           platform: 'tiktok',
-          userId: 'default-user',
+          userId,
         }),
       });
 

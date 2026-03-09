@@ -14,6 +14,9 @@ interface YouTubeNodeProps {
 function YouTubeNode({ id, data, selected }: YouTubeNodeProps) {
   const handleConnect = useCallback(async () => {
     try {
+      // Get actual user ID from localStorage
+      const userId = localStorage.getItem('vlowgen_user_id') || `user_${Date.now()}`;
+
       const response = await fetch('/api/composio/connect', {
         method: 'POST',
         headers: {
@@ -21,7 +24,7 @@ function YouTubeNode({ id, data, selected }: YouTubeNodeProps) {
         },
         body: JSON.stringify({
           platform: 'youtube',
-          userId: 'default-user',
+          userId,
         }),
       });
 

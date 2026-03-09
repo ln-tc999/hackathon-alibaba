@@ -14,6 +14,9 @@ interface InstagramNodeProps {
 function InstagramNode({ id, data, selected }: InstagramNodeProps) {
   const handleConnect = useCallback(async () => {
     try {
+      // Get actual user ID from localStorage
+      const userId = localStorage.getItem('vlowgen_user_id') || `user_${Date.now()}`;
+
       // Call API to initiate OAuth flow
       const response = await fetch('/api/composio/connect', {
         method: 'POST',
@@ -22,7 +25,7 @@ function InstagramNode({ id, data, selected }: InstagramNodeProps) {
         },
         body: JSON.stringify({
           platform: 'instagram',
-          userId: 'default-user',
+          userId,
         }),
       });
 

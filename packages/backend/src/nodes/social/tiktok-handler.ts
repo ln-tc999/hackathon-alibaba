@@ -25,16 +25,26 @@ export class TikTokNodeHandler extends BaseSocialMediaHandler {
         throw new Error('TikTok requires a valid video URL. Please ensure the video generation node is connected.');
       }
 
-      // Get connected TikTok account ID
-      let connectedAccountId = process.env.TIKTOK_CONNECTED_ACCOUNT_ID;
-      
+      // Get connected TikTok account ID from context (per-user)
+      // Priority: 1. Context credentials, 2. User-specific env, 3. Fallback (deprecated)
+      let connectedAccountId = context.credentials.tiktokConnectedAccountId;
+
       if (!connectedAccountId) {
-        console.log('[TikTok Handler] No connected account ID in env, fetching from Composio...');
-        connectedAccountId = await this.composioClient.getConnectedAccountId('TIKTOK');
+        // Try to get from user-specific environment variable
+        const userId = context.credentials.userId;
+        if (userId) {
+          connectedAccountId = process.env[`TIKTOK_CONNECTED_ACCOUNT_ID_${userId.toUpperCase()}`];
+        }
       }
 
       if (!connectedAccountId) {
-        throw new Error('No TikTok connected account found. Please connect your TikTok account in Composio first.');
+        // Fallback to shared env (deprecated - will be removed)
+        connectedAccountId = process.env.TIKTOK_CONNECTED_ACCOUNT_ID;
+        console.warn('[TikTok Handler] Using shared connected account ID. This is deprecated!');
+      }
+
+      if (!connectedAccountId) {
+        throw new Error('No TikTok connected account found. Please connect your TikTok account via the Connect TikTok button in the UI.');
       }
 
       const result = await this.composioClient.postToTikTok({
