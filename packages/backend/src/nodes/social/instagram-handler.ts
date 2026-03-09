@@ -65,12 +65,19 @@ export class InstagramNodeHandler extends BaseSocialMediaHandler {
       if (connectedAccounts && connectedAccounts.length > 0) {
         // Find active Instagram connection
         const instagramAccount = connectedAccounts.find(
-          (acc: any) => acc.appName === 'instagram' && acc.status === 'ACTIVE'
+          (acc: any) => acc.toolkit?.slug === 'instagram' && acc.status === 'ACTIVE'
         );
 
         if (instagramAccount) {
           connectedAccountId = instagramAccount.id;
           console.log(`[Instagram Handler] Found connected account: ${connectedAccountId}`);
+        } else {
+          console.error('[Instagram Handler] No ACTIVE Instagram account found!');
+          console.error('[Instagram Handler] Available accounts:', connectedAccounts.map((acc: any) => ({
+            id: acc.id,
+            toolkit: acc.toolkit?.slug,
+            status: acc.status,
+          })));
         }
       }
     } catch (error) {
