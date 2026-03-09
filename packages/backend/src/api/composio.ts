@@ -10,7 +10,7 @@ import { Router, Request, Response } from 'express';
 import { ComposioClient } from '../integrations/composio';
 import { ErrorResponse } from '@vlowgen/shared';
 
-const router = Router();
+const router: Router = Router();
 
 // In-memory store for user connected accounts (temporary - should use database in production)
 // Key: userId, Value: Map<platform, connectedAccountId>
