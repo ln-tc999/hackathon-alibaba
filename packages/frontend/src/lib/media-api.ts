@@ -3,8 +3,8 @@
  * Handles media history operations with backend
  */
 
-// Use relative path for nginx reverse proxy
-const API_URL = import.meta.env.PUBLIC_API_URL || '/api';
+// Use empty string - endpoints already include /api prefix
+const API_URL = import.meta.env.PUBLIC_API_URL || '';
 
 export interface MediaRecord {
   id: string;

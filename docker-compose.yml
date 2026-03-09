@@ -48,7 +48,7 @@ services:
       context: .
       dockerfile: packages/frontend/Dockerfile
       args:
-        - PUBLIC_API_URL=${PUBLIC_API_URL:-/api}
+        - PUBLIC_API_URL=${PUBLIC_API_URL:-}
         - PUBLIC_WAN2_API_KEY=${PUBLIC_WAN2_API_KEY}
         - PUBLIC_OPENROUTER_API_KEY=${PUBLIC_OPENROUTER_API_KEY}
         - PUBLIC_COMPOSIO_API_KEY=${PUBLIC_COMPOSIO_API_KEY}
@@ -60,7 +60,7 @@ services:
       - NODE_ENV=${NODE_ENV:-production}
       - HOST=0.0.0.0
       - PORT=4321
-      - PUBLIC_API_URL=${PUBLIC_API_URL:-/api}
+      - PUBLIC_API_URL=${PUBLIC_API_URL:-}
       - PUBLIC_WAN2_API_KEY=${PUBLIC_WAN2_API_KEY}
       - PUBLIC_OPENROUTER_API_KEY=${PUBLIC_OPENROUTER_API_KEY}
       - PUBLIC_COMPOSIO_API_KEY=${PUBLIC_COMPOSIO_API_KEY}

@@ -32,8 +32,8 @@ export function ImageHistory() {
     try {
       setLoading(true);
       const userId = getUserId();
-      // Use relative path for nginx reverse proxy
-      const apiUrl = import.meta.env.PUBLIC_API_URL || '/api';
+      // Use empty string - endpoint already includes /api prefix
+      const apiUrl = import.meta.env.PUBLIC_API_URL || '';
 
       const response = await fetch(`${apiUrl}/api/image-history/recent?userId=${userId}&limit=20`);
       const data = await response.json();
