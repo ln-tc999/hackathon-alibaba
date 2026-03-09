@@ -3,9 +3,7 @@ services:
   nginx:
     image: nginx:alpine
     container_name: vlowgen-nginx
-    ports:
-      - "80:80"
-      - "443:443"
+    network_mode: host
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
@@ -13,8 +11,6 @@ services:
       - frontend
       - backend
     restart: unless-stopped
-    networks:
-      - vlowgen-network
     security_opt:
       - no-new-privileges:true
 
@@ -54,8 +50,7 @@ services:
         - PUBLIC_COMPOSIO_API_KEY=${PUBLIC_COMPOSIO_API_KEY}
         - PUBLIC_FINGERPRINT_API_KEY=${PUBLIC_FINGERPRINT_API_KEY}
     container_name: vlowgen-frontend
-    expose:
-      - "4321"
+    network_mode: host
     environment:
       - NODE_ENV=${NODE_ENV:-production}
       - HOST=0.0.0.0
@@ -77,8 +72,6 @@ services:
       minio:
         condition: service_healthy
     restart: unless-stopped
-    networks:
-      - vlowgen-network
     security_opt:
       - no-new-privileges:true
     healthcheck:
