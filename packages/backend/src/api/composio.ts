@@ -28,7 +28,7 @@ function getUserAccountMap(userId: string): Map<string, string> {
 
 /**
  * POST /api/composio/connect
- * Get OAuth URL for connecting social media accounts
+ * Get OAuth URL for connecting social media accounts using your Auth Config
  */
 router.post('/connect', async (req: Request, res: Response) => {
   try {
@@ -54,10 +54,14 @@ router.post('/connect', async (req: Request, res: Response) => {
       } as ErrorResponse);
     }
 
-    // Get Composio API key from environment
+    // Get Composio API key and Auth Config ID from environment
     const composioApiKey = process.env.COMPOSIO_API_KEY;
     const composioApiUrl = process.env.COMPOSIO_API_URL || 'https://api.composio.dev';
     const frontendUrl = process.env.FRONTEND_URL || 'https://www.vlowgen-hacks.my.id';
+
+    // Get platform-specific Auth Config ID
+    const authConfigIdEnvVar = `${platform.toUpperCase()}_AUTH_CONFIG_ID`;
+    const authConfigId = process.env[authConfigIdEnvVar];
 
     if (!composioApiKey) {
       return res.status(500).json({
@@ -69,16 +73,22 @@ router.post('/connect', async (req: Request, res: Response) => {
       } as ErrorResponse);
     }
 
+    if (!authConfigId) {
+      return res.status(500).json({
+        error: {
+          type: 'system',
+          message: `Auth Config ID for ${platform} not configured. Please set ${authConfigIdEnvVar} in .env`,
+          retryable: false,
+        },
+      } as ErrorResponse);
+    }
+
     // Create Composio client
     const composioClient = new ComposioClient(composioApiKey, composioApiUrl);
 
-    // Get auth URL based on platform
-    let authUrl: string;
-    const platformUpper = platform.toUpperCase();
-
     // Check if user already has a connected account
     const userAccounts = getUserAccountMap(userId);
-    const existingConnectedId = userAccounts.get(platformUpper);
+    const existingConnectedId = userAccounts.get(platform.toUpperCase());
 
     if (existingConnectedId) {
       // User already connected, return success
@@ -91,43 +101,29 @@ router.post('/connect', async (req: Request, res: Response) => {
       });
     }
 
-    // Generate unique state with userId for callback
-    const state = `vlowgen_${userId}_${platform}_${Date.now()}`;
+    // Initiate connection using Auth Config ID
+    // This creates a connection request that user must authorize
+    const connReq = await composioClient.initiateConnection(
+      userId,
+      authConfigId,
+      {
+        callbackUrl: `${frontendUrl}/api/composio/callback`,
+      }
+    );
 
-    // Get OAuth URL from Composio
-    switch (platformUpper) {
-      case 'TWITTER':
-        const twitterAuth = await composioClient.getTwitterAuthUrl();
-        authUrl = `${twitterAuth.authUrl}${twitterAuth.authUrl.includes('?') ? '&' : '?'}state=${state}`;
-        break;
-      case 'INSTAGRAM':
-        authUrl = `https://app.composio.dev/integrations/instagram?redirect_uri=${encodeURIComponent(frontendUrl)}&state=${state}`;
-        break;
-      case 'FACEBOOK':
-        authUrl = `https://app.composio.dev/integrations/facebook?redirect_uri=${encodeURIComponent(frontendUrl)}&state=${state}`;
-        break;
-      case 'TIKTOK':
-        authUrl = `https://app.composio.dev/integrations/tiktok?redirect_uri=${encodeURIComponent(frontendUrl)}&state=${state}`;
-        break;
-      case 'YOUTUBE':
-        authUrl = `https://app.composio.dev/integrations/youtube?redirect_uri=${encodeURIComponent(frontendUrl)}&state=${state}`;
-        break;
-      default:
-        return res.status(400).json({
-          error: {
-            type: 'user',
-            message: `Unsupported platform: ${platform}`,
-            retryable: false,
-          },
-        } as ErrorResponse);
+    const authUrl = connReq.redirectUrl;
+
+    if (!authUrl) {
+      throw new Error('Failed to get OAuth URL from Composio');
     }
 
     res.json({
       success: true,
       authUrl,
-      state,
+      connectionRequestId: connReq.id,
       platform,
       message: `Please authorize your ${platform} account`,
+      instructions: 'You will be redirected to Composio to authorize your account. After authorization, close the window and come back.',
     });
   } catch (error) {
     console.error('Composio connect error:', error);

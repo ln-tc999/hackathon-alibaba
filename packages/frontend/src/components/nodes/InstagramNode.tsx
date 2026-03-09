@@ -56,8 +56,11 @@ function InstagramNode({ id, data, selected }: InstagramNodeProps) {
           return;
         }
 
-        // Show message to user about COOP restriction
-        alert('Instagram OAuth opened in a new window.\n\nAfter authorizing, close the window and come back here. Your connection will be verified automatically.');
+        // Show message to user about COOP restriction and Composio login
+        const authMessage = responseData.message || `Instagram OAuth opened in a new window.`;
+        const instructions = responseData.instructions || 'After authorizing, close the window and come back here.';
+        
+        alert(`${authMessage}\n\n${instructions}\n\nYour connection will be verified automatically.`);
 
         // Poll for connection status instead of checking popup.closed
         // This works around Cross-Origin Opener Policy restrictions

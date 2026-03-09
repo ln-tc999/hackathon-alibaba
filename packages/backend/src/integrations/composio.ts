@@ -107,6 +107,12 @@ export interface ComposioApiResponse {
   logId?: string;
 }
 
+export interface ConnectionRequest {
+  id: string;
+  redirectUrl: string;
+  waitForConnection: () => Promise<any>;
+}
+
 export class ComposioClient {
   private client: AxiosInstance;
   private apiKey: string;
@@ -122,6 +128,57 @@ export class ComposioClient {
         'X-API-Key': apiKey,
       },
     });
+  }
+
+  /**
+   * Initiate OAuth connection using Auth Config ID
+   * This is the proper way to let users connect their own accounts
+   */
+  async initiateConnection(
+    userId: string,
+    authConfigId: string,
+    options?: { callbackUrl?: string }
+  ): Promise<ConnectionRequest> {
+    try {
+      const response = await this.client.post('/v1/connectedAccounts', {
+        authConfigId,
+        userId,
+        callbackUrl: options?.callbackUrl,
+      });
+
+      const connectionId = response.data.id || response.data.connectedAccountId;
+      const redirectUrl = response.data.redirectUrl;
+
+      if (!redirectUrl) {
+        throw new Error('No redirect URL received from Composio');
+      }
+
+      return {
+        id: connectionId,
+        redirectUrl,
+        waitForConnection: async () => {
+          // Poll for connection status
+          const maxAttempts = 60; // 5 minutes
+          for (let i = 0; i < maxAttempts; i++) {
+            await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+            try {
+              const statusResponse = await this.client.get(`/v1/connectedAccounts/${connectionId}`);
+              if (statusResponse.data.active) {
+                return statusResponse.data;
+              }
+            } catch (error) {
+              // Continue polling
+            }
+          }
+          throw new Error('Connection timeout');
+        },
+      };
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Failed to initiate connection: ${error.response?.data?.message || error.message}`);
+      }
+      throw error;
+    }
   }
 
   /**
