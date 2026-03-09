@@ -94,8 +94,13 @@ services:
       context: .
       dockerfile: packages/backend/Dockerfile
     container_name: vlowgen-backend
-    expose:
-      - "3001"
+    ports:
+      - "3001:3001"
+    dns:
+      - 100.100.2.136
+      - 100.100.2.138
+      - 8.8.8.8
+      - 1.1.1.1
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt:ro  # Mount SSL certificates
     environment:
