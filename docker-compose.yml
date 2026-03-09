@@ -96,9 +96,7 @@ services:
     container_name: vlowgen-backend
     expose:
       - "3001"
-    dns:
-      - 8.8.8.8
-      - 1.1.1.1
+    network_mode: host
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt:ro  # Mount SSL certificates
     environment:
