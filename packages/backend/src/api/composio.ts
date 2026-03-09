@@ -1,7 +1,7 @@
 /**
  * Composio OAuth Routes
  * Handle social media account connections via Composio
- * 
+ *
  * IMPORTANT: Each user has their own connected accounts
  * Never share connected accounts between users!
  */
@@ -110,7 +110,7 @@ router.post('/connect', async (req: Request, res: Response) => {
     const connReq = await composioClient.initiateConnection(
       userId,
       authConfigId,
-      {}  // Empty options - let Composio handle redirect
+      {} // Empty options - let Composio handle redirect
     );
 
     const authUrl = connReq.redirectUrl;
@@ -128,7 +128,8 @@ router.post('/connect', async (req: Request, res: Response) => {
       connectionRequestId: connReq.id,
       platform,
       message: `Please authorize your ${platform} account`,
-      instructions: 'You will be redirected to Composio to authorize your account. After authorization, you will be redirected back.',
+      instructions:
+        'You will be redirected to Composio to authorize your account. After authorization, you will be redirected back.',
     });
   } catch (error) {
     console.error('Composio connect error:', error);
@@ -216,7 +217,7 @@ router.get('/connected', async (req: Request, res: Response) => {
 
   try {
     // Create Composio client
-    const composioApiKey = process.env.COMPOSIO_API_KEY;
+    const composioApiKey = process.env.COMPOSIO_API_KEY || '';
     const composioApiUrl = process.env.COMPOSIO_API_URL || 'https://backend.composio.dev/api';
     const composioClient = new ComposioClient(composioApiKey, composioApiUrl);
 
@@ -227,9 +228,7 @@ router.get('/connected', async (req: Request, res: Response) => {
       statuses: ['ACTIVE'],
     });
 
-    const connectedAccount = connectedAccounts.find(
-      (acc: any) => acc.appName === platform
-    );
+    const connectedAccount = connectedAccounts.find((acc: any) => acc.appName === platform);
 
     res.json({
       success: true,
@@ -264,7 +263,7 @@ router.get('/status', async (req: Request, res: Response) => {
   const userIdStr = userId || 'default-user';
 
   try {
-    const composioApiKey = process.env.COMPOSIO_API_KEY;
+    const composioApiKey = process.env.COMPOSIO_API_KEY || '';
     const composioApiUrl = process.env.COMPOSIO_API_URL || 'https://backend.composio.dev/api';
     const composioClient = new ComposioClient(composioApiKey, composioApiUrl);
 
@@ -274,9 +273,7 @@ router.get('/status', async (req: Request, res: Response) => {
       statuses: ['ACTIVE'],
     });
 
-    const connectedAccount = connectedAccounts.find(
-      (acc: any) => acc.appName === platformStr
-    );
+    const connectedAccount = connectedAccounts.find((acc: any) => acc.appName === platformStr);
 
     res.json({
       success: true,
@@ -323,7 +320,9 @@ router.delete('/disconnect', async (req: Request, res: Response) => {
       success: true,
       disconnected: deleted,
       platform,
-      message: deleted ? `${platform} account disconnected` : `${platform} account was not connected`,
+      message: deleted
+        ? `${platform} account disconnected`
+        : `${platform} account was not connected`,
     });
   } catch (error) {
     console.error('Composio disconnect error:', error);
