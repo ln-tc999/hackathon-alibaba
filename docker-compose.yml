@@ -94,9 +94,13 @@ services:
       context: .
       dockerfile: packages/backend/Dockerfile
     container_name: vlowgen-backend
-    expose:
-      - "3001"
-    network_mode: host
+    ports:
+      - "3001:3001"
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+      - 100.100.2.136  # Alibaba Cloud DNS
+      - 100.100.2.138  # Alibaba Cloud DNS secondary
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt:ro  # Mount SSL certificates
     environment:
@@ -134,6 +138,8 @@ services:
       minio:
         condition: service_healthy
     restart: unless-stopped
+    networks:
+      - vlowgen-network
     security_opt:
       - no-new-privileges:true
 
