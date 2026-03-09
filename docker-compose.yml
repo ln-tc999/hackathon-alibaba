@@ -134,18 +134,8 @@ services:
       minio:
         condition: service_healthy
     restart: unless-stopped
-    networks:
-      - vlowgen-network
     security_opt:
       - no-new-privileges:true
-    deploy:
-      resources:
-        limits:
-          cpus: '2'
-          memory: 1G
-        reservations:
-          cpus: '1'
-          memory: 512M
 
 networks:
   vlowgen-network:
