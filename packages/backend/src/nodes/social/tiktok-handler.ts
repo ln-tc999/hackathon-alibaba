@@ -14,7 +14,7 @@ export class TikTokNodeHandler extends BaseSocialMediaHandler {
     text: string,
     _imageUrl: string,
     videoUrl: string,
-    context?: any
+    context?: ExecutionContext
   ): Promise<string> {
     if (!this.composioClient) {
       throw new Error('Composio client not initialized');

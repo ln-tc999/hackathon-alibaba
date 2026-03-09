@@ -15,7 +15,8 @@ export class TwitterNodeHandler extends BaseSocialMediaHandler {
   protected async postToSocialMedia(
     text: string,
     imageUrl: string,
-    videoUrl: string
+    videoUrl: string,
+    context?: ExecutionContext
   ): Promise<string> {
     // Check if we have Twitter OAuth 1.0a credentials for direct API
     const hasDirectCredentials =

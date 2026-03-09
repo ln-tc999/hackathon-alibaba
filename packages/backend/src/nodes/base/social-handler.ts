@@ -208,7 +208,8 @@ export abstract class BaseSocialMediaHandler implements NodeHandler {
         return this.createErrorResult(node.id, validationError, startTime);
       }
 
-      const result = await this.postToSocialMedia(text, imageUrl, videoUrl);
+      // Pass context to postToSocialMedia for per-user account lookup
+      const result = await this.postToSocialMedia(text, imageUrl, videoUrl, context);
 
       return this.createSuccessResult(node.id, result, startTime);
     } catch (error) {
@@ -244,6 +245,7 @@ export abstract class BaseSocialMediaHandler implements NodeHandler {
   protected abstract postToSocialMedia(
     text: string,
     imageUrl: string,
-    videoUrl: string
+    videoUrl: string,
+    context?: ExecutionContext
   ): Promise<string>;
 }
