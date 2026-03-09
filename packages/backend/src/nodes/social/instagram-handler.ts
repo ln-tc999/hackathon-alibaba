@@ -31,40 +31,40 @@ export class InstagramNodeHandler extends BaseSocialMediaHandler {
     }
 
     // Get connected Instagram account ID
-    // Priority: 1. From context credentials, 2. Fetch from Composio API
-    let connectedAccountId = context?.credentials?.instagramConnectedAccountId;
+    // Fetch from Composio API using user ID
+    const userId = context?.credentials?.userId;
+    
+    if (!userId) {
+      throw new Error('User ID not provided in execution context. Cannot fetch Instagram connected account.');
+    }
 
-    if (!connectedAccountId) {
-      // Fetch from Composio API using user ID
-      const userId = context?.credentials?.userId;
+    let connectedAccountId: string | null = null;
+
+    try {
+      console.log(`[Instagram Handler] Fetching connected account for user: ${userId}`);
       
-      if (!userId) {
-        throw new Error('User ID not provided in execution context. Cannot fetch Instagram connected account.');
-      }
+      // List connected accounts for this user
+      const connectedAccounts = await this.composioClient.getConnectedAccounts({
+        userId,
+        app: 'instagram',
+        statuses: ['ACTIVE'],
+      });
 
-      try {
-        console.log(`[Instagram Handler] Fetching connected account for user: ${userId}`);
-        
-        // List connected accounts for this user
-        const connectedAccounts = await this.composioClient.getConnectedAccounts({
-          userId,
-          app: 'instagram',
-        });
+      console.log(`[Instagram Handler] Found ${connectedAccounts.length} connected account(s)`);
 
-        if (connectedAccounts && connectedAccounts.length > 0) {
-          // Find active Instagram connection
-          const instagramAccount = connectedAccounts.find(
-            (acc: any) => acc.appName === 'instagram' && acc.status === 'ACTIVE'
-          );
+      if (connectedAccounts && connectedAccounts.length > 0) {
+        // Find active Instagram connection
+        const instagramAccount = connectedAccounts.find(
+          (acc: any) => acc.appName === 'instagram' && acc.status === 'ACTIVE'
+        );
 
-          if (instagramAccount) {
-            connectedAccountId = instagramAccount.id;
-            console.log(`[Instagram Handler] Found connected account: ${connectedAccountId}`);
-          }
+        if (instagramAccount) {
+          connectedAccountId = instagramAccount.id;
+          console.log(`[Instagram Handler] Found connected account: ${connectedAccountId}`);
         }
-      } catch (error) {
-        console.error('[Instagram Handler] Failed to fetch connected accounts:', error);
       }
+    } catch (error) {
+      console.error('[Instagram Handler] Failed to fetch connected accounts:', error);
     }
 
     if (!connectedAccountId) {

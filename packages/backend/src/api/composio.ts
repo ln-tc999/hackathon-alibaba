@@ -214,16 +214,28 @@ router.get('/connected', async (req: Request, res: Response) => {
       } as ErrorResponse);
     }
 
-    // Get user's connected accounts
-    const userAccounts = getUserAccountMap(userId);
-    const connectedAccountId = userAccounts.get(platform.toUpperCase());
+    // Create Composio client
+    const composioApiKey = process.env.COMPOSIO_API_KEY;
+    const composioApiUrl = process.env.COMPOSIO_API_URL || 'https://backend.composio.dev/api';
+    const composioClient = new ComposioClient(composioApiKey, composioApiUrl);
+
+    // Fetch connected accounts from Composio API
+    const connectedAccounts = await composioClient.getConnectedAccounts({
+      userId: userId as string,
+      app: platform as string,
+      statuses: ['ACTIVE'],
+    });
+
+    const connectedAccount = connectedAccounts.find(
+      (acc: any) => acc.appName === platform
+    );
 
     res.json({
       success: true,
-      connected: !!connectedAccountId,
-      connectedAccountId,
+      connected: !!connectedAccount,
+      connectedAccountId: connectedAccount?.id,
       platform,
-      userId, // Return userId to confirm it's per-user
+      userId,
     });
   } catch (error) {
     console.error('Composio connected check error:', error);
@@ -232,6 +244,53 @@ router.get('/connected', async (req: Request, res: Response) => {
       error: {
         type: 'service',
         message: error instanceof Error ? error.message : 'Failed to check connection status',
+        retryable: true,
+      },
+    } as ErrorResponse);
+  }
+});
+
+/**
+ * GET /api/composio/status
+ * Alias for /connected - for backward compatibility with frontend
+ */
+router.get('/status', async (req: Request, res: Response) => {
+  // Just call the /connected endpoint logic
+  req.query.platform = req.query.platform as string || 'instagram';
+  req.query.userId = req.query.userId as string || 'default-user';
+  
+  // Re-use the /connected logic by calling it directly
+  const { platform, userId } = req.query;
+
+  try {
+    const composioApiKey = process.env.COMPOSIO_API_KEY;
+    const composioApiUrl = process.env.COMPOSIO_API_URL || 'https://backend.composio.dev/api';
+    const composioClient = new ComposioClient(composioApiKey, composioApiUrl);
+
+    const connectedAccounts = await composioClient.getConnectedAccounts({
+      userId: userId as string,
+      app: platform as string,
+      statuses: ['ACTIVE'],
+    });
+
+    const connectedAccount = connectedAccounts.find(
+      (acc: any) => acc.appName === platform
+    );
+
+    res.json({
+      success: true,
+      connected: !!connectedAccount,
+      connectedAccountId: connectedAccount?.id,
+      platform,
+      userId,
+    });
+  } catch (error) {
+    console.error('Composio status check error:', error);
+
+    res.status(500).json({
+      error: {
+        type: 'service',
+        message: error instanceof Error ? error.message : 'Failed to check status',
         retryable: true,
       },
     } as ErrorResponse);
